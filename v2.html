@@ -1084,7 +1084,7 @@ function App(){
         {/* ══════════════════════════ HOME ══════════════════════════════ */}
         {screen==="home"&&<div className="fade-in">
           {/* Héroe: valor de la colección */}
-          <button onClick={()=>go("oportunidades")} style={{...S.card,width:"100%",textAlign:"left",padding:"18px 18px 16px",marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden"}}>
+          <button onClick={()=>go("oportunidades")} style={{...S.card,width:"100%",textAlign:"left",padding:"18px 18px 16px",marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden",color:"var(--text)"}}>
             <div style={{position:"absolute",right:-50,top:-50,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,var(--accent2) 0%,transparent 70%)",opacity:.16,pointerEvents:"none"}}/>
             <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Valor de la colección</div>
             <div style={{fontFamily:"var(--display)",fontSize:40,lineHeight:1.02,marginTop:7,letterSpacing:priv?3:-1.2}}>{H(`${fmt(kpi.vm)} €`)}</div>
@@ -1120,7 +1120,7 @@ function App(){
               const hot=d>=0&&d<=21;
               return(
                 <button key={r.id} onClick={()=>{setTab("reservas");go("reservaDetalle",r);}}
-                  style={{...S.card,width:"100%",textAlign:"left",display:"flex",gap:11,alignItems:"center",padding:12,marginBottom:8,cursor:"pointer"}}>
+                  style={{...S.card,width:"100%",textAlign:"left",display:"flex",gap:11,alignItems:"center",padding:12,marginBottom:8,cursor:"pointer",color:"var(--text)"}}>
                   <div style={{width:50,height:50,borderRadius:13,flex:"none",display:"grid",placeContent:"center",textAlign:"center",lineHeight:1,
                     background:hot?"var(--accent2)":"var(--bg3)",color:hot?"#120A04":"var(--text)"}}>
                     <div style={{fontFamily:"var(--display)",fontSize:17}}>{d>=0?d:"—"}</div>
