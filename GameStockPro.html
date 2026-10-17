@@ -336,7 +336,7 @@ const initMovements=SALES.map(([nombre,cat,coste,pv,plat,fecha],i)=>({
 function getInitialState(){
   const saved=loadState();
   if(saved) return saved;
-  return {products:initProducts,movements:initMovements,reservas:INIT_RESERVAS,
+  return {products:[],movements:[],reservas:[],
           pokemon:[],pokemonVentas:[],
           seenNews:[],priceHistory:{},radarSources:{
             telegram:['ofertasXnintendo','OfertasJuegosPlayStation','gensgamer','OJPlayStationFisico','ofertascazachollos','Ragnacholloscanal','comunidadcazachollos','Ragnachollos','pokeaviso'],
