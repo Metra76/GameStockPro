@@ -732,12 +732,13 @@ function App(){
     if(tab==="stock") go("stock");
     if(tab==="radar") go("radar");
     if(tab==="reservas") go("reservas");
+    if(tab==="pokemon") go("pokemon");
   },[tab]);
 
   const ventas=state.movements.filter(m=>m.tipo==="Venta");
   const reservasOrd=useMemo(()=>[...state.reservas]
-    .sort((a,b)=>a.lanzamiento.localeCompare(b.lanzamiento)),[state.reservas]);
-  const reservasActivas=useMemo(()=>reservasOrd.filter(r=>diasHasta(r.lanzamiento)>=-7),[reservasOrd]);
+    .sort((a,b)=>(a.lanzamiento||"9999").localeCompare(b.lanzamiento||"9999")),[state.reservas]);
+  const reservasActivas=useMemo(()=>reservasOrd.filter(r=>!r.lanzamiento||diasHasta(r.lanzamiento)>=-7),[reservasOrd]);
   const reservasPasadas=useMemo(()=>reservasOrd.filter(r=>diasHasta(r.lanzamiento)<-7),[reservasOrd]);
 
   const kpi=useMemo(()=>{
