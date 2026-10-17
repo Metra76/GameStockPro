@@ -1203,6 +1203,7 @@ function App(){
           showToast("✓ Backup restaurado — subiendo a la nube…","var(--accent2)");
           if(user){saveToSupabase(user.id,data).then(()=>window.location.reload());}
           else{setTimeout(()=>window.location.reload(),1500);}
+              }catch(err){showToast("Error al importar backup","var(--red)");}
       };
       reader.readAsText(file);
     };
