@@ -81,7 +81,7 @@ const CAT_CONFIG={
   "PC":           {emoji:"",color:"var(--yellow)",light:"var(--yellow2)",border:"#fcd34d"},
   "Steelbook":    {emoji:"",color:"#059669",light:"#d1fae5",border:"#6ee7b7"},
   "Zapatillas":   {emoji:"",color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
-  "Cartas":       {emoji:"🃏",color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
+  "Cartas":       {emoji:"",color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
   "Coleccionismo":{emoji:"",color:"var(--accent2)",light:"#f3e8ff",border:"#d8b4fe"},
   "Switch 2":     {emoji:"",color:"#c2410c",light:"#fff7ed",border:"#fed7aa"},
   "Mandos":       {emoji:"",color:"var(--blue)",light:"#e0f2fe",border:"#7dd3fc"},
@@ -1356,7 +1356,7 @@ function App(){
                 <button key={grupo.key} onClick={()=>go("grupo",grupo)} style={{...S.row}}
                   onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                   onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <div style={{width:36,height:36,background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{grupo.emoji}</div>
+                  <div style={{width:5,height:36,borderRadius:3,background:grupo.color,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{grupo.emoji}</div>
                   <div style={{flex:1}}>
                     <div style={{fontWeight:700,fontSize:13}}>{grupo.label}</div>
                     <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{gRefs} refs · {gUds} uds</div>
@@ -1427,7 +1427,7 @@ function App(){
           return(
             <div>
               <div style={{...S.card,padding:"16px",marginBottom:10,display:"flex",alignItems:"center",gap:12}}>
-                <div style={{width:46,height:46,background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{grupo.emoji}</div>
+                <div style={{width:5,height:42,borderRadius:3,background:"var(--accent2)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{grupo.emoji}</div>
                 <div style={{flex:1}}>
                   <div style={{fontWeight:800,fontSize:17,color:grupo.color}}>{grupo.label}</div>
                   <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{items.reduce((a,c)=>a+c.refs,0)} refs · {gUds} uds</div>
@@ -1452,7 +1452,7 @@ function App(){
                     <button key={c.cat} onClick={()=>go("categoria",c.cat)} style={{...S.row}}
                       onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <div style={{width:34,height:34,background:cfg.light||"var(--bg3)",border:`1px solid ${cfg.border||"var(--border)"}`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{cfg.emoji}</div>
+                      <div style={{width:5,height:34,borderRadius:3,background:cfg.color||"var(--accent2)",flexShrink:0,display:"none",border:`0px solid ${cfg.border||"var(--border)"}`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{cfg.emoji}</div>
                       <div style={{flex:1}}>
                         <div style={{fontWeight:700,fontSize:13}}>{c.cat}</div>
                         <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{c.refs} refs · {c.uds} uds</div>
@@ -1478,7 +1478,7 @@ function App(){
             <div>
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                  <div style={{width:40,height:40,background:cfg.light,border:`1px solid ${cfg.border}`,borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{cfg.emoji}</div>
+                  <div style={{width:5,height:40,borderRadius:3,background:cfg.color,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{cfg.emoji}</div>
                   <div>
                     <div style={{fontWeight:800,fontSize:16,color:cfg.color}}>{data}</div>
                     <div style={{fontSize:11,color:"var(--text3)"}}>{cs.refs} refs · {cs.uds} uds</div>
