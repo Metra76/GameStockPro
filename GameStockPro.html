@@ -1199,10 +1199,10 @@ function App(){
         try{
           const data=JSON.parse(ev.target.result);
           if(!data.products||!data.movements) throw new Error("Formato inválido");
-          localStorage.setItem("gsp_v3",JSON.stringify(data));
-          showToast("✓ Backup restaurado — recarga la página","var(--accent2)");
-          setTimeout(()=>window.location.reload(),1500);
-        }catch(err){showToast("Error al importar backup","var(--red)");}
+                    localStorage.setItem("gsp_v3",JSON.stringify(data));
+          showToast("✓ Backup restaurado — subiendo a la nube…","var(--accent2)");
+          if(user){saveToSupabase(user.id,data).then(()=>window.location.reload());}
+          else{setTimeout(()=>window.location.reload(),1500);}
       };
       reader.readAsText(file);
     };
