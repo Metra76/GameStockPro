@@ -1093,12 +1093,12 @@ function App(){
           }
         </div>
         <div style={{display:"flex",gap:6}}>
-          <button onClick={()=>setPriv(p=>!p)} style={{background:priv?"var(--yellow2)":"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:priv?"var(--yellow)":"var(--text2)",fontWeight:600}}>{priv?"":""}</button>
+          <button onClick={()=>setPriv(p=>!p)} style={{background:priv?"var(--yellow2)":"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:priv?"var(--yellow)":"var(--text2)",fontWeight:600}}><Ico d={priv?I.lupa:I.ojo} size={14}/></button>
           <button onClick={handleLogout} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,color:"var(--text2)",fontWeight:600}} title={user?.email}><Ico d={I.salir} size={14}/></button>
           {(screen==="home"||screen==="stock")&&<>
             <button onClick={()=>{setMovForm({productoId:state.products[0]?.id||"",tipo:"Venta",cantidad:1,nota:"",precioVenta:""});setModal("mov");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:"var(--text)",fontWeight:600}}><Ico d={I.refrescar} size={14}/></button>
             <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}><Ico d={I.lupa} size={14}/></button>
-            <button onClick={()=>{setFormP(EMPTY_P);setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}>＋</button>
+            <button onClick={()=>{setFormP(EMPTY_P);setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}><Ico d={I.mas} size={15} c="#fff"/></button>
           </>}
           {screen==="stock"&&<button onClick={updateAllPrices} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}><Ico d={I.rayo} size={14}/></button>}
         </div>
