@@ -1121,7 +1121,7 @@ function App(){
               const fecha=m.fecha||"";
               if(!fecha) return;
               const mes=fecha.slice(0,7);
-              const coste=m.historico?m.coste:0;
+              const coste=m.historico?(m.coste||0):((state.products.find(p=>p.id===m.productoId)||{}).precioCompra||0);
               const ben=(m.precioVenta-coste)*m.cantidad-(m.ebayFee||0);
               meses[mes]=(meses[mes]||0)+ben;
             });
@@ -1152,7 +1152,7 @@ function App(){
                       const isPos=v>=0;
                       const h=Math.max(3,Math.abs(v)/maxV*barH);
                       const isBest=i===best&&v>0;
-                      const label=MESES[parseInt(mes.slice(5))-1];
+                      const label=MESES[parseInt(mes.slice(5))-1]+" "+mes.slice(2,4);
                       return(
                         <button key={mes} onClick={()=>{setVentasMes(ventasMes===mes?null:mes);go("ventas");}} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:barW,background:"none",border:"none",cursor:"pointer",padding:0,opacity:ventasMes&&ventasMes!==mes?0.4:1,transition:"opacity .2s"}}>
                           {isBest&&<div style={{fontSize:8,color:"var(--green)",fontWeight:800,marginBottom:2}}>🏆</div>}
