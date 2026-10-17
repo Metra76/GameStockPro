@@ -495,7 +495,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
       {/* Header */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
         <div style={{fontWeight:800,fontSize:15,color:"var(--text)"}}>
-          {pkScreen==="home"?"🃏 Pokémon TCG":pkScreen==="inventory"?"📦 Inventario":pkScreen==="sales"?"💸 Ventas":pkScreen==="search"?"🔍 Buscar carta":"➕ Añadir"}
+          {pkScreen==="home"?"Cartas":pkScreen==="inventory"?"Inventario":pkScreen==="sales"?"Ventas":pkScreen==="search"?"Buscar carta":"Añadir"}
         </div>
         <div style={{display:"flex",gap:6}}>
           {pkScreen!=="home"&&<button onClick={()=>setPkScreen("home")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--text)"}}>← Volver</button>}
@@ -556,9 +556,10 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
           ))}
         </div>}
         {pkList.length===0&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:40,textAlign:"center",color:"var(--text3)"}}>
-          <div style={{fontSize:32,marginBottom:8}}>🃏</div>
-          <div style={{fontWeight:700,fontSize:13}}>Sin cartas ni productos</div>
-          <div style={{fontSize:12,marginTop:4}}>Pulsa ➕ para añadir tu primera carta</div>
+          <svg viewBox="0 0 24 24" style={{width:40,height:40,fill:"none",stroke:"var(--border2)",strokeWidth:1.6,strokeLinecap:"round",strokeLinejoin:"round",marginBottom:10}}><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M8 21h9a2 2 0 0 0 2-2V8"/></svg>
+          <div style={{fontFamily:"var(--display)",fontSize:14,color:"var(--text)"}}>Aún no hay cartas</div>
+          <div style={{fontSize:12.5,marginTop:6,lineHeight:1.5,maxWidth:260,marginLeft:"auto",marginRight:"auto"}}>
+            Sobres sellados, ETB, displays o cartas sueltas con su grado. Añade la primera con el botón de arriba.</div>
         </div>}
       </>}
 
@@ -1788,7 +1789,7 @@ function App(){
           return(
             <div>
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
-                <div style={{fontWeight:700,fontSize:13,marginBottom:10}}>📊 Resumen reservas</div>
+                <div style={{fontFamily:"var(--display)",fontSize:13,marginBottom:10}}>Resumen de reservas</div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
                   {[{l:"Señal pagada",v:H(`${fmt(totalSignal)} €`),c:"var(--accent2)"},{l:"Pendiente",v:H(`${fmt(totalPend)} €`),c:totalPend>0?"var(--red)":"var(--green)"},{l:"Unidades",v:`${totalUds} uds`,c:"var(--blue)"}].map((k,i)=>(
                     <div key={i} style={{background:"var(--bg3)",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
@@ -1810,16 +1811,21 @@ function App(){
                     <button key={r.id} onClick={()=>go("reservaDetalle",r)} style={{...S.row}}
                       onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:urg,flexShrink:0}}/>
+                      <div style={{width:46,height:46,borderRadius:12,flex:"none",display:"grid",placeContent:"center",textAlign:"center",lineHeight:1,
+                        background:(r.lanzamiento&&d>=0&&d<=21)?"var(--accent2)":"var(--bg3)",color:(r.lanzamiento&&d>=0&&d<=21)?"#fff":"var(--text)"}}>
+                        <div style={{fontFamily:"var(--display)",fontSize:15}}>{r.lanzamiento?(d>=0?d:"—"):"—"}</div>
+                        <div style={{fontSize:8,letterSpacing:.5,textTransform:"uppercase",marginTop:2,opacity:.7}}>{r.lanzamiento?(d===0?"hoy":"días"):"s/f"}</div>
+                      </div>
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
-                        <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{cfg.emoji||"🎮"} {r.plataforma} · {r.lanzamiento}</div>
+                        <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
+                        <div style={{fontSize:11.5,color:"var(--text2)",marginTop:2}}>{r.lanzamiento||"sin fecha"} · {r.unidades||0} uds
+                          <span style={{display:"inline-block",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:"var(--bg3)",color:"var(--text2)",marginLeft:6}}>{r.plataforma}</span>
+                        </div>
                       </div>
-                      <div style={{textAlign:"right",flexShrink:0}}>
-                        <span style={{color:urg,fontWeight:800,fontSize:12}}>{d>0?`${d}d`:d===0?"HOY":"¡YA!"}</span>
-                        <div style={{fontSize:10,color:"var(--text3)"}}>{H(`${fmt(r.costeTotal||0)} €`)}</div>
+                      <div style={{textAlign:"right",flex:"none"}}>
+                        <div style={{fontFamily:"var(--display)",fontSize:13}}>{H(`${fmt(r.costeTotal||0)} €`)}</div>
+                        <div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>señal</div>
                       </div>
-                      <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
                     </button>
                   );
                 })}
@@ -1894,16 +1900,16 @@ function App(){
             {/* Pestañas principales */}
             <div style={{display:"flex",gap:6,marginBottom:10,overflowX:"auto",paddingBottom:2}}>
               {[
-                {k:"telegram",l:"🟦 Telegram"},
-                {k:"publishers",l:"🎯 Publishers"},
-                {k:"news",l:"📰 Medios"},
-                {k:"twitter",l:"🐦 Twitter"},
-                {k:"all",l:"🌐 Todo"},
+                {k:"telegram",l:"Telegram"},
+                {k:"publishers",l:"Publishers"},
+                {k:"news",l:"Medios"},
+                {k:"twitter",l:"Twitter"},
+                {k:"all",l:"Todo"},
               ].map(t=>(
                 <button key={t.k} onClick={()=>{setRadarTab(t.k);setRadarFilter("Todas");}}
-                  style={{background:radarTab===t.k?"var(--accent2)":"#fff",color:radarTab===t.k?"#fff":"var(--text)",
+                  style={{background:radarTab===t.k?"var(--accent2)":"var(--bg2)",color:radarTab===t.k?"#fff":"var(--text2)",
                     border:`1px solid ${radarTab===t.k?"var(--accent2)":"var(--border)"}`,borderRadius:20,
-                    padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
+                    padding:"7px 15px",fontSize:12.5,fontWeight:700,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
                   {t.l}
                 </button>
               ))}
