@@ -1,35 +1,36 @@
-const CACHE = 'gamestockpro-v1';
-const ASSETS = [
-  '/GameStockPro/GameStockPro.html',
-  'https://unpkg.com/react@18/umd/react.production.min.js',
-  'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js'
-];
+const CACHE = 'gsp-v2';
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
-});
+self.addEventListener('install', e => self.skipWaiting());
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-    )).then(() => self.clients.claim())
-  );
-});
+self.addEventListener('activate', e => e.waitUntil(
+  caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k)))).then(() => clients.claim())
+));
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (res && res.status === 200 && e.request.method === 'GET') {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      }).catch(() => caches.match('/GameStockPro/GameStockPro.html'));
-    })
-  );
+  const u = e.request.url;
+  if (!u.startsWith('http')) return;
+  if (u.includes('supabase.co') || e.request.method !== 'GET') return;
+  e.respondWith(fetch(e.request).catch(() => new Response('offline')));
+});
+
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'CHECK_RESERVAS') {
+    const hoy = new Date().toISOString().split('T')[0];
+    (e.data.reservas || []).forEach(r => {
+      const dias = Math.ceil((new Date(r.lanzamiento) - new Date(hoy)) / 86400000);
+      if (dias === 0 || dias === 1 || dias === 3 || dias === 7) {
+        const emoji = dias === 0 ? '\u{1F534}' : dias === 1 ? '\u{1F7E0}' : '\u{1F7E1}';
+        self.registration.showNotification(emoji + ' Reserva: ' + r.nombre, {
+          body: dias === 0 ? 'Lanza HOY' : 'Lanza en ' + dias + ' dia' + (dias > 1 ? 's' : ''),
+          tag: 'reserva-' + r.id,
+          data: { url: location.origin }
+        });
+      }
+    });
+  }
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow((e.notification.data && e.notification.data.url) || location.origin));
 });
