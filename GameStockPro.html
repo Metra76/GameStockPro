@@ -737,8 +737,10 @@ function App(){
     const inv=state.products.reduce((a,p)=>a+p.stock*p.precioCompra,0);
     const vm=state.products.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0);
     const ing=ventas.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
-    const cv=ventas.reduce((a,m)=>a+(m.historico?m.coste:0)*m.cantidad,0);
-    const ben=ing-cv;
+    const costeDe=m=>m.historico?(m.coste||0):((state.products.find(p=>p.id===m.productoId)||{}).precioCompra||0);
+    const cv=ventas.reduce((a,m)=>a+costeDe(m)*m.cantidad,0);
+    const fees=ventas.reduce((a,m)=>a+(m.ebayFee||0),0);
+    const ben=ing-cv-fees;
     const roi=cv>0?ben/cv*100:0;
     return{inv,vm,ing,ben,roi,margen:ing>0?ben/ing*100:0,stock:state.products.reduce((a,p)=>a+p.stock,0)};
   },[state,ventas]);
@@ -747,7 +749,7 @@ function App(){
     const prods=state.products.filter(p=>p.categoria===cat);
     const vCat=ventas.filter(m=>(m.historico?m.categoriaVenta:(state.products.find(p=>p.id===m.productoId)?.categoria||""))===cat);
     const ing=vCat.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
-    const cv=vCat.reduce((a,m)=>a+(m.historico?m.coste:0)*m.cantidad,0);
+    const cv=vCat.reduce((a,m)=>a+((m.historico?(m.coste||0):((state.products.find(p=>p.id===m.productoId)||{}).precioCompra||0))*m.cantidad)+(m.ebayFee||0),0);
     return{cat,refs:prods.length,uds:prods.reduce((a,p)=>a+p.stock,0),
       inv:prods.reduce((a,p)=>a+p.stock*p.precioCompra,0),
       vm:prods.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0),
