@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#0B0E17"/>
+<meta name="theme-color" content="#F5F6FA"/>
 <title>GameStockPro</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icons/icon-192.png"/>
@@ -12,39 +12,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#0B0E17;
-  --bg2:#141927;
-  --bg3:#1C2234;
-  --border:#2A3146;
-  --border2:#39415A;
-  --text:#EEF1F8;
-  --text2:#9AA4BF;
-  --text3:#6B7592;
-  --accent:#FFA468;
+  --bg:#F5F6FA;
+  --bg2:#FFFFFF;
+  --bg3:#EEF0F7;
+  --border:#E0E4EE;
+  --border2:#CDD3E2;
+  --text:#141826;
+  --text2:#5A6480;
+  --text3:#8C95AE;
+  --accent:#E8651A;
   --accent2:#FF7A2F;
-  --accent3:#3A2415;
-  --green:#2FD48F;
-  --green2:#06372A;
-  --red:#FF5C6E;
-  --red2:#3A0F16;
-  --yellow:#F0B429;
-  --yellow2:#3A2A05;
-  --blue:#4DA3FF;
-  --blue2:#12304F;
+  --accent3:#FFEDE1;
+  --green:#0FA968;
+  --green2:#E3F8EF;
+  --red:#E03146;
+  --red2:#FDE8EA;
+  --yellow:#C98A06;
+  --yellow2:#FDF3DC;
+  --blue:#2B7FE0;
+  --blue2:#E4F0FF;
   --sw:#FF4D5A;
   --ps5:#4DA3FF;
   --ps4:#7C8DF0;
   --zp:#F0B429;
   --display:'Archivo Black','Archivo Black Fallback',system-ui,sans-serif;
-  --card-shadow:0 2px 14px rgba(0,0,0,.45);
-  --glow:0 0 22px rgba(255,122,47,.16);
+  --card-shadow:0 1px 3px rgba(20,24,38,.07);
+  --glow:0 0 22px rgba(255,122,47,.18);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Archivo',system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;background:var(--bg);color:var(--text);font-size:14px;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.4;filter:invert(1)}
+input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
 input,select,button{font-family:inherit}
-input,select,textarea{background:var(--bg3)!important;color:var(--text)!important;border-color:var(--border2)!important}
+input,select,textarea{background:var(--bg2)!important;color:var(--text)!important;border-color:var(--border2)!important}
 input::placeholder{color:var(--text3)!important}
 .slide-up{animation:slideUp .22s cubic-bezier(.16,1,.3,1)}
 @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -221,7 +221,7 @@ function Sheet({children,onClose,title}){
       onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className="slide-up" style={{background:"var(--bg2)",borderRadius:"20px 20px 0 0",padding:"20px 18px 40px",width:"100%",maxWidth:500,maxHeight:"92vh",overflowY:"auto",boxShadow:"0 -8px 40px rgba(0,0,0,.6)"}}>
         <div style={{width:34,height:4,background:"var(--border)",borderRadius:2,margin:"0 auto 18px"}}/>
-        <div style={{fontWeight:800,fontSize:15,marginBottom:16,color:"var(--text)"}}>{title}</div>
+        <div style={{fontFamily:"var(--display)",fontSize:16,marginBottom:16,color:"var(--text)"}}>{title}</div>
         {children}
       </div>
     </div>
@@ -536,12 +536,12 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
           </button>
         </div>
         {pkList.length>0&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,boxShadow:"0 1px 4px rgba(0,0,0,.06)",overflow:"hidden",marginBottom:10}}>
-          <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <span style={{fontWeight:700,fontSize:13}}>Últimas adiciones</span>
             <button onClick={()=>setPkScreen("inventory")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,cursor:"pointer",fontWeight:600}}>Ver todo →</button>
           </div>
           {[...pkList].reverse().slice(0,4).map((p,i)=>(
-            <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",padding:"10px 14px",borderBottom:i<3?"1px solid #f3f4f6":"none"}}>
+            <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",padding:"10px 14px",borderBottom:i<3?"1px solid var(--border)":"none"}}>
               {p.image?<img src={p.image} alt={p.nombre} style={{width:36,height:50,objectFit:"contain",borderRadius:4,flexShrink:0}}/>
                 :<div style={{width:36,height:50,background:"var(--bg3)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🃏</div>}
               <div style={{flex:1,minWidth:0}}>
@@ -566,7 +566,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
       {pkScreen==="inventory"&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,overflow:"hidden"}}>
         {pkList.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Sin items.</div>}
         {pkList.map((p,i)=>(
-          <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 14px",borderBottom:i<pkList.length-1?"1px solid #f3f4f6":"none"}}>
+          <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 14px",borderBottom:i<pkList.length-1?"1px solid var(--border)":"none"}}>
             {p.image?<img src={p.image} alt={p.nombre} style={{width:36,height:50,objectFit:"contain",borderRadius:4,flexShrink:0}}/>
               :<div style={{width:36,height:50,background:"var(--bg3)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🃏</div>}
             <div style={{flex:1,minWidth:0}}>
@@ -591,7 +591,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
         {[...pkVentas].reverse().map((v,i)=>{
           const ben=(v.precioVenta-v.coste)*(v.unidades||1)-(v.fee||0);
           return(
-            <div key={v.id} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 14px",borderBottom:i<pkVentas.length-1?"1px solid #f3f4f6":"none"}}>
+            <div key={v.id} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 14px",borderBottom:i<pkVentas.length-1?"1px solid var(--border)":"none"}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.nombre}</div>
                 <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{v.fecha} · ×{v.unidades||1} · {v.nota||"—"}</div>
@@ -659,7 +659,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
               setPkForm({...pkForm,nombre:c.name,set:c.set||"",numero:c.number||"",rareza:c.rarity||"",
                 precioMercado:c.prices?.avg||0,image:c.image||""});
               setPkScreen("add");
-            }} style={{width:"100%",background:"transparent",border:"none",borderBottom:i<pkResults.length-1?"1px solid #f3f4f6":"none",padding:"12px 14px",display:"flex",gap:10,alignItems:"center",cursor:"pointer",textAlign:"left"}}
+            }} style={{width:"100%",background:"transparent",border:"none",borderBottom:i<pkResults.length-1?"1px solid var(--border)":"none",padding:"12px 14px",display:"flex",gap:10,alignItems:"center",cursor:"pointer",textAlign:"left"}}
               onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               {c.image?<img src={c.image} alt={c.name} style={{width:30,height:42,objectFit:"contain",borderRadius:4,flexShrink:0}}/>
@@ -701,6 +701,7 @@ function App(){
   const [editId,setEditId]=useState(null);
   const [movForm,setMovForm]=useState({productoId:"",tipo:"Venta",cantidad:1,nota:"",precioVenta:"",fecha:today,ebayFee:""});
   const [toast,setToast]=useState(null);
+  const [q,setQ]=useState("");
   const [priv,setPriv]=useState(false);
   const [search,setSearch]=useState("");
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
@@ -1122,7 +1123,7 @@ function App(){
                 <button key={r.id} onClick={()=>{setTab("reservas");go("reservaDetalle",r);}}
                   style={{...S.card,width:"100%",textAlign:"left",display:"flex",gap:11,alignItems:"center",padding:12,marginBottom:8,cursor:"pointer",color:"var(--text)"}}>
                   <div style={{width:50,height:50,borderRadius:13,flex:"none",display:"grid",placeContent:"center",textAlign:"center",lineHeight:1,
-                    background:hot?"var(--accent2)":"var(--bg3)",color:hot?"#120A04":"var(--text)"}}>
+                    background:hot?"var(--accent2)":"var(--bg3)",color:hot?"#FFFFFF":"var(--text)"}}>
                     <div style={{fontFamily:"var(--display)",fontSize:17}}>{d>=0?d:"—"}</div>
                     <div style={{fontSize:8.5,letterSpacing:.6,textTransform:"uppercase",marginTop:3,opacity:.75}}>{d===0?"hoy":"días"}</div>
                   </div>
@@ -1160,7 +1161,7 @@ function App(){
               <div style={{...S.card,padding:"16px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
                   <div>
-                    <div style={{fontWeight:800,fontSize:13,color:"var(--text)"}}>📈 Beneficio por mes</div>
+                    <div style={{fontFamily:"var(--display)",fontSize:13,color:"var(--text)"}}>Beneficio por mes</div>
                     <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>Últimos {keys.length} meses</div>
                   </div>
                   <div style={{textAlign:"right"}}>
@@ -1204,8 +1205,8 @@ function App(){
             if(!hasAny) return null;
             return(
               <div style={{...S.card,marginBottom:10,overflow:"hidden"}}>
-                <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontWeight:700,fontSize:13}}>📦 Inventario</span>
+                <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontFamily:"var(--display)",fontSize:13}}>Inventario</span>
                   <button onClick={()=>setTab("stock")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,cursor:"pointer",fontWeight:600}}>Ver stock →</button>
                 </div>
                 {GRUPOS.map(grupo=>{
@@ -1254,8 +1255,8 @@ function App(){
 
           {/* Próximas reservas */}
           <div style={{...S.card,overflow:"hidden"}}>
-            <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontWeight:700,fontSize:13}}>🔖 Próximas reservas</span>
+            <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontFamily:"var(--display)",fontSize:13}}>Próximas reservas</span>
               <button onClick={()=>setTab("reservas")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,cursor:"pointer",fontWeight:600}}>Ver todas →</button>
             </div>
             {reservasActivas.slice(0,4).map(r=>{
@@ -1283,9 +1284,40 @@ function App(){
 
         {/* ══════════════════════════ STOCK ═════════════════════════════ */}
         {screen==="stock"&&<div className="fade-in">
+          <div style={{position:"relative",marginBottom:10}}>
+            <svg viewBox="0 0 24 24" style={{position:"absolute",left:13,top:13,width:17,height:17,fill:"none",stroke:"var(--text3)",strokeWidth:2,strokeLinecap:"round"}}><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-3.6-3.6"/></svg>
+            <input value={q} onChange={e=>setQ(e.target.value)} placeholder={`Buscar en ${state.products.length} referencias…`}
+              style={{width:"100%",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:14,
+                padding:"11px 38px 11px 38px",fontSize:13.5,color:"var(--text)",outline:"none",boxShadow:"var(--card-shadow)"}}/>
+            {q&&<button onClick={()=>setQ("")} style={{position:"absolute",right:10,top:9,width:24,height:24,borderRadius:8,background:"var(--bg3)",border:"none",cursor:"pointer",color:"var(--text2)",fontSize:13}}>×</button>}
+          </div>
+
+          {q.trim().length>0&&(()=>{
+            const t=q.trim().toLowerCase();
+            const res=state.products.filter(p=>(p.nombre||"").toLowerCase().includes(t)||(p.sku||"").toLowerCase().includes(t));
+            return(
+              <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
+                <div style={{padding:"11px 14px",borderBottom:"1px solid var(--border)",fontSize:11.5,fontWeight:700,color:"var(--text2)"}}>
+                  {res.length} {res.length===1?"resultado":"resultados"}
+                </div>
+                {res.slice(0,40).map(p=>(
+                  <button key={p.id} onClick={()=>go("producto",p)} style={{...S.row}}>
+                    <div style={{width:5,height:34,borderRadius:3,flex:"none",background:({"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"})[p.categoria]||"var(--accent2)"}}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
+                      <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{p.categoria} · {p.stock} uds</div>
+                    </div>
+                    <div style={{fontFamily:"var(--display)",fontSize:13,flex:"none"}}>{H(`${fmt((p.valorMercado||0)*(p.stock||0))} €`)}</div>
+                  </button>
+                ))}
+                {res.length===0&&<div style={{padding:26,textAlign:"center",color:"var(--text3)",fontSize:13}}>Nada con ese nombre</div>}
+              </div>
+            );
+          })()}
+
           <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
-            <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6"}}>
-              <span style={{fontWeight:700,fontSize:13}}>📦 Stock por categoría</span>
+            <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
+              <span style={{fontFamily:"var(--display)",fontSize:13}}>Stock por categoría</span>
             </div>
             {GRUPOS.map(grupo=>{
               const items=catStats.filter(c=>grupo.cats.includes(c.cat)&&c.uds>0);
@@ -1330,7 +1362,7 @@ function App(){
           </button>
           {/* ROI por categoría */}
           <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
-            <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6"}}>
+            <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
               <span style={{fontWeight:700,fontSize:13}}>📊 ROI por categoría</span>
             </div>
             {catStats.filter(c=>c.uds>0||c.nVentas>0).sort((a,b)=>{
@@ -1342,7 +1374,7 @@ function App(){
               const roi=c.inv>0?(c.vm-c.inv)/c.inv*100:0;
               const pct=Math.min(Math.abs(roi),200)/200*100;
               return(
-                <div key={c.cat} style={{padding:"10px 14px",borderBottom:"1px solid #f3f4f6"}}>
+                <div key={c.cat} style={{padding:"10px 14px",borderBottom:"1px solid var(--border)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                     <span style={{fontSize:12,fontWeight:600}}>{cfg.emoji} {c.cat}</span>
                     <span style={{fontSize:12,fontWeight:800,color:roi>=0?"var(--green)":"var(--red)"}}>{roi>=0?"+":""}{fmt(roi)}%</span>
@@ -1575,7 +1607,7 @@ function App(){
                       Actualizado hace {ebayAge<1?"<1h":`${ebayAge}h`}
                     </div>
                     {p.ebayData.listings&&p.ebayData.listings.length>0&&(
-                      <div style={{marginTop:8,borderTop:"1px solid #f3f4f6",paddingTop:8}}>
+                      <div style={{marginTop:8,borderTop:"1px solid var(--border)",paddingTop:8}}>
                         <div style={{fontSize:10,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.3,marginBottom:6}}>Últimos anuncios</div>
                         {p.ebayData.listings.map((l,i)=>(
                           <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
@@ -1617,7 +1649,7 @@ function App(){
               {/* Ventas de este producto */}
               {pVentas.length>0&&(
                 <div style={{...S.card,overflow:"hidden"}}>
-                  <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6"}}>
+                  <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
                     <span style={{fontWeight:700,fontSize:13}}>💸 Ventas ({pVentas.length})</span>
                   </div>
                   {pVentas.map((m,i)=>{
@@ -1662,7 +1694,7 @@ function App(){
               <button onClick={()=>setVentasMes(null)} style={{background:"none",border:"none",color:"var(--accent2)",cursor:"pointer",fontSize:12,fontWeight:700}}>✕ Quitar filtro</button>
             </div>}
             <div style={{...S.card,overflow:"hidden"}}>
-              <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <span style={{fontWeight:700,fontSize:13}}>💸 {ventasMes?`Ventas de ${ventasMes}`:"Todas las ventas"} ({ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes).length:ventas.length})</span>
               </div>
               {(ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes):ventas).map((m,i)=>{
@@ -1922,7 +1954,7 @@ function App(){
                   const kws=state.radarKeywords||[];
                   const isAlert=kws.length>0&&kws.some(k=>n.titulo.toLowerCase().includes(k));
                   return(
-                  <div key={n.id} style={{borderBottom:"1px solid #f3f4f6",padding:"12px 16px",background:isAlert?"var(--yellow2)":"var(--bg3)",borderLeft:isAlert?"3px solid #d97706":"none"}}>
+                  <div key={n.id} style={{borderBottom:"1px solid var(--border)",padding:"12px 16px",background:isAlert?"var(--yellow2)":"var(--bg3)",borderLeft:isAlert?"3px solid #d97706":"none"}}>
                     <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
                       <div style={{flex:1,minWidth:0}}>
                         {n.link
@@ -1974,7 +2006,7 @@ function App(){
             <button key={t.k} onClick={()=>{setTab(t.k);if(t.k==="pokemon") setPkScreen("home");}}
               style={{flex:1,background:"none",border:"none",padding:"10px 0 8px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,transition:"all .1s",position:"relative"}}>
               <svg viewBox="0 0 24 24" style={{width:21,height:21,fill:"none",stroke:active?"var(--accent2)":"var(--text3)",strokeWidth:1.9,strokeLinecap:"round",strokeLinejoin:"round"}}><path d={t.d}/></svg>
-              {showBadge&&<div style={{position:"absolute",top:6,right:"calc(50% - 16px)",background:"var(--red)",color:"#0f0f13",borderRadius:99,fontSize:9,fontWeight:800,minWidth:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{badgeNum}</div>}
+              {showBadge&&<div style={{position:"absolute",top:6,right:"calc(50% - 16px)",background:"var(--red)",color:"#fff",borderRadius:99,fontSize:9,fontWeight:800,minWidth:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{badgeNum}</div>}
               <span style={{fontSize:9.5,fontWeight:700,color:active?"var(--accent2)":"var(--text3)",letterSpacing:.2,marginTop:3}}>{t.l}</span>
               {active&&<div style={{width:18,height:2,background:"var(--accent2)",borderRadius:99}}/>}
             </button>
@@ -2052,7 +2084,7 @@ function App(){
               {group.sources.map((src,i)=>{
                 const active=(state.radarSources?.[group.key]||[]).includes(src);
                 return(
-                  <div key={src} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",borderBottom:i<group.sources.length-1?"1px solid #f3f4f6":"none"}}>
+                  <div key={src} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",borderBottom:i<group.sources.length-1?"1px solid var(--border)":"none"}}>
                     <span style={{fontSize:13,color:active?"var(--text)":"var(--text3)"}}>{src}</span>
                     <button onClick={()=>{
                       const current=state.radarSources?.[group.key]||[];
