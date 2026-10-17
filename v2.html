@@ -75,23 +75,23 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const WORKER="https://gamestockpro-api.supremasos.workers.dev";
 
 const CAT_CONFIG={
-  "PS5":          {emoji:"🎮",color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
-  "PS4":          {emoji:"🎮",color:"var(--blue)",light:"#dbeafe",border:"#93c5fd"},
-  "Switch":       {emoji:"🔴",color:"var(--red)",light:"var(--red2)",border:"#fca5a5"},
-  "PC":           {emoji:"💻",color:"var(--yellow)",light:"var(--yellow2)",border:"#fcd34d"},
-  "Steelbook":    {emoji:"💿",color:"#059669",light:"#d1fae5",border:"#6ee7b7"},
-  "Zapatillas":   {emoji:"👟",color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
+  "PS5":          {emoji:"",color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
+  "PS4":          {emoji:"",color:"var(--blue)",light:"#dbeafe",border:"#93c5fd"},
+  "Switch":       {emoji:"",color:"var(--red)",light:"var(--red2)",border:"#fca5a5"},
+  "PC":           {emoji:"",color:"var(--yellow)",light:"var(--yellow2)",border:"#fcd34d"},
+  "Steelbook":    {emoji:"",color:"#059669",light:"#d1fae5",border:"#6ee7b7"},
+  "Zapatillas":   {emoji:"",color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
   "Cartas":       {emoji:"🃏",color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
-  "Coleccionismo":{emoji:"🎵",color:"var(--accent2)",light:"#f3e8ff",border:"#d8b4fe"},
-  "Switch 2":     {emoji:"🟠",color:"#c2410c",light:"#fff7ed",border:"#fed7aa"},
-  "Mandos":       {emoji:"🕹️",color:"var(--blue)",light:"#e0f2fe",border:"#7dd3fc"},
+  "Coleccionismo":{emoji:"",color:"var(--accent2)",light:"#f3e8ff",border:"#d8b4fe"},
+  "Switch 2":     {emoji:"",color:"#c2410c",light:"#fff7ed",border:"#fed7aa"},
+  "Mandos":       {emoji:"",color:"var(--blue)",light:"#e0f2fe",border:"#7dd3fc"},
 };
 const CATEGORIES_FULL=["PS5","PS4","Switch","PC","Steelbook","Zapatillas","Cartas","Coleccionismo","Switch 2","Mandos"];
 const PLATAFORMAS=["PS5","PS4","Switch","Switch 2","PC","Steelbook","Cartas","Coleccionismo"];
 const GRUPOS=[
-  {label:"Juegos",emoji:"🎮",key:"juegos",cats:["PS5","PS4","Switch","Switch 2","PC","Steelbook"],color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
-  {label:"Zapatillas",emoji:"👟",key:"zapatillas",cats:["Zapatillas"],color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
-  {label:"Otros",emoji:"📦",key:"otros",cats:["Cartas","Coleccionismo"],color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
+  {label:"Juegos",emoji:"",key:"juegos",cats:["PS5","PS4","Switch","Switch 2","PC","Steelbook"],color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
+  {label:"Zapatillas",emoji:"",key:"zapatillas",cats:["Zapatillas"],color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
+  {label:"Otros",emoji:"",key:"otros",cats:["Cartas","Coleccionismo"],color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
 ];
 const fmt=n=>Number(n).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});
 const HIDDEN="•••";
@@ -208,6 +208,31 @@ const S={
   row:{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid var(--border)",padding:"13px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left",transition:"background .1s"},
   badge:(c,l,b)=>({background:l,color:c,border:`1px solid ${b}`,padding:"2px 9px",borderRadius:20,fontSize:11,fontWeight:700}),
 };
+function Ico({d,size=17,c="currentColor",w=1.9,fill="none"}){
+  return <svg viewBox="0 0 24 24" style={{width:size,height:size,display:"block",flexShrink:0}}
+    fill={fill} stroke={c} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round"><path d={d}/></svg>;
+}
+const I={
+  ojo:"M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z M14.6 12a2.6 2.6 0 1 1-5.2 0 2.6 2.6 0 0 1 5.2 0Z",
+  salir:"M15 17l5-5-5-5 M20 12H9 M9 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3",
+  refrescar:"M20 11a8 8 0 1 0-.6 4 M20 5v6h-6",
+  lupa:"M17.5 11a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z M20 20l-3.6-3.6",
+  mas:"M12 5v14 M5 12h14",
+  rayo:"M13 2 4.5 13.5H11l-1 8.5L19.5 10H13Z",
+  euro:"M16.5 6.5A6 6 0 1 0 16.5 17.5 M4 10h8 M4 14h8",
+  grafica:"M4 19h16 M7 16V9 M12 16V5 M17 16v-5",
+  caja:"M3 8.5 12 4l9 4.5v7L12 20l-9-4.5Z M3 8.5 12 13l9-4.5 M12 13v7",
+  billete:"M3 7h18v10H3Z M12 14.2a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z",
+  etiqueta:"M3.5 12.5V5a1.5 1.5 0 0 1 1.5-1.5h7.5L21 12l-8 8Z M8 8h.01",
+  calendario:"M3.5 7.5A2.5 2.5 0 0 1 6 5h12a2.5 2.5 0 0 1 2.5 2.5v11A2.5 2.5 0 0 1 18 21H6a2.5 2.5 0 0 1-2.5-2.5Z M8 3v4 M16 3v4 M3.5 10h17",
+  lapiz:"M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17Z",
+  papelera:"M4 7h16 M9.5 7V5h5v2 M6.5 7l.8 12.2a1.8 1.8 0 0 0 1.8 1.8h5.8a1.8 1.8 0 0 0 1.8-1.8L18.5 7",
+  ajustes:"M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3 15a2 2 0 1 1 0-4 1.6 1.6 0 0 0 1.7-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 11 3.2V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.6 1.6 0 0 0 21 11a2 2 0 1 1 0 4 1.6 1.6 0 0 0-1.6 0Z",
+  descarga:"M12 4v11 M7.5 11.5 12 16l4.5-4.5 M5 20h14",
+  carpeta:"M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8A1.5 1.5 0 0 1 20.5 10v8a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18Z",
+  imagen:"M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5Z M8.5 10.5a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6Z M4 16l5-4 4.5 4 3-2.5L20 16",
+  guardar:"M5 4.5A1.5 1.5 0 0 1 6.5 3H16l3 3v12.5A1.5 1.5 0 0 1 17.5 20h-11A1.5 1.5 0 0 1 5 18.5Z M8 3v5h7 M8 13h8v7H8Z",
+};
 const EMPTY_P={nombre:"",categoria:"PS5",stock:0,precioCompra:0,valorMercado:0,sku:"",condicion:"Precintado",fechaCompra:"",cover:""};
 const EMPTY_R={nombre:"",plataforma:"PS5",lanzamiento:"",precioReserva:0,tienda:"",urlTienda:"",notas:"",unidades:0,costeTotal:0,costePendiente:0,precioFinal:0};
 
@@ -289,7 +314,7 @@ function UpdateProgress({current,total,onDone}){
   return(
     <div style={{padding:"12px 16px",background:"var(--accent3)",borderRadius:12,marginBottom:10}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-        <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>⚡ Actualizando precios eBay…</span>
+        <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>Actualizando precios eBay…</span>
         <span style={{fontSize:12,color:"var(--accent2)",fontWeight:700}}>{current}/{total}</span>
       </div>
       <div style={{background:"var(--accent3)",borderRadius:99,height:6}}>
@@ -330,13 +355,13 @@ function GameSearcher({onSelect,onClose}){
   },[q]);
 
   return(
-    <Sheet onClose={onClose} title="🔍 Buscar juego">
+    <Sheet onClose={onClose} title="Buscar juego">
       <Field label="Nombre del juego">
         <input autoFocus value={q} onChange={e=>setQ(e.target.value)}
           placeholder="Ej: Silent Hill 2 Collector..." style={S.inp()}/>
       </Field>
       {loading&&<div style={{textAlign:"center",padding:16,color:"var(--accent2)",fontSize:13}}>
-        <span className="spin" style={{display:"inline-block"}}>⚙️</span> Buscando…
+        <span className="spin" style={{display:"inline-block"}}><Ico d={I.refrescar}/></span> Buscando…
       </div>}
       {error&&<div style={{padding:10,background:"var(--red2)",borderRadius:8,color:"var(--red)",fontSize:12,marginBottom:8}}>{error}</div>}
       {results.length>0&&(
@@ -348,7 +373,7 @@ function GameSearcher({onSelect,onClose}){
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               {r.cover
                 ?<img src={r.cover} alt="" style={{width:36,height:48,objectFit:"cover",borderRadius:4,flexShrink:0}}/>
-                :<div style={{width:36,height:48,background:"var(--bg3)",borderRadius:4,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🎮</div>
+                :<div style={{width:36,height:48,background:"var(--bg3)",borderRadius:4,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}></div>
               }
               <div style={{flex:1,minWidth:0,textAlign:"left"}}>
                 <div style={{fontWeight:700,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
@@ -395,7 +420,7 @@ function LoginScreen({onLogin}){
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <div style={{background:"var(--bg2)",borderRadius:20,padding:28,width:"100%",maxWidth:380,boxShadow:"0 4px 40px rgba(0,0,0,.5)",border:"1px solid var(--border)"}}>
         <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{width:52,height:52,background:"linear-gradient(135deg,#7c3aed,#a78bfa)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,margin:"0 auto 12px"}}>🎮</div>
+          <div style={{width:52,height:52,background:"var(--accent2)",borderRadius:15,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,margin:"0 auto 12px"}}></div>
           <div style={{fontWeight:800,fontSize:20,color:"var(--text)"}}>GameStockPro</div>
           <div style={{fontSize:13,color:"var(--text3)",marginTop:4}}>{mode==="login"?"Inicia sesión en tu cuenta":"Crea tu cuenta"}</div>
         </div>
@@ -441,7 +466,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
   const pkIng = pkVentas.reduce((a,v)=>a+(v.precioVenta||0)*(v.unidades||1),0);
 
 
-  const TIPOS=[{k:"carta",l:"🃏 Carta suelta"},{k:"sobre",l:"📦 Sobre/Booster"},{k:"etb",l:"🎁 ETB / Elite Trainer"},{k:"display",l:"📦 Display"},{k:"coleccion",l:"📚 Colección completa"},{k:"otro",l:"🔮 Otro"}];
+  const TIPOS=[{k:"carta",l:"Carta suelta"},{k:"sobre",l:"Sobre/Booster"},{k:"etb",l:"ETB / Elite Trainer"},{k:"display",l:" Display"},{k:"coleccion",l:" Colección completa"},{k:"otro",l:" Otro"}];
   const CONDICIONES=["PSA 10","PSA 9","PSA 8","BGS 9.5","BGS 9","CGC 10","CGC 9.5","Mint","NM","LP","MP","HP","Damaged","Sellado"];
 
   const searchPokemon=async(q)=>{
@@ -499,7 +524,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
         </div>
         <div style={{display:"flex",gap:6}}>
           {pkScreen!=="home"&&<button onClick={()=>setPkScreen("home")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--text)"}}>← Volver</button>}
-          {pkScreen==="home"&&<button onClick={()=>setPkScreen("add")} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff"}}>➕ Añadir</button>}
+          {pkScreen==="home"&&<button onClick={()=>setPkScreen("add")} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff"}}>Añadir</button>}
         </div>
       </div>
 
@@ -507,10 +532,10 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
       {pkScreen==="home"&&<>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
           {[
-            {l:"Invertido",v:`${fmt(pkInv)} €`,icon:"💶",c:"var(--accent2)"},
-            {l:"Valor mercado",v:`${fmt(pkVM)} €`,icon:"📈",c:"var(--blue)"},
-            {l:"Beneficio",v:`${pkBen>=0?"+":""}${fmt(pkBen)} €`,icon:"💰",c:pkBen>=0?"var(--green)":"var(--red)"},
-            {l:"Ingresos",v:`${fmt(pkIng)} €`,icon:"💸",c:"var(--blue)"},
+            {l:"Invertido",v:`${fmt(pkInv)} €`,icon:I.euro,c:"var(--accent2)"},
+            {l:"Valor mercado",v:`${fmt(pkVM)} €`,icon:I.grafica,c:"var(--blue)"},
+            {l:"Beneficio",v:`${pkBen>=0?"+":""}${fmt(pkBen)} €`,icon:I.euro,c:pkBen>=0?"var(--green)":"var(--red)"},
+            {l:"Ingresos",v:`${fmt(pkIng)} €`,icon:I.billete,c:"var(--blue)"},
           ].map((k,i)=>(
             <div key={i} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,boxShadow:"0 1px 4px rgba(0,0,0,.06)",padding:"14px 15px"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
@@ -524,13 +549,13 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
           <button onClick={()=>setPkScreen("inventory")} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:"16px",cursor:"pointer",textAlign:"center"}}
             onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"} onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
-            <div style={{fontSize:24,marginBottom:4}}>📦</div>
+            <div style={{marginBottom:6,display:"flex",justifyContent:"center",color:"var(--text2)"}}><Ico d={I.caja} size={22}/></div>
             <div style={{fontWeight:700,fontSize:13}}>Inventario</div>
             <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{pkList.length} items</div>
           </button>
           <button onClick={()=>setPkScreen("sales")} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:"16px",cursor:"pointer",textAlign:"center"}}
             onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"} onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
-            <div style={{fontSize:24,marginBottom:4}}>💸</div>
+            <div style={{marginBottom:6,display:"flex",justifyContent:"center",color:"var(--text2)"}}><Ico d={I.billete} size={22}/></div>
             <div style={{fontWeight:700,fontSize:13}}>Ventas</div>
             <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{pkVentas.length} ventas</div>
           </button>
@@ -579,8 +604,8 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
               <button onClick={()=>fetchPkPrice(p)} style={{fontSize:9,background:"var(--accent3)",border:"none",borderRadius:4,padding:"2px 6px",cursor:"pointer",color:"var(--accent2)",fontWeight:700,marginTop:3}}>↻ CM</button>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:4}}>
-              <button onClick={()=>{setPkVentaForm({...pkVentaForm,itemId:p.id,nombre:p.nombre,coste:p.precioCompra||0,unidades:p.unidades||1});setPkVentaModal(true);}} style={{background:"var(--green2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--green)"}}>💸</button>
-              <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_POKEMON",payload:p.id});}} style={{background:"var(--red2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--red)"}}>🗑</button>
+              <button onClick={()=>{setPkVentaForm({...pkVentaForm,itemId:p.id,nombre:p.nombre,coste:p.precioCompra||0,unidades:p.unidades||1});setPkVentaModal(true);}} style={{background:"var(--green2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--green)"}}></button>
+              <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_POKEMON",payload:p.id});}} style={{background:"var(--red2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
             </div>
           </div>
         ))}
@@ -610,7 +635,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
       {pkScreen==="add"&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:"16px"}}>
         <div style={{marginBottom:12}}>
           <button onClick={()=>setPkScreen("search")} style={{width:"100%",background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:10,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>
-            🔍 Buscar carta en Pokémon TCG API
+            Buscar carta en Pokémon TCG API
           </button>
         </div>
         <Field label="Nombre"><input style={S.inp()} value={pkForm.nombre} onChange={e=>setPkForm({...pkForm,nombre:e.target.value})} placeholder="Ej: Charizard ex, Prismatic Evolutions Display..."/></Field>
@@ -664,10 +689,10 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
               onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               {c.image?<img src={c.image} alt={c.name} style={{width:30,height:42,objectFit:"contain",borderRadius:4,flexShrink:0}}/>
-                :<div style={{width:30,height:42,background:c.isEbay?"var(--yellow2)":"var(--bg3)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{c.isEbay?"📦":"🃏"}</div>}
+                :<div style={{width:30,height:42,background:c.isEbay?"var(--yellow2)":"var(--bg3)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{c.isEbay?"":"🃏"}</div>}
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:12}}>{c.name}</div>
-                <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{c.isEbay?"📊 Precio eBay estimado":`${c.set||""} ${c.number?"#"+c.number:""} · ${c.rarity||"—"}`}</div>
+                <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{c.isEbay?"Precio eBay estimado":`${c.set||""} ${c.number?"#"+c.number:""} · ${c.rarity||"—"}`}</div>
               </div>
               {c.prices?.avg&&<div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontWeight:700,fontSize:12,color:"var(--green)"}}>{fmt(c.prices.avg)} €</div>
@@ -678,7 +703,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
           ))}
         </div>}
         {pkResults.length===0&&!pkLoading&&pkSearch&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:24,textAlign:"center",color:"var(--text3)"}}>
-              <div style={{fontSize:24,marginBottom:8}}>🔍</div>
+              <div style={{marginBottom:8,display:"flex",justifyContent:"center",color:"var(--border2)"}}><Ico d={I.lupa} size={26}/></div>
               <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>Sin cartas encontradas</div>
               <div style={{fontSize:12}}>Prueba con el nombre en inglés. Para sobres y ETBs añádelos manualmente con el formulario.</div>
             </div>}
@@ -1035,7 +1060,7 @@ function App(){
   if(authLoading) return(
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{textAlign:"center",color:"var(--text3)"}}>
-        <span className="spin" style={{display:"inline-block",fontSize:32}}>⚙️</span>
+        <span className="spin" style={{display:"inline-block"}}><Ico d={I.refrescar} size={30}/></span>
         <div style={{marginTop:12,fontSize:13,fontWeight:600}}>Cargando…</div>
       </div>
     </div>
@@ -1062,20 +1087,20 @@ function App(){
           }
           {(screen==="home"||screen==="stock"||screen==="radar"||screen==="reservas")&&
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:30,height:30,background:"linear-gradient(135deg,#7c3aed,#a78bfa)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>🎮</div>
+              <div style={{width:30,height:30,background:"var(--accent2)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}></div>
               <span style={{fontWeight:800,fontSize:15,letterSpacing:"-0.3px"}}>StockPro</span>
             </div>
           }
         </div>
         <div style={{display:"flex",gap:6}}>
-          <button onClick={()=>setPriv(p=>!p)} style={{background:priv?"var(--yellow2)":"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:priv?"var(--yellow)":"var(--text2)",fontWeight:600}}>{priv?"🔒":"👁"}</button>
-          <button onClick={handleLogout} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,color:"var(--text2)",fontWeight:600}} title={user?.email}>⏏️</button>
+          <button onClick={()=>setPriv(p=>!p)} style={{background:priv?"var(--yellow2)":"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:priv?"var(--yellow)":"var(--text2)",fontWeight:600}}>{priv?"":""}</button>
+          <button onClick={handleLogout} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,color:"var(--text2)",fontWeight:600}} title={user?.email}><Ico d={I.salir} size={14}/></button>
           {(screen==="home"||screen==="stock")&&<>
-            <button onClick={()=>{setMovForm({productoId:state.products[0]?.id||"",tipo:"Venta",cantidad:1,nota:"",precioVenta:""});setModal("mov");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:"var(--text)",fontWeight:600}}>🔄</button>
-            <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}>🔍</button>
+            <button onClick={()=>{setMovForm({productoId:state.products[0]?.id||"",tipo:"Venta",cantidad:1,nota:"",precioVenta:""});setModal("mov");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:"var(--text)",fontWeight:600}}><Ico d={I.refrescar} size={14}/></button>
+            <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}><Ico d={I.lupa} size={14}/></button>
             <button onClick={()=>{setFormP(EMPTY_P);setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}>＋</button>
           </>}
-          {screen==="stock"&&<button onClick={updateAllPrices} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}>⚡</button>}
+          {screen==="stock"&&<button onClick={updateAllPrices} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}><Ico d={I.rayo} size={14}/></button>}
         </div>
       </div>
 
@@ -1181,7 +1206,7 @@ function App(){
                       const label=MESES[parseInt(mes.slice(5))-1]+" "+mes.slice(2,4);
                       return(
                         <button key={mes} onClick={()=>{setVentasMes(ventasMes===mes?null:mes);go("ventas");}} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:barW,background:"none",border:"none",cursor:"pointer",padding:0,opacity:ventasMes&&ventasMes!==mes?0.4:1,transition:"opacity .2s"}}>
-                          {isBest&&<div style={{fontSize:8,color:"var(--green)",fontWeight:800,marginBottom:2}}>🏆</div>}
+                          {isBest&&<div style={{fontSize:8,color:"var(--accent2)",fontWeight:800,marginBottom:2}}>▲</div>}
                           {!isBest&&<div style={{height:14}}/>}
                           <div style={{
                             width:"100%",height:h,
@@ -1240,15 +1265,15 @@ function App(){
 
           {/* Accesos rápidos */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
-            {[{l:"Ventas",icon:"💸",sub:`${ventas.length} registradas`,s:"ventas",c:"var(--green)"},
-              {l:"Reservas",icon:"🔖",sub:`${reservasActivas.length} activas`,s:"reservas",c:"var(--accent2)"},
-              {l:"🔥 Oportunidades",icon:"⚡",sub:`${oportunidades.length} detectadas`,s:"oportunidades",c:"var(--yellow)"}
+            {[{l:"Ventas",icon:I.billete,sub:`${ventas.length} registradas`,s:"ventas",c:"var(--green)"},
+              {l:"Reservas",icon:I.calendario,sub:`${reservasActivas.length} activas`,s:"reservas",c:"var(--accent2)"},
+              {l:"Oportunidades",icon:I.rayo,sub:`${oportunidades.length} detectadas`,s:"oportunidades",c:"var(--yellow)"}
             ].map(x=>(
               <button key={x.s} onClick={()=>{if(x.s==="reservas") setTab("reservas");else go(x.s);}}
                 style={{...S.card,padding:"14px 12px",border:"1px solid var(--border)",cursor:"pointer",textAlign:"left",transition:"all .15s",background:"var(--bg2)"}}
                 onMouseEnter={e=>e.currentTarget.style.borderColor=x.c}
                 onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
-                <div style={{fontSize:22,marginBottom:6}}>{x.icon}</div>
+                <div style={{marginBottom:7,color:x.c}}><Ico d={x.icon} size={20}/></div>
                 <div style={{fontWeight:700,fontSize:11,color:"var(--text)"}}>{x.l}</div>
                 <div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>{x.sub}</div>
               </button>
@@ -1273,7 +1298,7 @@ function App(){
                   <div style={{width:8,height:8,borderRadius:"50%",background:urg,flexShrink:0}}/>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
-                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{cfg.emoji||"🎮"} {r.plataforma} · {r.lanzamiento}</div>
+                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{r.plataforma} · {r.lanzamiento}</div>
                   </div>
                   <span style={{color:urg,fontWeight:800,fontSize:12,flexShrink:0}}>{d>0?`${d}d`:d===0?"HOY":"Pasó"}</span>
                   <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
@@ -1347,25 +1372,25 @@ function App(){
           </div>
           {coverProgress&&<div style={{padding:"12px 16px",background:"var(--yellow2)",borderRadius:12,marginBottom:10}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--yellow)"}}>🖼 Buscando portadas…</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--yellow)"}}>Buscando portadas…</span>
               <span style={{fontSize:12,color:"var(--yellow)",fontWeight:700}}>{coverProgress.current}/{coverProgress.total}</span>
             </div>
             <div style={{background:"#fcd34d",borderRadius:99,height:6}}>
               <div style={{background:"var(--yellow)",height:6,borderRadius:99,width:`${coverProgress.total>0?Math.round(coverProgress.current/coverProgress.total*100):0}%`,transition:"width .3s"}}/>
             </div>
           </div>}
-          <button onClick={exportCSV} style={{width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:14,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:8}}>⬇️ Exportar CSV</button>
+          <button onClick={exportCSV} style={{width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:14,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:8}}>️ Exportar CSV</button>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-            <button onClick={exportJSON} style={{background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>💾 Backup JSON</button>
-            <button onClick={importJSON} style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)"}}>📂 Restaurar</button>
+            <button onClick={exportJSON} style={{background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>Backup JSON</button>
+            <button onClick={importJSON} style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)"}}>Restaurar</button>
           </div>
           <button onClick={updateAllCovers} disabled={!!coverProgress} style={{width:"100%",background:coverProgress?"var(--yellow2)":"var(--bg3)",border:"1px solid #fcd34d",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--yellow)",marginBottom:10}}>
-            🖼 Buscar portadas automáticamente ({state.products.filter(p=>!p.cover&&p.stock>0).length} sin portada)
+            Buscar portadas automáticamente ({state.products.filter(p=>!p.cover&&p.stock>0).length} sin portada)
           </button>
           {/* ROI por categoría */}
           <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
             <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
-              <span style={{fontWeight:700,fontSize:13}}>📊 ROI por categoría</span>
+              <span style={{fontWeight:700,fontSize:13}}>ROI por categoría</span>
             </div>
             {catStats.filter(c=>c.uds>0||c.nVentas>0).sort((a,b)=>{
               const roiA=a.inv>0?(a.vm-a.inv)/a.inv*100:0;
@@ -1467,13 +1492,13 @@ function App(){
                     </div>
                   ))}
                 </div>}
-                {sinVM>0&&<div style={{marginTop:8,fontSize:11,color:"var(--yellow)",fontWeight:600}}>⚠️ {sinVM} producto{sinVM>1?"s":""} sin valor de mercado</div>}
+                {sinVM>0&&<div style={{marginTop:8,fontSize:11,color:"var(--yellow)",fontWeight:600}}>{sinVM} producto{sinVM>1?"s":""} sin valor de mercado</div>}
               </div>
               <div style={{position:"relative",marginBottom:10}}>
                 <input value={search} onChange={e=>setSearch(e.target.value)}
                   placeholder={`Buscar en ${data}…`}
                   style={{...S.inp(),paddingLeft:32}}/>
-                <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"var(--text3)"}}>🔍</span>
+                <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"var(--text3)"}}></span>
               </div>
               <div style={{...S.card,overflow:"hidden"}}>
                 {catProducts.length===0&&<div style={{padding:30,textAlign:"center",color:"var(--text3)"}}>Sin productos{search?" para esta búsqueda":""}</div>}
@@ -1492,14 +1517,14 @@ function App(){
                       }
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                          {esOp&&<span style={{fontSize:10}}>🔥</span>}
+                          {esOp&&<span style={{fontSize:9,fontWeight:800,color:"var(--accent2)"}}>OP</span>}
                           <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:esOp?"var(--red)":"var(--text)"}}>{p.nombre}</div>
                         </div>
                         <div style={{fontSize:11,color:"var(--text3)",display:"flex",gap:6,alignItems:"center"}}>
                           <span>{p.sku}</span>
                           <span>·</span><span>×{p.stock}</span>
                           {p.ebayData&&!ebStale&&<span style={{color:"var(--accent2)",fontSize:10}}>eBay ✓</span>}
-                          {ebStale&&<span style={{color:"var(--yellow)",fontSize:10}}>⚠️ desact.</span>}
+                          {ebStale&&<span style={{color:"var(--yellow)",fontSize:10}}>desact.</span>}
                         </div>
                       </div>
                       <div style={{textAlign:"right",flexShrink:0}}>
@@ -1538,20 +1563,20 @@ function App(){
                     {p.cover&&<div style={{position:"relative",cursor:"pointer"}} onClick={()=>{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:ev.target.result}});showToast("✓ Portada actualizada");};reader.readAsDataURL(file);};inp.click();}}>
                     <img src={p.cover} alt="" style={{width:44,height:76,objectFit:"cover",borderRadius:8}}/>
                     <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",transition:"background .2s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,.4)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(0,0,0,0)"}>
-                      <span style={{fontSize:14,opacity:0}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0}>✎</span>
+                      <span style={{fontSize:14,opacity:0}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0}></span>
                     </div>
                   </div>}
                   {!p.cover&&<div style={{display:"flex",flexDirection:"column",gap:3}}>
                     <button onClick={()=>fetchCover(p)} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
-                      <span style={{fontSize:13}}>🔍</span><span>IGDB</span>
+                      <Ico d={I.lupa} size={13}/><span>IGDB</span>
                     </button>
                     <button onClick={()=>{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:ev.target.result}});showToast("✓ Portada subida");};reader.readAsDataURL(file);};inp.click();}} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
-                      <span style={{fontSize:13}}>📷</span><span>Foto</span>
+                      <Ico d={I.imagen} size={13}/><span>Foto</span>
                     </button>
                   </div>}
                     <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                      <button onClick={()=>{setFormP({...p});setEditId(p.id);setModal("edit");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>✏️</button>
-                      <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_PRODUCT",payload:p.id});go("categoria",p.categoria);}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}>🗑</button>
+                      <button onClick={()=>{setFormP({...p});setEditId(p.id);setModal("edit");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}><Ico d={I.lapiz} size={14}/></button>
+                      <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_PRODUCT",payload:p.id});go("categoria",p.categoria);}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
                     </div>
                   </div>
                 </div>
@@ -1576,7 +1601,7 @@ function App(){
                 {pPlusval!==null&&!priv&&(
                   <div style={{marginTop:8,padding:"8px 12px",background:pPlusval>0?"var(--bg3)":"#fef2f2",borderRadius:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <span style={{fontSize:12,fontWeight:600,color:pPlusval>0?"var(--green)":"var(--red)"}}>
-                      {pPlusval>0?"📈":"📉"} Plus-valía: {pPlusval>0?"+":""}{fmt(pPlusval)}%
+                      Plus-valía: {pPlusval>0?"+":""}{fmt(pPlusval)}%
                     </span>
                     <span style={{fontSize:12,fontWeight:700,color:pPlusval>0?"var(--green)":"var(--red)"}}>
                       {pPlusval>0?"+":""}{H(`${fmt(p.valorMercado-p.precioCompra)} €`)}
@@ -1588,10 +1613,10 @@ function App(){
               {/* eBay precio */}
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                  <span style={{fontWeight:700,fontSize:13}}>📊 Precio eBay</span>
+                  <span style={{fontWeight:700,fontSize:13}}>Precio eBay</span>
                   <button onClick={()=>fetchEbayPrice(p)} disabled={isLoading}
                     style={{background:"var(--accent3)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}>
-                    {isLoading?<span className="spin" style={{display:"inline-block"}}>⚙️</span>:"🔄 Actualizar"}
+                    {isLoading?<span className="spin" style={{display:"inline-block"}}><Ico d={I.refrescar}/></span>:"Actualizar"}
                   </button>
                 </div>
                 {p.ebayData?(
@@ -1631,7 +1656,7 @@ function App(){
               {/* Historial precios */}
               {(p.priceHistory&&p.priceHistory.length>0)&&(
                 <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
-                  <div style={{fontWeight:700,fontSize:13,marginBottom:8}}>📈 Historial de precio</div>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:8}}>Historial de precio</div>
                   <PriceChart history={p.priceHistory} color={cfg.color||"var(--accent2)"}/>
                 </div>
               )}
@@ -1640,11 +1665,11 @@ function App(){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
                 <button onClick={()=>{setMovForm({productoId:p.id,tipo:"Venta",cantidad:1,nota:"",precioVenta:p.valorMercado||""});setModal("mov");}}
                   style={{background:"var(--green)",border:"none",borderRadius:11,padding:"12px",cursor:"pointer",color:"#fff",fontWeight:800,fontSize:13}}>
-                  💰 Registrar venta
+                  Registrar venta
                 </button>
                 <button onClick={()=>{const q=encodeURIComponent(p.nombre.replace(/[–—]/g,"-"));window.open(`https://www.ebay.es/sch/i.html?_nkw=${q}&LH_Sold=1`,"_blank","noopener");}}
                   style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:11,padding:"12px",cursor:"pointer",color:"var(--text)",fontWeight:700,fontSize:13}}>
-                  🔍 Ver en eBay
+                  Ver en eBay
                 </button>
               </div>
 
@@ -1652,7 +1677,7 @@ function App(){
               {pVentas.length>0&&(
                 <div style={{...S.card,overflow:"hidden"}}>
                   <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
-                    <span style={{fontWeight:700,fontSize:13}}>💸 Ventas ({pVentas.length})</span>
+                    <span style={{fontWeight:700,fontSize:13}}>Ventas ({pVentas.length})</span>
                   </div>
                   {pVentas.map((m,i)=>{
                     const coste=m.historico?m.coste:(p.precioCompra||0);
@@ -1692,12 +1717,12 @@ function App(){
               ))}
             </div>}
             {ventasMes&&<div style={{...S.card,padding:"10px 14px",marginBottom:8,background:"var(--accent3)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>📅 Filtrando: {ventasMes}</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>Filtrando: {ventasMes}</span>
               <button onClick={()=>setVentasMes(null)} style={{background:"none",border:"none",color:"var(--accent2)",cursor:"pointer",fontSize:12,fontWeight:700}}>✕ Quitar filtro</button>
             </div>}
             <div style={{...S.card,overflow:"hidden"}}>
               <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontWeight:700,fontSize:13}}>💸 {ventasMes?`Ventas de ${ventasMes}`:"Todas las ventas"} ({ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes).length:ventas.length})</span>
+                <span style={{fontFamily:"var(--display)",fontSize:13}}>{ventasMes?`Ventas de ${ventasMes}`:"Todas las ventas"} ({ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes).length:ventas.length})</span>
               </div>
               {(ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes):ventas).map((m,i)=>{
                 const prod=state.products.find(p=>p.id===m.productoId);
@@ -1752,7 +1777,7 @@ function App(){
         {screen==="oportunidades"&&(
           <div>
             <div style={{...S.card,padding:"12px 16px",marginBottom:10,background:"var(--bg3)",border:"1px solid #fcd34d"}}>
-              <div style={{fontSize:12,color:"var(--yellow)",fontWeight:700}}>🔥 Oportunidades detectadas</div>
+              <div style={{fontSize:12,color:"var(--yellow)",fontWeight:700}}>Oportunidades detectadas</div>
               <div style={{fontSize:11,color:"var(--yellow)",marginTop:3}}>Productos con valor de mercado ≥1.5× precio de compra</div>
             </div>
             <div style={{...S.card,overflow:"hidden"}}>
@@ -1764,7 +1789,7 @@ function App(){
                   <button key={p.id} onClick={()=>go("producto",p)} style={{...S.row}}
                     onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <div style={{width:30,height:30,background:"var(--bg3)",border:"1px solid #fcd34d",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:"var(--yellow)",fontSize:i<3?15:11,flexShrink:0}}>{i<3?["🥇","🥈","🥉"][i]:i+1}</div>
+                    <div style={{width:30,height:30,background:"var(--bg3)",border:"1px solid #fcd34d",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:"var(--yellow)",fontSize:i<3?15:11,flexShrink:0}}>{i<3?["1.","2.","3."][i]:i+1}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
                       <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{cfg2.emoji} {p.categoria} · {H(`${fmt(p.precioCompra)} → ${fmt(p.valorMercado)} €`)}</div>
@@ -1801,7 +1826,7 @@ function App(){
                 </div>
               </div>
               <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8}}>
-                <button onClick={()=>{setFormR(EMPTY_R);setEditId(null);setModal("reserva");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"8px 16px",cursor:"pointer",color:"#fff",fontWeight:700,fontSize:13}}>＋ Nueva reserva</button>
+                <button onClick={()=>{setFormR(EMPTY_R);setEditId(null);setModal("reserva");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"8px 16px",cursor:"pointer",color:"#fff",fontWeight:700,fontSize:13}}>+ Nueva reserva</button>
               </div>
               <div style={{...S.card,overflow:"hidden"}}>
                 {reservasActivas.map(r=>{
@@ -1841,7 +1866,7 @@ function App(){
                       <div key={r.id} style={{...S.row,justifyContent:"space-between"}}>
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{fontWeight:500,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:"var(--text2)"}}>{r.nombre}</div>
-                          <div style={{fontSize:11,color:"var(--text3)"}}>{cfg.emoji||"🎮"} {r.plataforma} · {r.lanzamiento}</div>
+                          <div style={{fontSize:11,color:"var(--text3)"}}>{r.plataforma} · {r.lanzamiento}</div>
                         </div>
                         <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_RESERVA",payload:r.id});}}
                           style={{background:"var(--red2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"var(--red)",fontWeight:700,flexShrink:0,marginLeft:8}}>
@@ -1864,15 +1889,15 @@ function App(){
                 <div style={{flex:1,minWidth:0,paddingRight:8}}>
                   <div style={{fontWeight:800,fontSize:15,marginBottom:4,lineHeight:1.3}}>{rFresh.nombre}</div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
-                    <span style={S.badge(rCfg.color||"var(--text)",rCfg.light||"var(--bg3)",rCfg.border||"var(--border)")}>{rCfg.emoji||"🎮"} {rFresh.plataforma}</span>
+                    <span style={S.badge(rCfg.color||"var(--text)",rCfg.light||"var(--bg3)",rCfg.border||"var(--border)")}>{rCfg.emoji||""} {rFresh.plataforma}</span>
                     <span style={{padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:800,background:rDias<=30?"var(--red2)":rDias<=90?"var(--yellow2)":"var(--green2)",color:rUrg,border:`1px solid ${rUrg}`}}>
                       {rDias>0?`${rDias}d`:rDias===0?"HOY":"Pasado"}
                     </span>
                   </div>
                 </div>
                 <div style={{display:"flex",gap:6,flexShrink:0}}>
-                  <button onClick={()=>{setFormR({...rFresh});setEditId(rFresh.id);setModal("reserva");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>✏️</button>
-                  <button onClick={()=>{if(window.confirm("¿Eliminar reserva?")) dispatch({type:"DELETE_RESERVA",payload:rFresh.id});setTab("reservas");}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}>🗑</button>
+                  <button onClick={()=>{setFormR({...rFresh});setEditId(rFresh.id);setModal("reserva");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}><Ico d={I.lapiz} size={14}/></button>
+                  <button onClick={()=>{if(window.confirm("¿Eliminar reserva?")) dispatch({type:"DELETE_RESERVA",payload:rFresh.id});setTab("reservas");}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
                 </div>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -1889,7 +1914,7 @@ function App(){
               </div>}
               {rFresh.urlTienda&&<a href={rFresh.urlTienda} target="_blank" rel="noopener noreferrer"
                 style={{display:"block",marginTop:8,padding:"10px 14px",background:"var(--accent3)",borderRadius:8,textDecoration:"none",color:"var(--accent2)",fontWeight:700,fontSize:13,textAlign:"center"}}>
-                🔗 Ir a la tienda →
+                Ir a la tienda →
               </a>}
             </div>
           </div>
@@ -1922,9 +1947,9 @@ function App(){
                 {radarNews.filter(n=>!(state.seenNews||[]).includes(n.id)).length} noticias nuevas
               </span>
               <div style={{display:"flex",gap:6}}>
-                <button onClick={()=>setRadarSettings(true)} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,color:"var(--text)",fontWeight:700}}>⚙️</button>
+                <button onClick={()=>setRadarSettings(true)} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,color:"var(--text)",fontWeight:700}}><Ico d={I.ajustes} size={14}/></button>
                 <button onClick={()=>fetchRadarNews(radarTab)} style={{background:"var(--accent3)",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}>
-                  {radarLoading?"…":"🔄"}
+                  {radarLoading?"…":<Ico d={I.refrescar} size={14}/>}
                 </button>
               </div>
             </div>
@@ -1952,9 +1977,9 @@ function App(){
                   :unseen;
                 if(filtered.length===0) return(
                   <div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>
-                    <div style={{fontSize:24,marginBottom:8}}>{radarNews.length>0?"✅":"📡"}</div>
+                    <div style={{marginBottom:8,display:"flex",justifyContent:"center",color:"var(--border2)"}}><Ico d={I.lupa} size={26}/></div>
                     <div style={{fontSize:13,fontWeight:600}}>{radarNews.length>0?"Todo visto":"Sin noticias ahora mismo"}</div>
-                    <div style={{fontSize:11,marginTop:4}}>Pulsa 🔄 para buscar de nuevo</div>
+                    <div style={{fontSize:11,marginTop:4}}>Pulsa actualizar para buscar de nuevo</div>
                   </div>
                 );
                 return filtered.map((n,i)=>{
@@ -2022,7 +2047,7 @@ function App(){
       </div>
 
       {/* ══════════════════════════ MODALES ════════════════════════════════ */}
-      {(modal==="add"||modal==="edit")&&<Sheet onClose={()=>setModal(null)} title={modal==="add"?"➕ Nuevo producto":"✏️ Editar producto"}>
+      {(modal==="add"||modal==="edit")&&<Sheet onClose={()=>setModal(null)} title={modal==="add"?"Nuevo producto":"Editar producto"}>
         {[["nombre","Nombre"],["sku","SKU"],["stock","Stock","number"],["precioCompra","Precio coste (€)","number"],["valorMercado","Valor mercado New/Sealed (€)","number"]].map(([k,l,t="text"])=>(
           <Field key={k} label={l}><input type={t} value={formP[k]} onChange={e=>setFormP({...formP,[k]:e.target.value})} style={S.inp()} onFocus={e=>e.target.style.borderColor="var(--accent2)"} onBlur={e=>e.target.style.borderColor="var(--border)"}/></Field>
         ))}
@@ -2034,7 +2059,7 @@ function App(){
         <Btns onCancel={()=>setModal(null)} onSave={saveP}/>
       </Sheet>}
 
-      {modal==="mov"&&<Sheet onClose={()=>setModal(null)} title="🔄 Registrar movimiento">
+      {modal==="mov"&&<Sheet onClose={()=>setModal(null)} title="Registrar movimiento">
         <Field label="Producto"><select value={movForm.productoId} onChange={e=>setMovForm({...movForm,productoId:e.target.value})} style={S.inp()}>{state.products.map(p=><option key={p.id} value={p.id}>{p.nombre} ({p.categoria}) · {p.stock} uds</option>)}</select></Field>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
           <Field label="Tipo"><select value={movForm.tipo} onChange={e=>setMovForm({...movForm,tipo:e.target.value})} style={S.inp()}><option>Venta</option><option>Entrada</option><option>Salida</option></select></Field>
@@ -2047,7 +2072,7 @@ function App(){
         <Btns onCancel={()=>setModal(null)} onSave={saveMov} saveLabel="Registrar" saveColor="var(--green)"/>
       </Sheet>}
 
-      {modal==="reserva"&&<Sheet onClose={()=>{setModal(null);setEditId(null);setFormR(EMPTY_R);}} title={editId?"✏️ Editar reserva":"🔖 Nueva reserva"}>
+      {modal==="reserva"&&<Sheet onClose={()=>{setModal(null);setEditId(null);setFormR(EMPTY_R);}} title={editId?" Editar reserva":"Nueva reserva"}>
         <Field label="Nombre"><input type="text" value={formR.nombre} onChange={e=>setFormR({...formR,nombre:e.target.value})} style={S.inp()} onFocus={e=>e.target.style.borderColor="var(--accent2)"} onBlur={e=>e.target.style.borderColor="var(--border)"}/></Field>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
           <Field label="Plataforma"><select value={formR.plataforma} onChange={e=>setFormR({...formR,plataforma:e.target.value})} style={S.inp()}>{PLATAFORMAS.map(p=><option key={p}>{p}</option>)}</select></Field>
@@ -2079,11 +2104,11 @@ function App(){
       />}
 
       {/* ── RADAR SETTINGS ── */}
-      {radarSettings&&<Sheet onClose={()=>setRadarSettings(false)} title="⚙️ Fuentes del Radar">
+      {radarSettings&&<Sheet onClose={()=>setRadarSettings(false)} title="Fuentes del Radar">
         {[
-          {key:"telegram",label:"🟦 Telegram",sources:(state.radarSources?.telegram||[])},
-          {key:"publishers",label:"🎯 Medios ES",sources:(state.radarSources?.publishers||[])},
-          {key:"news",label:"📰 Medios EN",sources:(state.radarSources?.news||[])},
+          {key:"telegram",label:"Telegram",sources:(state.radarSources?.telegram||[])},
+          {key:"publishers",label:"Medios ES",sources:(state.radarSources?.publishers||[])},
+          {key:"news",label:"Medios EN",sources:(state.radarSources?.news||[])},
         ].map(group=>(
           <div key={group.key} style={{marginBottom:16}}>
             <div style={{fontSize:11,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>{group.label}</div>
@@ -2108,7 +2133,7 @@ function App(){
         ))}
         <div style={{fontSize:11,color:"var(--text3)",textAlign:"center",marginTop:8}}>Los cambios se aplican al recargar las noticias</div>
         <div style={{marginTop:16}}>
-          <div style={{fontSize:11,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>🔍 Alertas por palabras clave</div>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}> Alertas por palabras clave</div>
           <div style={{fontSize:11,color:"var(--text3)",marginBottom:8}}>Separa con comas. Ej: shenmue, bloodrayne, switch 2</div>
           <textarea
             defaultValue={(state.radarKeywords||[]).join(", ")}
@@ -2118,7 +2143,7 @@ function App(){
             }}
             style={{...S.inp(),height:70,resize:"none",fontFamily:"inherit"}}
             placeholder="shenmue, bloodrayne, switch 2..."/>
-          <div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>Las noticias que contengan estas palabras aparecerán marcadas con 🔔</div>
+          <div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>Las noticias que contengan estas palabras aparecerán marcadas con </div>
         </div>
       </Sheet>}
 
