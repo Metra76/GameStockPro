@@ -1080,10 +1080,10 @@ function App(){
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {screen!=="home"&&screen!=="stock"&&screen!=="radar"&&screen!=="reservas"&&
             <button onClick={()=>{
-              if(screen==="producto"||screen==="categoria"||screen==="grupo") setTab("stock");
-              else if(screen==="reservaDetalle") setTab("reservas");
-              else if(screen==="oportunidades"||screen==="ventas"||screen==="ventaDetalle") go("home");
-              else setTab("home");
+              if(screen==="producto"||screen==="categoria"||screen==="grupo"){setTab("stock");go("stock");}
+              else if(screen==="reservaDetalle"){setTab("reservas");go("reservas");}
+              else if(screen==="oportunidades"||screen==="ventas"||screen==="ventaDetalle"){setTab("home");go("home");}
+              else {setTab("home");go("home");}
             }} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--text)",display:"flex",alignItems:"center",gap:4}}>← Atrás</button>
           }
           {(screen==="home"||screen==="stock"||screen==="radar"||screen==="reservas")&&
