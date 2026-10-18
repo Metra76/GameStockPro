@@ -161,7 +161,11 @@ function reducer(state,action){
           if(!last||last.date!==ts) ph.push({date:ts,price:ebayData.mediana});
           else ph[ph.length-1]={date:ts,price:ebayData.mediana};
         }
-        return {...p,ebayData,valorMercado:ebayData.mediana>0?ebayData.mediana:p.valorMercado,priceHistory:ph};
+        const sb=ebayData.mediana>0&&(!action.payload.soloSubir||ebayData.mediana>(p.valorMercado||0));
+        if(!sb) return {...p,ebayData,priceHistory:ph};
+        return {...p,ebayData,valorMercado:ebayData.mediana,priceHistory:ph,
+          valorFuente:(ebayData.count||0)>=4?"ebay-mediana":"ebay-pocos",
+          valorFecha:ts,valorAnuncios:ebayData.count||0};
       });
       next={...state,products};break;
     }
@@ -837,23 +841,29 @@ function App(){
 
   /* ── Auto update all prices ── */
   const updateAllPrices=useCallback(async()=>{
-    const withStock=state.products.filter(p=>p.stock>0);
-    setUpdateProgress({current:0,total:withStock.length});
-    for(let i=0;i<withStock.length;i++){
-      const p=withStock[i];
+    const lista=state.products.filter(p=>p.stock>0);
+    if(!lista.length){showToast("No hay productos con stock");return;}
+    setUpdateProgress({current:0,total:lista.length});
+    let subidos=0,igual=0,sinDatos=0;
+    for(let i=0;i<lista.length;i++){
+      const p=lista[i];
       try{
-        const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(p.nombre)}&cat=${encodeURIComponent(p.categoria)}&region=${encodeURIComponent(p.region||"PAL ESP")}&edicion=${encodeURIComponent(p.edicion&&p.edicion!=="Estándar"?p.edicion:"")}`);
+        const ed=p.edicion&&!/^(est[\u00e1a]ndar|standard|normal)$/i.test(p.edicion)?p.edicion:"";
+        const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(p.nombre)}&cat=${encodeURIComponent(p.categoria||"")}&region=${encodeURIComponent(p.region||"PAL ESP")}&edicion=${encodeURIComponent(ed)}`);
         if(r.ok){
           const data=await r.json();
           const med=(data.mediana??data.median)||0;
-          if(med>0) dispatch({type:"UPDATE_EBAY",payload:{id:p.id,ebayData:{mediana:med,min:data.min||0,max:data.max||0,count:data.count||0,fetchedAt:new Date().toISOString()}}});
-        }
-      }catch(e){}
-      setUpdateProgress({current:i+1,total:withStock.length});
-      await new Promise(res=>setTimeout(res,300));
+          if(med>0){
+            dispatch({type:"UPDATE_EBAY",payload:{id:p.id,soloSubir:true,ebayData:{mediana:med,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
+            if(med>(p.valorMercado||0)) subidos++; else igual++;
+          } else sinDatos++;
+        } else sinDatos++;
+      }catch(e){sinDatos++;}
+      setUpdateProgress({current:i+1,total:lista.length});
+      await new Promise(res=>setTimeout(res,800));
     }
     setUpdateProgress(null);
-    showToast(`✓ ${withStock.length} precios actualizados`);
+    showToast(`${subidos} al alza \u00b7 ${igual} sin cambio \u00b7 ${sinDatos} sin datos`);
   },[state.products]);
 
   /* ── Auto update all covers ── */
@@ -1103,7 +1113,7 @@ function App(){
             <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}><Ico d={I.lupa} size={14}/></button>
             <button onClick={()=>{setFormP(EMPTY_P);setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}><Ico d={I.mas} size={15} c="#fff"/></button>
           </>}
-          {screen==="stock"&&<button onClick={updateAllPrices} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}><Ico d={I.rayo} size={14}/></button>}
+          {screen==="stock"&&<button onClick={updateAllPrices} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700,display:"flex",alignItems:"center",gap:5}}><Ico d={I.rayo} size={14}/>{updateProgress?"Actualizando…":"Actualizar precios"}</button>}
         </div>
       </div>
 
