@@ -807,8 +807,8 @@ function App(){
       const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(product.nombre)}&cat=${encodeURIComponent(product.categoria)}`);
       if(!r.ok) throw new Error("Error eBay");
       const data=await r.json();
-      dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{mediana:data.mediana||0,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
-      showToast(`✓ Precio eBay: ${fmt(data.mediana||0)} €`);
+      dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{mediana:(data.mediana??data.median)||0,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
+      showToast(`✓ Precio eBay: ${fmt((data.mediana??data.median)||0)} €`);
     }catch(e){showToast("Error al obtener precio eBay","var(--red)");}
     finally{setLoadingEbay(null);}
   },[]);
@@ -843,7 +843,8 @@ function App(){
         const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(p.nombre)}&cat=${encodeURIComponent(p.categoria)}`);
         if(r.ok){
           const data=await r.json();
-          if(data.mediana>0) dispatch({type:"UPDATE_EBAY",payload:{id:p.id,ebayData:{mediana:data.mediana,min:data.min||0,max:data.max||0,count:data.count||0,fetchedAt:new Date().toISOString()}}});
+          const med=(data.mediana??data.median)||0;
+          if(med>0) dispatch({type:"UPDATE_EBAY",payload:{id:p.id,ebayData:{mediana:med,min:data.min||0,max:data.max||0,count:data.count||0,fetchedAt:new Date().toISOString()}}});
         }
       }catch(e){}
       setUpdateProgress({current:i+1,total:withStock.length});
