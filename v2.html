@@ -806,8 +806,7 @@ function App(){
   const fetchEbayPrice=useCallback(async(product)=>{
     setLoadingEbay(product.id);
     try{
-      const qNom=`${product.nombre}${product.edicion&&product.edicion!=="Estándar"?" "+product.edicion:""}`;
-      const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(qNom)}&cat=${encodeURIComponent(product.categoria)}&region=${encodeURIComponent(product.region||"PAL ESP")}`);
+      const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(product.nombre)}&cat=${encodeURIComponent(product.categoria)}&region=${encodeURIComponent(product.region||"PAL ESP")}&edicion=${encodeURIComponent(product.edicion&&product.edicion!=="Estándar"?product.edicion:"")}`);
       if(!r.ok) throw new Error("Error eBay");
       const data=await r.json();
       dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{mediana:(data.mediana??data.median)||0,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
@@ -843,8 +842,7 @@ function App(){
     for(let i=0;i<withStock.length;i++){
       const p=withStock[i];
       try{
-        const qN=`${p.nombre}${p.edicion&&p.edicion!=="Estándar"?" "+p.edicion:""}`;
-        const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(qN)}&cat=${encodeURIComponent(p.categoria)}&region=${encodeURIComponent(p.region||"PAL ESP")}`);
+        const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(p.nombre)}&cat=${encodeURIComponent(p.categoria)}&region=${encodeURIComponent(p.region||"PAL ESP")}&edicion=${encodeURIComponent(p.edicion&&p.edicion!=="Estándar"?p.edicion:"")}`);
         if(r.ok){
           const data=await r.json();
           const med=(data.mediana??data.median)||0;
