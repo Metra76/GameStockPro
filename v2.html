@@ -233,7 +233,9 @@ const I={
   imagen:"M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5Z M8.5 10.5a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6Z M4 16l5-4 4.5 4 3-2.5L20 16",
   guardar:"M5 4.5A1.5 1.5 0 0 1 6.5 3H16l3 3v12.5A1.5 1.5 0 0 1 17.5 20h-11A1.5 1.5 0 0 1 5 18.5Z M8 3v5h7 M8 13h8v7H8Z",
 };
-const EMPTY_P={nombre:"",categoria:"PS5",stock:0,precioCompra:0,valorMercado:0,sku:"",condicion:"Precintado",fechaCompra:"",cover:""};
+const REGIONES=["PAL ESP","PAL","PAL UK","PAL ITA","NTSC","JP"];
+const EDICIONES_UI=["Estándar","Deluxe","Collector's","Signature","Limited","Ultimate","Special","Day One","Steelbook","Complete","Collection","Trilogy","Premium","Anniversary"];
+const EMPTY_P={nombre:"",categoria:"PS5",stock:0,precioCompra:0,valorMercado:0,sku:"",condicion:"Precintado",fechaCompra:"",cover:"",region:"PAL ESP",edicion:"Estándar"};
 const EMPTY_R={nombre:"",plataforma:"PS5",lanzamiento:"",precioReserva:0,tienda:"",urlTienda:"",notas:"",unidades:0,costeTotal:0,costePendiente:0,precioFinal:0};
 
 /* ═══════════════════════ RADAR DATA ══════════════════════════════════ */
@@ -804,7 +806,8 @@ function App(){
   const fetchEbayPrice=useCallback(async(product)=>{
     setLoadingEbay(product.id);
     try{
-      const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(product.nombre)}&cat=${encodeURIComponent(product.categoria)}`);
+      const qNom=`${product.nombre}${product.edicion&&product.edicion!=="Estándar"?" "+product.edicion:""}`;
+      const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(qNom)}&cat=${encodeURIComponent(product.categoria)}&region=${encodeURIComponent(product.region||"PAL ESP")}`);
       if(!r.ok) throw new Error("Error eBay");
       const data=await r.json();
       dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{mediana:(data.mediana??data.median)||0,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
@@ -840,7 +843,8 @@ function App(){
     for(let i=0;i<withStock.length;i++){
       const p=withStock[i];
       try{
-        const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(p.nombre)}&cat=${encodeURIComponent(p.categoria)}`);
+        const qN=`${p.nombre}${p.edicion&&p.edicion!=="Estándar"?" "+p.edicion:""}`;
+        const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(qN)}&cat=${encodeURIComponent(p.categoria)}&region=${encodeURIComponent(p.region||"PAL ESP")}`);
         if(r.ok){
           const data=await r.json();
           const med=(data.mediana??data.median)||0;
@@ -1002,8 +1006,8 @@ function App(){
     setModal(null);setFormR(EMPTY_R);setEditId(null);
   };
   const exportCSV=()=>{
-    const h=["SKU","Categoría","Nombre","Stock","Condición","Fecha Compra","Coste","Valor Mercado","eBay Mediana","eBay Min","eBay Max"];
-    const r=state.products.map(p=>[p.sku,p.categoria,`"${p.nombre}"`,p.stock,p.condicion||"Precintado",p.fechaCompra||"",p.precioCompra,p.valorMercado,p.ebayData?.mediana||"",p.ebayData?.min||"",p.ebayData?.max||""]);
+    const h=["SKU","Categoría","Nombre","Stock","Condición","Región","Edición","Fecha Compra","Coste","Valor Mercado","eBay Mediana","eBay Min","eBay Max"];
+    const r=state.products.map(p=>[p.sku,p.categoria,`"${p.nombre}"`,p.stock,p.condicion||"Precintado",p.region||"PAL ESP",p.edicion||"Estándar",p.fechaCompra||"",p.precioCompra,p.valorMercado,p.ebayData?.mediana||"",p.ebayData?.min||"",p.ebayData?.max||""]);
     const blob=new Blob(["\uFEFF",[h,...r].map(x=>x.join(";")).join("\n")],{type:"text/csv;charset=utf-8;"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`stockpro_${today}.csv`;a.click();
     showToast("✓ CSV exportado");
@@ -1598,6 +1602,14 @@ function App(){
                     <div style={{fontSize:9,color:cfg.color,textTransform:"uppercase",letterSpacing:.3,marginBottom:3,fontWeight:700}}>Valor mdo.</div>
                     <div style={{fontSize:14,fontWeight:800,color:cfg.color}}>{H(`${fmt(p.valorMercado)} €`)}</div>
                   </div>
+                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
+                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Región</div>
+                    <div style={{fontSize:13,fontWeight:700}}>{p.region||"PAL ESP"}</div>
+                  </div>
+                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
+                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Edición</div>
+                    <div style={{fontSize:13,fontWeight:700}}>{p.edicion||"Estándar"}</div>
+                  </div>
                 </div>
                 {pPlusval!==null&&!priv&&(
                   <div style={{marginTop:8,padding:"8px 12px",background:pPlusval>0?"var(--bg3)":"#fef2f2",borderRadius:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -2055,6 +2067,10 @@ function App(){
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
           <Field label="Categoría"><select value={formP.categoria} onChange={e=>setFormP({...formP,categoria:e.target.value})} style={S.inp()}>{CATEGORIES_FULL.map(c=><option key={c}>{c}</option>)}</select></Field>
           <Field label="Condición"><select value={formP.condicion||"Precintado"} onChange={e=>setFormP({...formP,condicion:e.target.value})} style={S.inp()}><option>Precintado</option><option>CIB</option><option>Loose</option></select></Field>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
+          <Field label="Región"><select value={formP.region||"PAL ESP"} onChange={e=>setFormP({...formP,region:e.target.value})} style={S.inp()}>{REGIONES.map(r=><option key={r}>{r}</option>)}</select></Field>
+          <Field label="Edición"><select value={formP.edicion||"Estándar"} onChange={e=>setFormP({...formP,edicion:e.target.value})} style={S.inp()}>{EDICIONES_UI.map(e2=><option key={e2}>{e2}</option>)}</select></Field>
         </div>
         <Field label="Fecha de compra"><input type="date" value={formP.fechaCompra||""} onChange={e=>setFormP({...formP,fechaCompra:e.target.value})} style={S.inp()}/></Field>
         <Btns onCancel={()=>setModal(null)} onSave={saveP}/>
