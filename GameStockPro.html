@@ -381,6 +381,15 @@ function reducer(state,action){
       const products=state.products.map(p=>fotos[p.id]&&!p.cover?{...p,cover:fotos[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1910m:true}};break;
     }
+    case "AJUSTES_1910N":{
+      // Lote de sobres de mejora 30.º Aniversario, de camino (Juan, 19/10)
+      const ts=new Date().toISOString().split("T")[0];
+      const n={...EMPTY_P,id:1760900000041,categoria:"Cartas",condicion:"Precintado",edicion:"Estándar",ebayData:null,priceHistory:[],valorFuente:"manual",valorFecha:ts,region:"ES",
+        nombre:"Lote de sobres de mejora Celebración 30.º Aniversario – ES (de camino)",sku:"PKM-30TH-BB",stock:1,precioCompra:29.99,valorMercado:60,
+        cover:"https://tcgplayer-cdn.tcgplayer.com/product/704171_in_400x400.jpg"};
+      const products=state.products.some(p=>p.id===n.id)?state.products:[...state.products,n];
+      next={...state,products,flags:{...(state.flags||{}),ajustes1910n:true}};break;
+    }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
@@ -1216,6 +1225,7 @@ function App(){
     if(!f.ajustes1910k){dispatch({type:"AJUSTES_1910K"});setTimeout(()=>subirNube(),4400);}
     if(!f.ajustes1910l){dispatch({type:"AJUSTES_1910L"});setTimeout(()=>subirNube(),4800);}
     if(!f.ajustes1910m){dispatch({type:"AJUSTES_1910M"});setTimeout(()=>subirNube(),5200);}
+    if(!f.ajustes1910n){dispatch({type:"AJUSTES_1910N"});setTimeout(()=>subirNube(),5600);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
