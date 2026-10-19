@@ -96,7 +96,8 @@ const GRUPOS=[
 ];
 const SECCIONES=[{k:"juegos",l:"Juegos"},{k:"zapatillas",l:"Zapatillas"},{k:"cartas",l:"Cartas"}];
 const seccionDe=cat=>cat==="Zapatillas"?"zapatillas":cat==="Cartas"?"cartas":"juegos";
-const fmt=n=>Number(n).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});
+// Siempre con punto de miles, tambien en cifras de 4 digitos (es-ES no lo pone por defecto)
+const fmt=n=>{const v=Number(n)||0;const [e,d]=Math.abs(v).toFixed(2).split(".");return (v<0?"-":"")+e.replace(/\B(?=(\d{3})+(?!\d))/g,".")+","+d;};
 const HIDDEN="•••";
 // De donde sale el valor de mercado de cada ficha
 const FUENTE=p=>{
