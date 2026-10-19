@@ -95,6 +95,15 @@ const GRUPOS=[
 ];
 const fmt=n=>Number(n).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});
 const HIDDEN="•••";
+// De donde sale el valor de mercado de cada ficha
+const FUENTE=p=>{
+  const n=p.valorAnuncios||0;
+  if(p.valorFuente==="ebay-mediana") return {t:`eBay · ${n} anuncios`,c:"var(--green)"};
+  if(p.valorFuente==="ebay-pocos") return {t:`eBay · solo ${n} anuncio${n===1?"":"s"}`,c:"var(--yellow)"};
+  if(p.valorFuente==="ebay-vendidos-es") return {t:"eBay vendidos",c:"var(--green)"};
+  if(p.valorFuente==="ebay-usado") return {t:"precio de usado",c:"var(--yellow)"};
+  return {t:"puesto a mano",c:"var(--text3)"};
+};
 const today=new Date().toISOString().split("T")[0];
 const diasHasta=f=>Math.ceil((new Date(f)-new Date(today))/86400000);
 
@@ -1345,7 +1354,11 @@ function App(){
                     <div style={{width:5,height:34,borderRadius:3,flex:"none",background:({"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"})[p.categoria]||"var(--accent2)"}}/>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
-                      <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{p.categoria} · {p.stock} uds</div>
+                      <div style={{fontSize:11,color:"var(--text3)",marginTop:1,display:"flex",alignItems:"center",gap:5}}>
+                        <span>{p.categoria} · {p.stock} uds</span>
+                        {!p.valorFuente&&<span style={{fontSize:9,fontWeight:700,color:"var(--text3)",background:"var(--bg3)",borderRadius:4,padding:"1px 4px"}}>a mano</span>}
+                        {p.valorFuente==="ebay-pocos"&&<span style={{fontSize:9,fontWeight:700,color:"var(--yellow)",background:"var(--yellow2)",borderRadius:4,padding:"1px 4px"}}>pocos</span>}
+                      </div>
                     </div>
                     <div style={{fontFamily:"var(--display)",fontSize:13,flex:"none"}}>{H(`${fmt((p.valorMercado||0)*(p.stock||0))} €`)}</div>
                   </button>
@@ -1609,6 +1622,8 @@ function App(){
                   <div style={{background:cfg.light,borderRadius:10,padding:"10px 12px",border:`1px solid ${cfg.border}`}}>
                     <div style={{fontSize:9,color:cfg.color,textTransform:"uppercase",letterSpacing:.3,marginBottom:3,fontWeight:700}}>Valor mdo.</div>
                     <div style={{fontSize:14,fontWeight:800,color:cfg.color}}>{H(`${fmt(p.valorMercado)} €`)}</div>
+                    <div style={{fontSize:8.5,color:FUENTE(p).c,marginTop:2,fontWeight:600}}>{FUENTE(p).t}</div>
+                    {p.valorFecha&&<div style={{fontSize:8,color:"var(--text3)"}}>{p.valorFecha.split("-").reverse().join("/")}</div>}
                   </div>
                   <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
                     <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Región</div>
