@@ -287,6 +287,12 @@ function reducer(state,action){
       const products=state.products.map(p=>fix[p.id]?{...p,...fix[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1910c:true}};break;
     }
+    case "AJUSTES_1910D":{
+      // Mandos DualSense: 2 del 30 Aniversario y 1 de The Last of Us, 150 cada uno (Juan, 19/10)
+      const ts=new Date().toISOString().split("T")[0];
+      const products=state.products.map(p=>(p.id===305||p.id===306)?{...p,valorMercado:150,valorFuente:"manual",valorFecha:ts}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1910d:true}};break;
+    }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
@@ -1112,6 +1118,7 @@ function App(){
     if(!f.ajustes1910) dispatch({type:"AJUSTES_1910"});
     if(!f.ajustes1910b){dispatch({type:"AJUSTES_1910B"});setTimeout(()=>subirNube(),800);}
     if(!f.ajustes1910c){dispatch({type:"AJUSTES_1910C"});setTimeout(()=>subirNube(),1200);}
+    if(!f.ajustes1910d){dispatch({type:"AJUSTES_1910D"});setTimeout(()=>subirNube(),1600);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
