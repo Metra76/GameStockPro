@@ -882,15 +882,15 @@ function App(){
   },[nav,state.products,search]);
 
   /* ── eBay price fetch ── */
-  const fetchEbayPrice=useCallback(async(product)=>{
+  const fetchEbayPrice=useCallback(async(product,soloSubir)=>{
     setLoadingEbay(product.id);
     try{
       const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(product.nombre)}&cat=${encodeURIComponent(product.categoria)}&region=${encodeURIComponent(product.region||"PAL ESP")}&edicion=${encodeURIComponent(product.edicion&&product.edicion!=="Estándar"?product.edicion:"")}`);
       if(!r.ok) throw new Error("Error eBay");
       const data=await r.json();
       const rf=refinarPrecio(product,data);
-      dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{...rf,fetchedAt:new Date().toISOString()}}});
-      showToast(rf.mediana>0?`Precio eBay: ${fmt(rf.mediana)} €`:"Sin anuncios que encajen");
+      dispatch({type:"UPDATE_EBAY",payload:{id:product.id,soloSubir:soloSubir===true,ebayData:{...rf,fetchedAt:new Date().toISOString()}}});
+      if(soloSubir!==true) showToast(rf.mediana>0?`Precio eBay: ${fmt(rf.mediana)} €`:"Sin anuncios que encajen");
     }catch(e){showToast("Error al obtener precio eBay","var(--red)");}
     finally{setLoadingEbay(null);}
   },[]);
@@ -1054,21 +1054,25 @@ function App(){
     return()=>clearInterval(interval);
   },[user,state]);
 
-  // Tanda del 19/10: se lanza sola una vez, al abrir la app con la sesión ya cargada
-  const autoLanzado=useRef(false);
+  // Ajuste puntual de datos del 19/10 (Zelda BotW + Expansion a 140 como minimo). No busca precios.
   useEffect(()=>{
-    if(!user||authLoading||autoLanzado.current||!state.products.length) return;
-    const f=state.flags||{};
-    if(f.reval1910&&f.ajustes1910) return;
-    const t=setTimeout(async()=>{
-      if(autoLanzado.current) return;
-      autoLanzado.current=true;
-      if(!f.ajustes1910) dispatch({type:"AJUSTES_1910"});
-      if(!f.reval1910){showToast("Revalorando la colección, deja la app abierta unos minutos");await updateAllPrices(true);}
-      else {await new Promise(r=>setTimeout(r,600));await subirNube();}
-    },4000);
-    return()=>clearTimeout(t);
+    if(!user||authLoading||!state.products.length) return;
+    if((state.flags||{}).ajustes1910) return;
+    dispatch({type:"AJUSTES_1910"});
   },[user,authLoading,state.products.length]);
+
+  // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
+  const fichaAuto=useRef(null);
+  useEffect(()=>{
+    if(nav.screen!=="producto"||!nav.data) return;
+    const p=state.products.find(x=>x.id===nav.data.id);
+    if(!p||fichaAuto.current===p.id) return;
+    fichaAuto.current=p.id;
+    if(p.valorFuente==="ebay-vendidos-es") return;
+    const hoy=new Date().toISOString().split("T")[0];
+    if(p.ebayData?.fetchedAt?.startsWith(hoy)) return;
+    fetchEbayPrice(p,true);
+  },[nav]);
 
   const handleLogin=(u)=>{
     setUser(u);
@@ -1763,7 +1767,7 @@ function App(){
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                   <span style={{fontWeight:700,fontSize:13}}>Precio eBay</span>
-                  <button onClick={()=>fetchEbayPrice(p)} disabled={isLoading}
+                  <button onClick={()=>fetchEbayPrice(p,false)} disabled={isLoading}
                     style={{background:"var(--accent3)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}>
                     {isLoading?<span className="spin" style={{display:"inline-block"}}><Ico d={I.refrescar}/></span>:"Actualizar"}
                   </button>
