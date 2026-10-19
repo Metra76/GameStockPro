@@ -3,43 +3,48 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#0f0f13"/>
+<meta name="theme-color" content="#F5F6FA"/>
 <title>GameStockPro</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icons/icon-192.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#0f0f13;
-  --bg2:#16161c;
-  --bg3:#1e1e27;
-  --border:#2a2a35;
-  --border2:#333340;
-  --text:#f0f0f5;
-  --text2:#9090a8;
-  --text3:#5a5a70;
-  --accent:#a78bfa;
-  --accent2:#7c3aed;
-  --accent3:#4c1d95;
-  --green:#34d399;
-  --green2:#064e3b;
-  --red:#f87171;
-  --red2:#450a0a;
-  --yellow:#fbbf24;
-  --yellow2:#451a03;
-  --blue:#60a5fa;
-  --blue2:#1e3a5f;
-  --card-shadow:0 2px 12px rgba(0,0,0,.4);
-  --glow:0 0 20px rgba(167,139,250,.15);
+  --bg:#F5F6FA;
+  --bg2:#FFFFFF;
+  --bg3:#EEF0F7;
+  --border:#E0E4EE;
+  --border2:#CDD3E2;
+  --text:#141826;
+  --text2:#5A6480;
+  --text3:#8C95AE;
+  --accent:#E8651A;
+  --accent2:#FF7A2F;
+  --accent3:#FFEDE1;
+  --green:#0FA968;
+  --green2:#E3F8EF;
+  --red:#E03146;
+  --red2:#FDE8EA;
+  --yellow:#C98A06;
+  --yellow2:#FDF3DC;
+  --blue:#2B7FE0;
+  --blue2:#E4F0FF;
+  --sw:#FF4D5A;
+  --ps5:#4DA3FF;
+  --ps4:#7C8DF0;
+  --zp:#F0B429;
+  --display:'Archivo Black','Archivo Black Fallback',system-ui,sans-serif;
+  --card-shadow:0 1px 3px rgba(20,24,38,.07);
+  --glow:0 0 22px rgba(255,122,47,.18);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+body{font-family:'Archivo',system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;background:var(--bg);color:var(--text);font-size:14px;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.4;filter:invert(1)}
+input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
 input,select,button{font-family:inherit}
-input,select,textarea{background:var(--bg3)!important;color:var(--text)!important;border-color:var(--border2)!important}
+input,select,textarea{background:var(--bg2)!important;color:var(--text)!important;border-color:var(--border2)!important}
 input::placeholder{color:var(--text3)!important}
 .slide-up{animation:slideUp .22s cubic-bezier(.16,1,.3,1)}
 @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -70,23 +75,23 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const WORKER="https://gamestockpro-api.supremasos.workers.dev";
 
 const CAT_CONFIG={
-  "PS5":          {emoji:"🎮",color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
-  "PS4":          {emoji:"🎮",color:"var(--blue)",light:"#dbeafe",border:"#93c5fd"},
-  "Switch":       {emoji:"🔴",color:"var(--red)",light:"var(--red2)",border:"#fca5a5"},
-  "PC":           {emoji:"💻",color:"var(--yellow)",light:"var(--yellow2)",border:"#fcd34d"},
-  "Steelbook":    {emoji:"💿",color:"#059669",light:"#d1fae5",border:"#6ee7b7"},
-  "Zapatillas":   {emoji:"👟",color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
-  "Cartas":       {emoji:"🃏",color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
-  "Coleccionismo":{emoji:"🎵",color:"var(--accent2)",light:"#f3e8ff",border:"#d8b4fe"},
-  "Switch 2":     {emoji:"🟠",color:"#c2410c",light:"#fff7ed",border:"#fed7aa"},
-  "Mandos":       {emoji:"🕹️",color:"var(--blue)",light:"#e0f2fe",border:"#7dd3fc"},
+  "PS5":          {emoji:"",color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
+  "PS4":          {emoji:"",color:"var(--blue)",light:"#dbeafe",border:"#93c5fd"},
+  "Switch":       {emoji:"",color:"var(--red)",light:"var(--red2)",border:"#fca5a5"},
+  "PC":           {emoji:"",color:"var(--yellow)",light:"var(--yellow2)",border:"#fcd34d"},
+  "Steelbook":    {emoji:"",color:"#059669",light:"#d1fae5",border:"#6ee7b7"},
+  "Zapatillas":   {emoji:"",color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
+  "Cartas":       {emoji:"",color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
+  "Coleccionismo":{emoji:"",color:"var(--accent2)",light:"#f3e8ff",border:"#d8b4fe"},
+  "Switch 2":     {emoji:"",color:"#c2410c",light:"#fff7ed",border:"#fed7aa"},
+  "Mandos":       {emoji:"",color:"var(--blue)",light:"#e0f2fe",border:"#7dd3fc"},
 };
 const CATEGORIES_FULL=["PS5","PS4","Switch","PC","Steelbook","Zapatillas","Cartas","Coleccionismo","Switch 2","Mandos"];
 const PLATAFORMAS=["PS5","PS4","Switch","Switch 2","PC","Steelbook","Cartas","Coleccionismo"];
 const GRUPOS=[
-  {label:"Juegos",emoji:"🎮",key:"juegos",cats:["PS5","PS4","Switch","Switch 2","PC","Steelbook"],color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
-  {label:"Zapatillas",emoji:"👟",key:"zapatillas",cats:["Zapatillas"],color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
-  {label:"Otros",emoji:"📦",key:"otros",cats:["Cartas","Coleccionismo"],color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
+  {label:"Juegos",emoji:"",key:"juegos",cats:["PS5","PS4","Switch","Switch 2","PC","Steelbook"],color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
+  {label:"Zapatillas",emoji:"",key:"zapatillas",cats:["Zapatillas"],color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
+  {label:"Otros",emoji:"",key:"otros",cats:["Cartas","Coleccionismo"],color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
 ];
 const fmt=n=>Number(n).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});
 const HIDDEN="•••";
@@ -207,7 +212,34 @@ const S={
   row:{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid var(--border)",padding:"13px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left",transition:"background .1s"},
   badge:(c,l,b)=>({background:l,color:c,border:`1px solid ${b}`,padding:"2px 9px",borderRadius:20,fontSize:11,fontWeight:700}),
 };
-const EMPTY_P={nombre:"",categoria:"PS5",stock:0,precioCompra:0,valorMercado:0,sku:"",condicion:"Precintado",fechaCompra:"",cover:""};
+function Ico({d,size=17,c="currentColor",w=1.9,fill="none"}){
+  return <svg viewBox="0 0 24 24" style={{width:size,height:size,display:"block",flexShrink:0}}
+    fill={fill} stroke={c} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round"><path d={d}/></svg>;
+}
+const I={
+  ojo:"M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z M14.6 12a2.6 2.6 0 1 1-5.2 0 2.6 2.6 0 0 1 5.2 0Z",
+  salir:"M15 17l5-5-5-5 M20 12H9 M9 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3",
+  refrescar:"M20 11a8 8 0 1 0-.6 4 M20 5v6h-6",
+  lupa:"M17.5 11a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z M20 20l-3.6-3.6",
+  mas:"M12 5v14 M5 12h14",
+  rayo:"M13 2 4.5 13.5H11l-1 8.5L19.5 10H13Z",
+  euro:"M16.5 6.5A6 6 0 1 0 16.5 17.5 M4 10h8 M4 14h8",
+  grafica:"M4 19h16 M7 16V9 M12 16V5 M17 16v-5",
+  caja:"M3 8.5 12 4l9 4.5v7L12 20l-9-4.5Z M3 8.5 12 13l9-4.5 M12 13v7",
+  billete:"M3 7h18v10H3Z M12 14.2a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z",
+  etiqueta:"M3.5 12.5V5a1.5 1.5 0 0 1 1.5-1.5h7.5L21 12l-8 8Z M8 8h.01",
+  calendario:"M3.5 7.5A2.5 2.5 0 0 1 6 5h12a2.5 2.5 0 0 1 2.5 2.5v11A2.5 2.5 0 0 1 18 21H6a2.5 2.5 0 0 1-2.5-2.5Z M8 3v4 M16 3v4 M3.5 10h17",
+  lapiz:"M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17Z",
+  papelera:"M4 7h16 M9.5 7V5h5v2 M6.5 7l.8 12.2a1.8 1.8 0 0 0 1.8 1.8h5.8a1.8 1.8 0 0 0 1.8-1.8L18.5 7",
+  ajustes:"M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3 15a2 2 0 1 1 0-4 1.6 1.6 0 0 0 1.7-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 11 3.2V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.6 1.6 0 0 0 21 11a2 2 0 1 1 0 4 1.6 1.6 0 0 0-1.6 0Z",
+  descarga:"M12 4v11 M7.5 11.5 12 16l4.5-4.5 M5 20h14",
+  carpeta:"M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8A1.5 1.5 0 0 1 20.5 10v8a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18Z",
+  imagen:"M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5Z M8.5 10.5a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6Z M4 16l5-4 4.5 4 3-2.5L20 16",
+  guardar:"M5 4.5A1.5 1.5 0 0 1 6.5 3H16l3 3v12.5A1.5 1.5 0 0 1 17.5 20h-11A1.5 1.5 0 0 1 5 18.5Z M8 3v5h7 M8 13h8v7H8Z",
+};
+const REGIONES=["PAL ESP","PAL","PAL UK","PAL ITA","NTSC","JP"];
+const EDICIONES_UI=["Estándar","Deluxe","Collector's","Signature","Limited","Ultimate","Special","Day One","Steelbook","Complete","Collection","Trilogy","Premium","Anniversary"];
+const EMPTY_P={nombre:"",categoria:"PS5",stock:0,precioCompra:0,valorMercado:0,sku:"",condicion:"Precintado",fechaCompra:"",cover:"",region:"PAL ESP",edicion:"Estándar"};
 const EMPTY_R={nombre:"",plataforma:"PS5",lanzamiento:"",precioReserva:0,tienda:"",urlTienda:"",notas:"",unidades:0,costeTotal:0,costePendiente:0,precioFinal:0};
 
 /* ═══════════════════════ RADAR DATA ══════════════════════════════════ */
@@ -220,7 +252,7 @@ function Sheet({children,onClose,title}){
       onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className="slide-up" style={{background:"var(--bg2)",borderRadius:"20px 20px 0 0",padding:"20px 18px 40px",width:"100%",maxWidth:500,maxHeight:"92vh",overflowY:"auto",boxShadow:"0 -8px 40px rgba(0,0,0,.6)"}}>
         <div style={{width:34,height:4,background:"var(--border)",borderRadius:2,margin:"0 auto 18px"}}/>
-        <div style={{fontWeight:800,fontSize:15,marginBottom:16,color:"var(--text)"}}>{title}</div>
+        <div style={{fontFamily:"var(--display)",fontSize:16,marginBottom:16,color:"var(--text)"}}>{title}</div>
         {children}
       </div>
     </div>
@@ -288,7 +320,7 @@ function UpdateProgress({current,total,onDone}){
   return(
     <div style={{padding:"12px 16px",background:"var(--accent3)",borderRadius:12,marginBottom:10}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-        <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>⚡ Actualizando precios eBay…</span>
+        <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>Actualizando precios eBay…</span>
         <span style={{fontSize:12,color:"var(--accent2)",fontWeight:700}}>{current}/{total}</span>
       </div>
       <div style={{background:"var(--accent3)",borderRadius:99,height:6}}>
@@ -329,13 +361,13 @@ function GameSearcher({onSelect,onClose}){
   },[q]);
 
   return(
-    <Sheet onClose={onClose} title="🔍 Buscar juego">
+    <Sheet onClose={onClose} title="Buscar juego">
       <Field label="Nombre del juego">
         <input autoFocus value={q} onChange={e=>setQ(e.target.value)}
           placeholder="Ej: Silent Hill 2 Collector..." style={S.inp()}/>
       </Field>
       {loading&&<div style={{textAlign:"center",padding:16,color:"var(--accent2)",fontSize:13}}>
-        <span className="spin" style={{display:"inline-block"}}>⚙️</span> Buscando…
+        <span className="spin" style={{display:"inline-block"}}><Ico d={I.refrescar}/></span> Buscando…
       </div>}
       {error&&<div style={{padding:10,background:"var(--red2)",borderRadius:8,color:"var(--red)",fontSize:12,marginBottom:8}}>{error}</div>}
       {results.length>0&&(
@@ -347,7 +379,7 @@ function GameSearcher({onSelect,onClose}){
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               {r.cover
                 ?<img src={r.cover} alt="" style={{width:36,height:48,objectFit:"cover",borderRadius:4,flexShrink:0}}/>
-                :<div style={{width:36,height:48,background:"var(--bg3)",borderRadius:4,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🎮</div>
+                :<div style={{width:36,height:48,background:"var(--bg3)",borderRadius:4,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}></div>
               }
               <div style={{flex:1,minWidth:0,textAlign:"left"}}>
                 <div style={{fontWeight:700,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
@@ -394,7 +426,7 @@ function LoginScreen({onLogin}){
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <div style={{background:"var(--bg2)",borderRadius:20,padding:28,width:"100%",maxWidth:380,boxShadow:"0 4px 40px rgba(0,0,0,.5)",border:"1px solid var(--border)"}}>
         <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{width:52,height:52,background:"linear-gradient(135deg,#7c3aed,#a78bfa)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,margin:"0 auto 12px"}}>🎮</div>
+          <div style={{width:52,height:52,background:"var(--accent2)",borderRadius:15,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,margin:"0 auto 12px"}}></div>
           <div style={{fontWeight:800,fontSize:20,color:"var(--text)"}}>GameStockPro</div>
           <div style={{fontSize:13,color:"var(--text3)",marginTop:4}}>{mode==="login"?"Inicia sesión en tu cuenta":"Crea tu cuenta"}</div>
         </div>
@@ -440,7 +472,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
   const pkIng = pkVentas.reduce((a,v)=>a+(v.precioVenta||0)*(v.unidades||1),0);
 
 
-  const TIPOS=[{k:"carta",l:"🃏 Carta suelta"},{k:"sobre",l:"📦 Sobre/Booster"},{k:"etb",l:"🎁 ETB / Elite Trainer"},{k:"display",l:"📦 Display"},{k:"coleccion",l:"📚 Colección completa"},{k:"otro",l:"🔮 Otro"}];
+  const TIPOS=[{k:"carta",l:"Carta suelta"},{k:"sobre",l:"Sobre/Booster"},{k:"etb",l:"ETB / Elite Trainer"},{k:"display",l:" Display"},{k:"coleccion",l:" Colección completa"},{k:"otro",l:" Otro"}];
   const CONDICIONES=["PSA 10","PSA 9","PSA 8","BGS 9.5","BGS 9","CGC 10","CGC 9.5","Mint","NM","LP","MP","HP","Damaged","Sellado"];
 
   const searchPokemon=async(q)=>{
@@ -494,11 +526,11 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
       {/* Header */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
         <div style={{fontWeight:800,fontSize:15,color:"var(--text)"}}>
-          {pkScreen==="home"?"🃏 Pokémon TCG":pkScreen==="inventory"?"📦 Inventario":pkScreen==="sales"?"💸 Ventas":pkScreen==="search"?"🔍 Buscar carta":"➕ Añadir"}
+          {pkScreen==="home"?"Cartas":pkScreen==="inventory"?"Inventario":pkScreen==="sales"?"Ventas":pkScreen==="search"?"Buscar carta":"Añadir"}
         </div>
         <div style={{display:"flex",gap:6}}>
           {pkScreen!=="home"&&<button onClick={()=>setPkScreen("home")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--text)"}}>← Volver</button>}
-          {pkScreen==="home"&&<button onClick={()=>setPkScreen("add")} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff"}}>➕ Añadir</button>}
+          {pkScreen==="home"&&<button onClick={()=>setPkScreen("add")} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,fontWeight:700,color:"#fff"}}>Añadir</button>}
         </div>
       </div>
 
@@ -506,10 +538,10 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
       {pkScreen==="home"&&<>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
           {[
-            {l:"Invertido",v:`${fmt(pkInv)} €`,icon:"💶",c:"var(--accent2)"},
-            {l:"Valor mercado",v:`${fmt(pkVM)} €`,icon:"📈",c:"var(--blue)"},
-            {l:"Beneficio",v:`${pkBen>=0?"+":""}${fmt(pkBen)} €`,icon:"💰",c:pkBen>=0?"var(--green)":"var(--red)"},
-            {l:"Ingresos",v:`${fmt(pkIng)} €`,icon:"💸",c:"var(--blue)"},
+            {l:"Invertido",v:`${fmt(pkInv)} €`,icon:I.euro,c:"var(--accent2)"},
+            {l:"Valor mercado",v:`${fmt(pkVM)} €`,icon:I.grafica,c:"var(--blue)"},
+            {l:"Beneficio",v:`${pkBen>=0?"+":""}${fmt(pkBen)} €`,icon:I.euro,c:pkBen>=0?"var(--green)":"var(--red)"},
+            {l:"Ingresos",v:`${fmt(pkIng)} €`,icon:I.billete,c:"var(--blue)"},
           ].map((k,i)=>(
             <div key={i} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,boxShadow:"0 1px 4px rgba(0,0,0,.06)",padding:"14px 15px"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
@@ -523,24 +555,24 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
           <button onClick={()=>setPkScreen("inventory")} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:"16px",cursor:"pointer",textAlign:"center"}}
             onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"} onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
-            <div style={{fontSize:24,marginBottom:4}}>📦</div>
+            <div style={{marginBottom:6,display:"flex",justifyContent:"center",color:"var(--text2)"}}><Ico d={I.caja} size={22}/></div>
             <div style={{fontWeight:700,fontSize:13}}>Inventario</div>
             <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{pkList.length} items</div>
           </button>
           <button onClick={()=>setPkScreen("sales")} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:"16px",cursor:"pointer",textAlign:"center"}}
             onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"} onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
-            <div style={{fontSize:24,marginBottom:4}}>💸</div>
+            <div style={{marginBottom:6,display:"flex",justifyContent:"center",color:"var(--text2)"}}><Ico d={I.billete} size={22}/></div>
             <div style={{fontWeight:700,fontSize:13}}>Ventas</div>
             <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{pkVentas.length} ventas</div>
           </button>
         </div>
         {pkList.length>0&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,boxShadow:"0 1px 4px rgba(0,0,0,.06)",overflow:"hidden",marginBottom:10}}>
-          <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <span style={{fontWeight:700,fontSize:13}}>Últimas adiciones</span>
             <button onClick={()=>setPkScreen("inventory")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,cursor:"pointer",fontWeight:600}}>Ver todo →</button>
           </div>
           {[...pkList].reverse().slice(0,4).map((p,i)=>(
-            <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",padding:"10px 14px",borderBottom:i<3?"1px solid #f3f4f6":"none"}}>
+            <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",padding:"10px 14px",borderBottom:i<3?"1px solid var(--border)":"none"}}>
               {p.image?<img src={p.image} alt={p.nombre} style={{width:36,height:50,objectFit:"contain",borderRadius:4,flexShrink:0}}/>
                 :<div style={{width:36,height:50,background:"var(--bg3)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🃏</div>}
               <div style={{flex:1,minWidth:0}}>
@@ -555,9 +587,10 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
           ))}
         </div>}
         {pkList.length===0&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:40,textAlign:"center",color:"var(--text3)"}}>
-          <div style={{fontSize:32,marginBottom:8}}>🃏</div>
-          <div style={{fontWeight:700,fontSize:13}}>Sin cartas ni productos</div>
-          <div style={{fontSize:12,marginTop:4}}>Pulsa ➕ para añadir tu primera carta</div>
+          <svg viewBox="0 0 24 24" style={{width:40,height:40,fill:"none",stroke:"var(--border2)",strokeWidth:1.6,strokeLinecap:"round",strokeLinejoin:"round",marginBottom:10}}><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M8 21h9a2 2 0 0 0 2-2V8"/></svg>
+          <div style={{fontFamily:"var(--display)",fontSize:14,color:"var(--text)"}}>Aún no hay cartas</div>
+          <div style={{fontSize:12.5,marginTop:6,lineHeight:1.5,maxWidth:260,marginLeft:"auto",marginRight:"auto"}}>
+            Sobres sellados, ETB, displays o cartas sueltas con su grado. Añade la primera con el botón de arriba.</div>
         </div>}
       </>}
 
@@ -565,7 +598,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
       {pkScreen==="inventory"&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,overflow:"hidden"}}>
         {pkList.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Sin items.</div>}
         {pkList.map((p,i)=>(
-          <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 14px",borderBottom:i<pkList.length-1?"1px solid #f3f4f6":"none"}}>
+          <div key={p.id} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 14px",borderBottom:i<pkList.length-1?"1px solid var(--border)":"none"}}>
             {p.image?<img src={p.image} alt={p.nombre} style={{width:36,height:50,objectFit:"contain",borderRadius:4,flexShrink:0}}/>
               :<div style={{width:36,height:50,background:"var(--bg3)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🃏</div>}
             <div style={{flex:1,minWidth:0}}>
@@ -577,8 +610,8 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
               <button onClick={()=>fetchPkPrice(p)} style={{fontSize:9,background:"var(--accent3)",border:"none",borderRadius:4,padding:"2px 6px",cursor:"pointer",color:"var(--accent2)",fontWeight:700,marginTop:3}}>↻ CM</button>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:4}}>
-              <button onClick={()=>{setPkVentaForm({...pkVentaForm,itemId:p.id,nombre:p.nombre,coste:p.precioCompra||0,unidades:p.unidades||1});setPkVentaModal(true);}} style={{background:"var(--green2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--green)"}}>💸</button>
-              <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_POKEMON",payload:p.id});}} style={{background:"var(--red2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--red)"}}>🗑</button>
+              <button onClick={()=>{setPkVentaForm({...pkVentaForm,itemId:p.id,nombre:p.nombre,coste:p.precioCompra||0,unidades:p.unidades||1});setPkVentaModal(true);}} style={{background:"var(--green2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--green)"}}></button>
+              <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_POKEMON",payload:p.id});}} style={{background:"var(--red2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
             </div>
           </div>
         ))}
@@ -590,7 +623,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
         {[...pkVentas].reverse().map((v,i)=>{
           const ben=(v.precioVenta-v.coste)*(v.unidades||1)-(v.fee||0);
           return(
-            <div key={v.id} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 14px",borderBottom:i<pkVentas.length-1?"1px solid #f3f4f6":"none"}}>
+            <div key={v.id} style={{display:"flex",gap:10,alignItems:"center",padding:"12px 14px",borderBottom:i<pkVentas.length-1?"1px solid var(--border)":"none"}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.nombre}</div>
                 <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{v.fecha} · ×{v.unidades||1} · {v.nota||"—"}</div>
@@ -608,7 +641,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
       {pkScreen==="add"&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:"16px"}}>
         <div style={{marginBottom:12}}>
           <button onClick={()=>setPkScreen("search")} style={{width:"100%",background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:10,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>
-            🔍 Buscar carta en Pokémon TCG API
+            Buscar carta en Pokémon TCG API
           </button>
         </div>
         <Field label="Nombre"><input style={S.inp()} value={pkForm.nombre} onChange={e=>setPkForm({...pkForm,nombre:e.target.value})} placeholder="Ej: Charizard ex, Prismatic Evolutions Display..."/></Field>
@@ -658,14 +691,14 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
               setPkForm({...pkForm,nombre:c.name,set:c.set||"",numero:c.number||"",rareza:c.rarity||"",
                 precioMercado:c.prices?.avg||0,image:c.image||""});
               setPkScreen("add");
-            }} style={{width:"100%",background:"transparent",border:"none",borderBottom:i<pkResults.length-1?"1px solid #f3f4f6":"none",padding:"12px 14px",display:"flex",gap:10,alignItems:"center",cursor:"pointer",textAlign:"left"}}
+            }} style={{width:"100%",background:"transparent",border:"none",borderBottom:i<pkResults.length-1?"1px solid var(--border)":"none",padding:"12px 14px",display:"flex",gap:10,alignItems:"center",cursor:"pointer",textAlign:"left"}}
               onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               {c.image?<img src={c.image} alt={c.name} style={{width:30,height:42,objectFit:"contain",borderRadius:4,flexShrink:0}}/>
-                :<div style={{width:30,height:42,background:c.isEbay?"var(--yellow2)":"var(--bg3)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{c.isEbay?"📦":"🃏"}</div>}
+                :<div style={{width:30,height:42,background:c.isEbay?"var(--yellow2)":"var(--bg3)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{c.isEbay?"":"🃏"}</div>}
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:12}}>{c.name}</div>
-                <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{c.isEbay?"📊 Precio eBay estimado":`${c.set||""} ${c.number?"#"+c.number:""} · ${c.rarity||"—"}`}</div>
+                <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{c.isEbay?"Precio eBay estimado":`${c.set||""} ${c.number?"#"+c.number:""} · ${c.rarity||"—"}`}</div>
               </div>
               {c.prices?.avg&&<div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontWeight:700,fontSize:12,color:"var(--green)"}}>{fmt(c.prices.avg)} €</div>
@@ -676,7 +709,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
           ))}
         </div>}
         {pkResults.length===0&&!pkLoading&&pkSearch&&<div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,padding:24,textAlign:"center",color:"var(--text3)"}}>
-              <div style={{fontSize:24,marginBottom:8}}>🔍</div>
+              <div style={{marginBottom:8,display:"flex",justifyContent:"center",color:"var(--border2)"}}><Ico d={I.lupa} size={26}/></div>
               <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>Sin cartas encontradas</div>
               <div style={{fontSize:12}}>Prueba con el nombre en inglés. Para sobres y ETBs añádelos manualmente con el formulario.</div>
             </div>}
@@ -700,7 +733,8 @@ function App(){
   const [editId,setEditId]=useState(null);
   const [movForm,setMovForm]=useState({productoId:"",tipo:"Venta",cantidad:1,nota:"",precioVenta:"",fecha:today,ebayFee:""});
   const [toast,setToast]=useState(null);
-  const [priv,setPriv]=useState(false);
+  const [q,setQ]=useState("");
+  const [priv,setPriv]=useState(true);
   const [search,setSearch]=useState("");
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
   const [loadingEbay,setLoadingEbay]=useState(null); // product id being fetched
@@ -729,12 +763,13 @@ function App(){
     if(tab==="stock") go("stock");
     if(tab==="radar") go("radar");
     if(tab==="reservas") go("reservas");
+    if(tab==="pokemon") go("pokemon");
   },[tab]);
 
   const ventas=state.movements.filter(m=>m.tipo==="Venta");
   const reservasOrd=useMemo(()=>[...state.reservas]
-    .sort((a,b)=>a.lanzamiento.localeCompare(b.lanzamiento)),[state.reservas]);
-  const reservasActivas=useMemo(()=>reservasOrd.filter(r=>diasHasta(r.lanzamiento)>=-7),[reservasOrd]);
+    .sort((a,b)=>(a.lanzamiento||"9999").localeCompare(b.lanzamiento||"9999")),[state.reservas]);
+  const reservasActivas=useMemo(()=>reservasOrd.filter(r=>!r.lanzamiento||diasHasta(r.lanzamiento)>=-7),[reservasOrd]);
   const reservasPasadas=useMemo(()=>reservasOrd.filter(r=>diasHasta(r.lanzamiento)<-7),[reservasOrd]);
 
   const kpi=useMemo(()=>{
@@ -775,11 +810,11 @@ function App(){
   const fetchEbayPrice=useCallback(async(product)=>{
     setLoadingEbay(product.id);
     try{
-      const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(product.nombre)}&cat=${encodeURIComponent(product.categoria)}`);
+      const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(product.nombre)}&cat=${encodeURIComponent(product.categoria)}&region=${encodeURIComponent(product.region||"PAL ESP")}&edicion=${encodeURIComponent(product.edicion&&product.edicion!=="Estándar"?product.edicion:"")}`);
       if(!r.ok) throw new Error("Error eBay");
       const data=await r.json();
-      dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{mediana:data.mediana||0,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
-      showToast(`✓ Precio eBay: ${fmt(data.mediana||0)} €`);
+      dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{mediana:(data.mediana??data.median)||0,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
+      showToast(`✓ Precio eBay: ${fmt((data.mediana??data.median)||0)} €`);
     }catch(e){showToast("Error al obtener precio eBay","var(--red)");}
     finally{setLoadingEbay(null);}
   },[]);
@@ -979,8 +1014,8 @@ function App(){
     setModal(null);setFormR(EMPTY_R);setEditId(null);
   };
   const exportCSV=()=>{
-    const h=["SKU","Categoría","Nombre","Stock","Condición","Fecha Compra","Coste","Valor Mercado","eBay Mediana","eBay Min","eBay Max"];
-    const r=state.products.map(p=>[p.sku,p.categoria,`"${p.nombre}"`,p.stock,p.condicion||"Precintado",p.fechaCompra||"",p.precioCompra,p.valorMercado,p.ebayData?.mediana||"",p.ebayData?.min||"",p.ebayData?.max||""]);
+    const h=["SKU","Categoría","Nombre","Stock","Condición","Región","Edición","Fecha Compra","Coste","Valor Mercado","eBay Mediana","eBay Min","eBay Max"];
+    const r=state.products.map(p=>[p.sku,p.categoria,`"${p.nombre}"`,p.stock,p.condicion||"Precintado",p.region||"PAL ESP",p.edicion||"Estándar",p.fechaCompra||"",p.precioCompra,p.valorMercado,p.ebayData?.mediana||"",p.ebayData?.min||"",p.ebayData?.max||""]);
     const blob=new Blob(["\uFEFF",[h,...r].map(x=>x.join(";")).join("\n")],{type:"text/csv;charset=utf-8;"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`stockpro_${today}.csv`;a.click();
     showToast("✓ CSV exportado");
@@ -1038,7 +1073,7 @@ function App(){
   if(authLoading) return(
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{textAlign:"center",color:"var(--text3)"}}>
-        <span className="spin" style={{display:"inline-block",fontSize:32}}>⚙️</span>
+        <span className="spin" style={{display:"inline-block"}}><Ico d={I.refrescar} size={30}/></span>
         <div style={{marginTop:12,fontSize:13,fontWeight:600}}>Cargando…</div>
       </div>
     </div>
@@ -1057,28 +1092,28 @@ function App(){
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {screen!=="home"&&screen!=="stock"&&screen!=="radar"&&screen!=="reservas"&&
             <button onClick={()=>{
-              if(screen==="producto"||screen==="categoria"||screen==="grupo") setTab("stock");
-              else if(screen==="reservaDetalle") setTab("reservas");
-              else if(screen==="oportunidades"||screen==="ventas"||screen==="ventaDetalle") go("home");
-              else setTab("home");
+              if(screen==="producto"||screen==="categoria"||screen==="grupo"){setTab("stock");go("stock");}
+              else if(screen==="reservaDetalle"){setTab("reservas");go("reservas");}
+              else if(screen==="oportunidades"||screen==="ventas"||screen==="ventaDetalle"){setTab("home");go("home");}
+              else {setTab("home");go("home");}
             }} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--text)",display:"flex",alignItems:"center",gap:4}}>← Atrás</button>
           }
           {(screen==="home"||screen==="stock"||screen==="radar"||screen==="reservas")&&
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:30,height:30,background:"linear-gradient(135deg,#7c3aed,#a78bfa)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>🎮</div>
+              <div style={{width:30,height:30,background:"var(--accent2)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}></div>
               <span style={{fontWeight:800,fontSize:15,letterSpacing:"-0.3px"}}>StockPro</span>
             </div>
           }
         </div>
         <div style={{display:"flex",gap:6}}>
-          <button onClick={()=>setPriv(p=>!p)} style={{background:priv?"var(--yellow2)":"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:priv?"var(--yellow)":"var(--text2)",fontWeight:600}}>{priv?"🔒":"👁"}</button>
-          <button onClick={handleLogout} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,color:"var(--text2)",fontWeight:600}} title={user?.email}>⏏️</button>
+          <button onClick={()=>setPriv(p=>!p)} style={{background:priv?"var(--yellow2)":"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:priv?"var(--yellow)":"var(--text2)",fontWeight:600}}><Ico d={priv?I.lupa:I.ojo} size={14}/></button>
+          <button onClick={handleLogout} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,color:"var(--text2)",fontWeight:600}} title={user?.email}><Ico d={I.salir} size={14}/></button>
           {(screen==="home"||screen==="stock")&&<>
-            <button onClick={()=>{setMovForm({productoId:state.products[0]?.id||"",tipo:"Venta",cantidad:1,nota:"",precioVenta:""});setModal("mov");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:"var(--text)",fontWeight:600}}>🔄</button>
-            <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}>🔍</button>
-            <button onClick={()=>{setFormP(EMPTY_P);setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}>＋</button>
+            <button onClick={()=>{setMovForm({productoId:state.products[0]?.id||"",tipo:"Venta",cantidad:1,nota:"",precioVenta:""});setModal("mov");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:"var(--text)",fontWeight:600}}><Ico d={I.refrescar} size={14}/></button>
+            <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}><Ico d={I.lupa} size={14}/></button>
+            <button onClick={()=>{setFormP(EMPTY_P);setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}><Ico d={I.mas} size={15} c="#fff"/></button>
           </>}
-          {screen==="stock"&&<button onClick={updateAllPrices} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700,display:"flex",alignItems:"center",gap:5}}>{updateProgress?"Actualizando…":"Actualizar precios"}</button>}
+          {screen==="stock"&&<button onClick={updateAllPrices} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700,display:"flex",alignItems:"center",gap:5}}><Ico d={I.rayo} size={14}/>{updateProgress?"Actualizando…":"Actualizar precios"}</button>}
         </div>
       </div>
 
@@ -1089,43 +1124,59 @@ function App(){
 
         {/* ══════════════════════════ HOME ══════════════════════════════ */}
         {screen==="home"&&<div className="fade-in">
-          {/* KPIs 2x2 */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+          {/* Héroe: valor de la colección */}
+          <button onClick={()=>go("oportunidades")} style={{...S.card,width:"100%",textAlign:"left",padding:"18px 18px 16px",marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden",color:"var(--text)"}}>
+            <div style={{position:"absolute",right:-50,top:-50,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,var(--accent2) 0%,transparent 70%)",opacity:.16,pointerEvents:"none"}}/>
+            <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Valor de la colección</div>
+            <div style={{fontFamily:"var(--display)",fontSize:40,lineHeight:1.02,marginTop:7,letterSpacing:priv?3:-1.2}}>{H(`${fmt(kpi.vm)} €`)}</div>
+            {!priv&&<div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"var(--accent3)",color:"var(--accent2)",fontWeight:700,fontSize:12.5,padding:"5px 10px",borderRadius:999}}>
+              {kpi.vm>=kpi.inv?"▲":"▼"} {`${kpi.vm>=kpi.inv?"+":""}${fmt(kpi.vm-kpi.inv)} €`} · {kpi.inv>0?((kpi.vm-kpi.inv)/kpi.inv*100).toFixed(1):"0"} % sobre coste
+            </div>}
+          </button>
+
+          {/* Chips de cifras */}
+          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,marginBottom:10,scrollbarWidth:"none"}}>
             {[
-              {l:"Invertido",v:H(`${fmt(kpi.inv)} €`),sub:`${kpi.stock} uds`,icon:"💶",c:"var(--accent2)",nav:"stock"},
-              {l:"Valor mercado",v:H(`${fmt(kpi.vm)} €`),sub:!priv&&kpi.vm>kpi.inv?`+${fmt(kpi.vm-kpi.inv)} €`:"",icon:"💎",c:"var(--blue)",nav:"oportunidades"},
-              {l:"Beneficio",v:H(`${kpi.ben>=0?"+":""}${fmt(kpi.ben)} €`),sub:`${ventas.length} ventas`,icon:"📈",c:kpi.ben>=0?"var(--green)":"var(--red)",nav:"ventas"},
-              {l:"Ingresos",v:H(`${fmt(kpi.ing)} €`),sub:!priv&&kpi.ing>0?`${kpi.margen.toFixed(1)}% margen`:"",icon:"💸",c:"var(--blue)",nav:"ventas"},
+              {l:"Invertido",v:H(`${fmt(kpi.inv)} €`),c:"var(--text)",nav:"stock"},
+              {l:"Beneficio",v:H(`${kpi.ben>=0?"+":""}${fmt(kpi.ben)} €`),c:kpi.ben>=0?"var(--green)":"var(--red)",nav:"ventas"},
+              {l:"Ingresos",v:H(`${fmt(kpi.ing)} €`),c:"var(--text)",nav:"ventas"},
+              {l:"ROI ventas",v:H(`${fmt(kpi.roi)}%`),c:kpi.roi>=0?"var(--green)":"var(--red)",nav:"ventas"},
+              {l:"Multiplicador",v:H(`×${kpi.inv>0?(kpi.vm/kpi.inv).toFixed(2):"∞"}`),c:"var(--yellow)",nav:"oportunidades"},
             ].map((k,i)=>(
-              <button key={i} onClick={()=>go(k.nav)} style={{...S.card,padding:"14px 15px",cursor:"pointer",textAlign:"left",width:"100%",border:"1px solid var(--border)"}}
-                onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
-                onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                  <span style={{fontSize:10,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.5}}>{k.l}</span>
-                  <span>{k.icon}</span>
-                </div>
-                <div style={{fontSize:18,fontWeight:800,color:k.c,letterSpacing:priv?3:-0.3}}>{k.v}</div>
-                {k.sub&&<div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{k.sub}</div>}
+              <button key={i} onClick={()=>go(k.nav)} style={{...S.card,flex:"none",minWidth:112,padding:"10px 13px",cursor:"pointer",textAlign:"left"}}>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"var(--text3)"}}>{k.l}</div>
+                <div style={{fontFamily:"var(--display)",fontSize:16,letterSpacing:-.4,marginTop:3,color:k.c}}>{k.v}</div>
               </button>
             ))}
           </div>
 
-          {/* Dashboard financiero */}
-          <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
-            <div style={{fontWeight:700,fontSize:13,marginBottom:10}}>📊 Dashboard financiero</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-              {[
-                {l:"ROI ventas",v:H(`${kpi.roi>=0?"+":""}${fmt(kpi.roi)}%`),c:kpi.roi>=0?"var(--green)":"var(--red)"},
-                {l:"Plus-valía",v:H(`+${fmt(kpi.vm-kpi.inv)} €`),c:kpi.vm>kpi.inv?"var(--accent2)":"var(--red)"},
-                {l:"Multiplicador",v:H(`×${kpi.inv>0?(kpi.vm/kpi.inv).toFixed(2):"∞"}`),c:"var(--yellow)"},
-              ].map((k,i)=>(
-                <div key={i} style={{background:"var(--bg3)",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
-                  <div style={{fontSize:10,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.3,marginBottom:4}}>{k.l}</div>
-                  <div style={{fontSize:14,fontWeight:800,color:k.c}}>{k.v}</div>
-                </div>
-              ))}
+          {/* Próximos lanzamientos */}
+          {reservasActivas.length>0&&<>
+            <div style={{display:"flex",alignItems:"center",gap:8,margin:"20px 0 10px"}}>
+              <span style={{fontFamily:"var(--display)",fontSize:13,flex:1}}>Próximos lanzamientos</span>
+              <button onClick={()=>setTab("reservas")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:11.5,cursor:"pointer",fontWeight:700}}>Ver todas →</button>
             </div>
-          </div>
+            {reservasActivas.slice(0,3).map(r=>{
+              const d=diasHasta(r.lanzamiento);
+              const hot=d>=0&&d<=21;
+              return(
+                <button key={r.id} onClick={()=>{setTab("reservas");go("reservaDetalle",r);}}
+                  style={{...S.card,width:"100%",textAlign:"left",display:"flex",gap:11,alignItems:"center",padding:12,marginBottom:8,cursor:"pointer",color:"var(--text)"}}>
+                  <div style={{width:50,height:50,borderRadius:13,flex:"none",display:"grid",placeContent:"center",textAlign:"center",lineHeight:1,
+                    background:hot?"var(--accent2)":"var(--bg3)",color:hot?"#FFFFFF":"var(--text)"}}>
+                    <div style={{fontFamily:"var(--display)",fontSize:17}}>{d>=0?d:"—"}</div>
+                    <div style={{fontSize:8.5,letterSpacing:.6,textTransform:"uppercase",marginTop:3,opacity:.75}}>{d===0?"hoy":"días"}</div>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:600,fontSize:13.5,lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
+                    <div style={{fontSize:11.5,color:"var(--text2)",marginTop:3}}>{r.lanzamiento||"sin fecha"} · {r.unidades||0} uds
+                      <span style={{display:"inline-block",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:"var(--bg3)",color:"var(--text2)",marginLeft:6}}>{r.plataforma}</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </>}
 
           {/* Gráfica beneficios por mes — rediseño */}
           {(()=>{
@@ -1150,7 +1201,7 @@ function App(){
               <div style={{...S.card,padding:"16px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
                   <div>
-                    <div style={{fontWeight:800,fontSize:13,color:"var(--text)"}}>📈 Beneficio por mes</div>
+                    <div style={{fontFamily:"var(--display)",fontSize:13,color:"var(--text)"}}>Beneficio por mes</div>
                     <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>Últimos {keys.length} meses</div>
                   </div>
                   <div style={{textAlign:"right"}}>
@@ -1168,7 +1219,7 @@ function App(){
                       const label=MESES[parseInt(mes.slice(5))-1]+" "+mes.slice(2,4);
                       return(
                         <button key={mes} onClick={()=>{setVentasMes(ventasMes===mes?null:mes);go("ventas");}} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:barW,background:"none",border:"none",cursor:"pointer",padding:0,opacity:ventasMes&&ventasMes!==mes?0.4:1,transition:"opacity .2s"}}>
-                          {isBest&&<div style={{fontSize:8,color:"var(--green)",fontWeight:800,marginBottom:2}}>🏆</div>}
+                          {isBest&&<div style={{fontSize:8,color:"var(--accent2)",fontWeight:800,marginBottom:2}}>▲</div>}
                           {!isBest&&<div style={{height:14}}/>}
                           <div style={{
                             width:"100%",height:h,
@@ -1194,8 +1245,8 @@ function App(){
             if(!hasAny) return null;
             return(
               <div style={{...S.card,marginBottom:10,overflow:"hidden"}}>
-                <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontWeight:700,fontSize:13}}>📦 Inventario</span>
+                <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontFamily:"var(--display)",fontSize:13}}>Inventario</span>
                   <button onClick={()=>setTab("stock")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,cursor:"pointer",fontWeight:600}}>Ver stock →</button>
                 </div>
                 {GRUPOS.map(grupo=>{
@@ -1208,7 +1259,7 @@ function App(){
                     <button key={grupo.key} onClick={()=>{setTab("stock");go("grupo",grupo);}} style={{...S.row}}
                       onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <div style={{width:36,height:36,background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{grupo.emoji}</div>
+                      <div style={{width:5,height:38,borderRadius:3,flex:"none",background:({"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"})[grupo.cats[0]]||"var(--accent2)"}}/>
                       <div style={{flex:1}}>
                         <div style={{fontWeight:700,fontSize:13}}>{grupo.label}</div>
                         <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{gRefs} refs · {gUds} uds</div>
@@ -1227,15 +1278,15 @@ function App(){
 
           {/* Accesos rápidos */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
-            {[{l:"Ventas",icon:"💸",sub:`${ventas.length} registradas`,s:"ventas",c:"var(--green)"},
-              {l:"Reservas",icon:"🔖",sub:`${reservasActivas.length} activas`,s:"reservas",c:"var(--accent2)"},
-              {l:"🔥 Oportunidades",icon:"⚡",sub:`${oportunidades.length} detectadas`,s:"oportunidades",c:"var(--yellow)"}
+            {[{l:"Ventas",icon:I.billete,sub:`${ventas.length} registradas`,s:"ventas",c:"var(--green)"},
+              {l:"Reservas",icon:I.calendario,sub:`${reservasActivas.length} activas`,s:"reservas",c:"var(--accent2)"},
+              {l:"Oportunidades",icon:I.rayo,sub:`${oportunidades.length} detectadas`,s:"oportunidades",c:"var(--yellow)"}
             ].map(x=>(
               <button key={x.s} onClick={()=>{if(x.s==="reservas") setTab("reservas");else go(x.s);}}
                 style={{...S.card,padding:"14px 12px",border:"1px solid var(--border)",cursor:"pointer",textAlign:"left",transition:"all .15s",background:"var(--bg2)"}}
                 onMouseEnter={e=>e.currentTarget.style.borderColor=x.c}
                 onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
-                <div style={{fontSize:22,marginBottom:6}}>{x.icon}</div>
+                <div style={{marginBottom:7,color:x.c}}><Ico d={x.icon} size={20}/></div>
                 <div style={{fontWeight:700,fontSize:11,color:"var(--text)"}}>{x.l}</div>
                 <div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>{x.sub}</div>
               </button>
@@ -1244,8 +1295,8 @@ function App(){
 
           {/* Próximas reservas */}
           <div style={{...S.card,overflow:"hidden"}}>
-            <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontWeight:700,fontSize:13}}>🔖 Próximas reservas</span>
+            <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontFamily:"var(--display)",fontSize:13}}>Próximas reservas</span>
               <button onClick={()=>setTab("reservas")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,cursor:"pointer",fontWeight:600}}>Ver todas →</button>
             </div>
             {reservasActivas.slice(0,4).map(r=>{
@@ -1260,7 +1311,7 @@ function App(){
                   <div style={{width:8,height:8,borderRadius:"50%",background:urg,flexShrink:0}}/>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
-                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{cfg.emoji||"🎮"} {r.plataforma} · {r.lanzamiento}</div>
+                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{r.plataforma} · {r.lanzamiento}</div>
                   </div>
                   <span style={{color:urg,fontWeight:800,fontSize:12,flexShrink:0}}>{d>0?`${d}d`:d===0?"HOY":"Pasó"}</span>
                   <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
@@ -1273,9 +1324,40 @@ function App(){
 
         {/* ══════════════════════════ STOCK ═════════════════════════════ */}
         {screen==="stock"&&<div className="fade-in">
+          <div style={{position:"relative",marginBottom:10}}>
+            <svg viewBox="0 0 24 24" style={{position:"absolute",left:13,top:13,width:17,height:17,fill:"none",stroke:"var(--text3)",strokeWidth:2,strokeLinecap:"round"}}><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-3.6-3.6"/></svg>
+            <input value={q} onChange={e=>setQ(e.target.value)} placeholder={`Buscar en ${state.products.length} referencias…`}
+              style={{width:"100%",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:14,
+                padding:"11px 38px 11px 38px",fontSize:13.5,color:"var(--text)",outline:"none",boxShadow:"var(--card-shadow)"}}/>
+            {q&&<button onClick={()=>setQ("")} style={{position:"absolute",right:10,top:9,width:24,height:24,borderRadius:8,background:"var(--bg3)",border:"none",cursor:"pointer",color:"var(--text2)",fontSize:13}}>×</button>}
+          </div>
+
+          {q.trim().length>0&&(()=>{
+            const t=q.trim().toLowerCase();
+            const res=state.products.filter(p=>(p.nombre||"").toLowerCase().includes(t)||(p.sku||"").toLowerCase().includes(t));
+            return(
+              <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
+                <div style={{padding:"11px 14px",borderBottom:"1px solid var(--border)",fontSize:11.5,fontWeight:700,color:"var(--text2)"}}>
+                  {res.length} {res.length===1?"resultado":"resultados"}
+                </div>
+                {res.slice(0,40).map(p=>(
+                  <button key={p.id} onClick={()=>go("producto",p)} style={{...S.row}}>
+                    <div style={{width:5,height:34,borderRadius:3,flex:"none",background:({"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"})[p.categoria]||"var(--accent2)"}}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
+                      <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{p.categoria} · {p.stock} uds</div>
+                    </div>
+                    <div style={{fontFamily:"var(--display)",fontSize:13,flex:"none"}}>{H(`${fmt((p.valorMercado||0)*(p.stock||0))} €`)}</div>
+                  </button>
+                ))}
+                {res.length===0&&<div style={{padding:26,textAlign:"center",color:"var(--text3)",fontSize:13}}>Nada con ese nombre</div>}
+              </div>
+            );
+          })()}
+
           <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
-            <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6"}}>
-              <span style={{fontWeight:700,fontSize:13}}>📦 Stock por categoría</span>
+            <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
+              <span style={{fontFamily:"var(--display)",fontSize:13}}>Stock por categoría</span>
             </div>
             {GRUPOS.map(grupo=>{
               const items=catStats.filter(c=>grupo.cats.includes(c.cat)&&c.uds>0);
@@ -1287,7 +1369,7 @@ function App(){
                 <button key={grupo.key} onClick={()=>go("grupo",grupo)} style={{...S.row}}
                   onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                   onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <div style={{width:36,height:36,background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{grupo.emoji}</div>
+                  <div style={{width:5,height:36,borderRadius:3,background:grupo.color,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{grupo.emoji}</div>
                   <div style={{flex:1}}>
                     <div style={{fontWeight:700,fontSize:13}}>{grupo.label}</div>
                     <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{gRefs} refs · {gUds} uds</div>
@@ -1303,25 +1385,25 @@ function App(){
           </div>
           {coverProgress&&<div style={{padding:"12px 16px",background:"var(--yellow2)",borderRadius:12,marginBottom:10}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--yellow)"}}>🖼 Buscando portadas…</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--yellow)"}}>Buscando portadas…</span>
               <span style={{fontSize:12,color:"var(--yellow)",fontWeight:700}}>{coverProgress.current}/{coverProgress.total}</span>
             </div>
             <div style={{background:"#fcd34d",borderRadius:99,height:6}}>
               <div style={{background:"var(--yellow)",height:6,borderRadius:99,width:`${coverProgress.total>0?Math.round(coverProgress.current/coverProgress.total*100):0}%`,transition:"width .3s"}}/>
             </div>
           </div>}
-          <button onClick={exportCSV} style={{width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:14,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:8}}>⬇️ Exportar CSV</button>
+          <button onClick={exportCSV} style={{width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:14,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:8}}>️ Exportar CSV</button>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-            <button onClick={exportJSON} style={{background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>💾 Backup JSON</button>
-            <button onClick={importJSON} style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)"}}>📂 Restaurar</button>
+            <button onClick={exportJSON} style={{background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>Backup JSON</button>
+            <button onClick={importJSON} style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)"}}>Restaurar</button>
           </div>
           <button onClick={updateAllCovers} disabled={!!coverProgress} style={{width:"100%",background:coverProgress?"var(--yellow2)":"var(--bg3)",border:"1px solid #fcd34d",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--yellow)",marginBottom:10}}>
-            🖼 Buscar portadas automáticamente ({state.products.filter(p=>!p.cover&&p.stock>0).length} sin portada)
+            Buscar portadas automáticamente ({state.products.filter(p=>!p.cover&&p.stock>0).length} sin portada)
           </button>
           {/* ROI por categoría */}
           <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
-            <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6"}}>
-              <span style={{fontWeight:700,fontSize:13}}>📊 ROI por categoría</span>
+            <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
+              <span style={{fontWeight:700,fontSize:13}}>ROI por categoría</span>
             </div>
             {catStats.filter(c=>c.uds>0||c.nVentas>0).sort((a,b)=>{
               const roiA=a.inv>0?(a.vm-a.inv)/a.inv*100:0;
@@ -1332,7 +1414,7 @@ function App(){
               const roi=c.inv>0?(c.vm-c.inv)/c.inv*100:0;
               const pct=Math.min(Math.abs(roi),200)/200*100;
               return(
-                <div key={c.cat} style={{padding:"10px 14px",borderBottom:"1px solid #f3f4f6"}}>
+                <div key={c.cat} style={{padding:"10px 14px",borderBottom:"1px solid var(--border)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                     <span style={{fontSize:12,fontWeight:600}}>{cfg.emoji} {c.cat}</span>
                     <span style={{fontSize:12,fontWeight:800,color:roi>=0?"var(--green)":"var(--red)"}}>{roi>=0?"+":""}{fmt(roi)}%</span>
@@ -1358,7 +1440,7 @@ function App(){
           return(
             <div>
               <div style={{...S.card,padding:"16px",marginBottom:10,display:"flex",alignItems:"center",gap:12}}>
-                <div style={{width:46,height:46,background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{grupo.emoji}</div>
+                <div style={{width:5,height:42,borderRadius:3,background:"var(--accent2)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{grupo.emoji}</div>
                 <div style={{flex:1}}>
                   <div style={{fontWeight:800,fontSize:17,color:grupo.color}}>{grupo.label}</div>
                   <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{items.reduce((a,c)=>a+c.refs,0)} refs · {gUds} uds</div>
@@ -1383,7 +1465,7 @@ function App(){
                     <button key={c.cat} onClick={()=>go("categoria",c.cat)} style={{...S.row}}
                       onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <div style={{width:34,height:34,background:cfg.light||"var(--bg3)",border:`1px solid ${cfg.border||"var(--border)"}`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{cfg.emoji}</div>
+                      <div style={{width:5,height:34,borderRadius:3,background:cfg.color||"var(--accent2)",flexShrink:0,display:"none",border:`0px solid ${cfg.border||"var(--border)"}`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{cfg.emoji}</div>
                       <div style={{flex:1}}>
                         <div style={{fontWeight:700,fontSize:13}}>{c.cat}</div>
                         <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{c.refs} refs · {c.uds} uds</div>
@@ -1409,7 +1491,7 @@ function App(){
             <div>
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                  <div style={{width:40,height:40,background:cfg.light,border:`1px solid ${cfg.border}`,borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{cfg.emoji}</div>
+                  <div style={{width:5,height:40,borderRadius:3,background:cfg.color,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{cfg.emoji}</div>
                   <div>
                     <div style={{fontWeight:800,fontSize:16,color:cfg.color}}>{data}</div>
                     <div style={{fontSize:11,color:"var(--text3)"}}>{cs.refs} refs · {cs.uds} uds</div>
@@ -1423,13 +1505,13 @@ function App(){
                     </div>
                   ))}
                 </div>}
-                {sinVM>0&&<div style={{marginTop:8,fontSize:11,color:"var(--yellow)",fontWeight:600}}>⚠️ {sinVM} producto{sinVM>1?"s":""} sin valor de mercado</div>}
+                {sinVM>0&&<div style={{marginTop:8,fontSize:11,color:"var(--yellow)",fontWeight:600}}>{sinVM} producto{sinVM>1?"s":""} sin valor de mercado</div>}
               </div>
               <div style={{position:"relative",marginBottom:10}}>
                 <input value={search} onChange={e=>setSearch(e.target.value)}
                   placeholder={`Buscar en ${data}…`}
                   style={{...S.inp(),paddingLeft:32}}/>
-                <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"var(--text3)"}}>🔍</span>
+                <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"var(--text3)"}}></span>
               </div>
               <div style={{...S.card,overflow:"hidden"}}>
                 {catProducts.length===0&&<div style={{padding:30,textAlign:"center",color:"var(--text3)"}}>Sin productos{search?" para esta búsqueda":""}</div>}
@@ -1448,14 +1530,14 @@ function App(){
                       }
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                          {esOp&&<span style={{fontSize:10}}>🔥</span>}
+                          {esOp&&<span style={{fontSize:9,fontWeight:800,color:"var(--accent2)"}}>OP</span>}
                           <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:esOp?"var(--red)":"var(--text)"}}>{p.nombre}</div>
                         </div>
                         <div style={{fontSize:11,color:"var(--text3)",display:"flex",gap:6,alignItems:"center"}}>
                           <span>{p.sku}</span>
                           <span>·</span><span>×{p.stock}</span>
                           {p.ebayData&&!ebStale&&<span style={{color:"var(--accent2)",fontSize:10}}>eBay ✓</span>}
-                          {ebStale&&<span style={{color:"var(--yellow)",fontSize:10}}>⚠️ desact.</span>}
+                          {ebStale&&<span style={{color:"var(--yellow)",fontSize:10}}>desact.</span>}
                         </div>
                       </div>
                       <div style={{textAlign:"right",flexShrink:0}}>
@@ -1494,20 +1576,20 @@ function App(){
                     {p.cover&&<div style={{position:"relative",cursor:"pointer"}} onClick={()=>{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:ev.target.result}});showToast("✓ Portada actualizada");};reader.readAsDataURL(file);};inp.click();}}>
                     <img src={p.cover} alt="" style={{width:44,height:76,objectFit:"cover",borderRadius:8}}/>
                     <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",transition:"background .2s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,.4)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(0,0,0,0)"}>
-                      <span style={{fontSize:14,opacity:0}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0}>✎</span>
+                      <span style={{fontSize:14,opacity:0}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0}></span>
                     </div>
                   </div>}
                   {!p.cover&&<div style={{display:"flex",flexDirection:"column",gap:3}}>
                     <button onClick={()=>fetchCover(p)} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
-                      <span style={{fontSize:13}}>🔍</span><span>IGDB</span>
+                      <Ico d={I.lupa} size={13}/><span>IGDB</span>
                     </button>
                     <button onClick={()=>{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:ev.target.result}});showToast("✓ Portada subida");};reader.readAsDataURL(file);};inp.click();}} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
-                      <span style={{fontSize:13}}>📷</span><span>Foto</span>
+                      <Ico d={I.imagen} size={13}/><span>Foto</span>
                     </button>
                   </div>}
                     <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                      <button onClick={()=>{setFormP({...p});setEditId(p.id);setModal("edit");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>✏️</button>
-                      <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_PRODUCT",payload:p.id});go("categoria",p.categoria);}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}>🗑</button>
+                      <button onClick={()=>{setFormP({...p});setEditId(p.id);setModal("edit");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}><Ico d={I.lapiz} size={14}/></button>
+                      <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_PRODUCT",payload:p.id});go("categoria",p.categoria);}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
                     </div>
                   </div>
                 </div>
@@ -1528,11 +1610,19 @@ function App(){
                     <div style={{fontSize:9,color:cfg.color,textTransform:"uppercase",letterSpacing:.3,marginBottom:3,fontWeight:700}}>Valor mdo.</div>
                     <div style={{fontSize:14,fontWeight:800,color:cfg.color}}>{H(`${fmt(p.valorMercado)} €`)}</div>
                   </div>
+                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
+                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Región</div>
+                    <div style={{fontSize:13,fontWeight:700}}>{p.region||"PAL ESP"}</div>
+                  </div>
+                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
+                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Edición</div>
+                    <div style={{fontSize:13,fontWeight:700}}>{p.edicion||"Estándar"}</div>
+                  </div>
                 </div>
                 {pPlusval!==null&&!priv&&(
                   <div style={{marginTop:8,padding:"8px 12px",background:pPlusval>0?"var(--bg3)":"#fef2f2",borderRadius:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                     <span style={{fontSize:12,fontWeight:600,color:pPlusval>0?"var(--green)":"var(--red)"}}>
-                      {pPlusval>0?"📈":"📉"} Plus-valía: {pPlusval>0?"+":""}{fmt(pPlusval)}%
+                      Plus-valía: {pPlusval>0?"+":""}{fmt(pPlusval)}%
                     </span>
                     <span style={{fontSize:12,fontWeight:700,color:pPlusval>0?"var(--green)":"var(--red)"}}>
                       {pPlusval>0?"+":""}{H(`${fmt(p.valorMercado-p.precioCompra)} €`)}
@@ -1544,10 +1634,10 @@ function App(){
               {/* eBay precio */}
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                  <span style={{fontWeight:700,fontSize:13}}>📊 Precio eBay</span>
+                  <span style={{fontWeight:700,fontSize:13}}>Precio eBay</span>
                   <button onClick={()=>fetchEbayPrice(p)} disabled={isLoading}
                     style={{background:"var(--accent3)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}>
-                    {isLoading?<span className="spin" style={{display:"inline-block"}}>⚙️</span>:"🔄 Actualizar"}
+                    {isLoading?<span className="spin" style={{display:"inline-block"}}><Ico d={I.refrescar}/></span>:"Actualizar"}
                   </button>
                 </div>
                 {p.ebayData?(
@@ -1565,7 +1655,7 @@ function App(){
                       Actualizado hace {ebayAge<1?"<1h":`${ebayAge}h`}
                     </div>
                     {p.ebayData.listings&&p.ebayData.listings.length>0&&(
-                      <div style={{marginTop:8,borderTop:"1px solid #f3f4f6",paddingTop:8}}>
+                      <div style={{marginTop:8,borderTop:"1px solid var(--border)",paddingTop:8}}>
                         <div style={{fontSize:10,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.3,marginBottom:6}}>Últimos anuncios</div>
                         {p.ebayData.listings.map((l,i)=>(
                           <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
@@ -1587,7 +1677,7 @@ function App(){
               {/* Historial precios */}
               {(p.priceHistory&&p.priceHistory.length>0)&&(
                 <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
-                  <div style={{fontWeight:700,fontSize:13,marginBottom:8}}>📈 Historial de precio</div>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:8}}>Historial de precio</div>
                   <PriceChart history={p.priceHistory} color={cfg.color||"var(--accent2)"}/>
                 </div>
               )}
@@ -1596,19 +1686,19 @@ function App(){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
                 <button onClick={()=>{setMovForm({productoId:p.id,tipo:"Venta",cantidad:1,nota:"",precioVenta:p.valorMercado||""});setModal("mov");}}
                   style={{background:"var(--green)",border:"none",borderRadius:11,padding:"12px",cursor:"pointer",color:"#fff",fontWeight:800,fontSize:13}}>
-                  💰 Registrar venta
+                  Registrar venta
                 </button>
                 <button onClick={()=>{const q=encodeURIComponent(p.nombre.replace(/[–—]/g,"-"));window.open(`https://www.ebay.es/sch/i.html?_nkw=${q}&LH_Sold=1`,"_blank","noopener");}}
                   style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:11,padding:"12px",cursor:"pointer",color:"var(--text)",fontWeight:700,fontSize:13}}>
-                  🔍 Ver en eBay
+                  Ver en eBay
                 </button>
               </div>
 
               {/* Ventas de este producto */}
               {pVentas.length>0&&(
                 <div style={{...S.card,overflow:"hidden"}}>
-                  <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6"}}>
-                    <span style={{fontWeight:700,fontSize:13}}>💸 Ventas ({pVentas.length})</span>
+                  <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
+                    <span style={{fontWeight:700,fontSize:13}}>Ventas ({pVentas.length})</span>
                   </div>
                   {pVentas.map((m,i)=>{
                     const coste=m.historico?m.coste:(p.precioCompra||0);
@@ -1648,12 +1738,12 @@ function App(){
               ))}
             </div>}
             {ventasMes&&<div style={{...S.card,padding:"10px 14px",marginBottom:8,background:"var(--accent3)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>📅 Filtrando: {ventasMes}</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>Filtrando: {ventasMes}</span>
               <button onClick={()=>setVentasMes(null)} style={{background:"none",border:"none",color:"var(--accent2)",cursor:"pointer",fontSize:12,fontWeight:700}}>✕ Quitar filtro</button>
             </div>}
             <div style={{...S.card,overflow:"hidden"}}>
-              <div style={{padding:"12px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontWeight:700,fontSize:13}}>💸 {ventasMes?`Ventas de ${ventasMes}`:"Todas las ventas"} ({ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes).length:ventas.length})</span>
+              <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontFamily:"var(--display)",fontSize:13}}>{ventasMes?`Ventas de ${ventasMes}`:"Todas las ventas"} ({ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes).length:ventas.length})</span>
               </div>
               {(ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes):ventas).map((m,i)=>{
                 const prod=state.products.find(p=>p.id===m.productoId);
@@ -1708,7 +1798,7 @@ function App(){
         {screen==="oportunidades"&&(
           <div>
             <div style={{...S.card,padding:"12px 16px",marginBottom:10,background:"var(--bg3)",border:"1px solid #fcd34d"}}>
-              <div style={{fontSize:12,color:"var(--yellow)",fontWeight:700}}>🔥 Oportunidades detectadas</div>
+              <div style={{fontSize:12,color:"var(--yellow)",fontWeight:700}}>Oportunidades detectadas</div>
               <div style={{fontSize:11,color:"var(--yellow)",marginTop:3}}>Productos con valor de mercado ≥1.5× precio de compra</div>
             </div>
             <div style={{...S.card,overflow:"hidden"}}>
@@ -1720,7 +1810,7 @@ function App(){
                   <button key={p.id} onClick={()=>go("producto",p)} style={{...S.row}}
                     onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <div style={{width:30,height:30,background:"var(--bg3)",border:"1px solid #fcd34d",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:"var(--yellow)",fontSize:i<3?15:11,flexShrink:0}}>{i<3?["🥇","🥈","🥉"][i]:i+1}</div>
+                    <div style={{width:30,height:30,background:"var(--bg3)",border:"1px solid #fcd34d",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:"var(--yellow)",fontSize:i<3?15:11,flexShrink:0}}>{i<3?["1.","2.","3."][i]:i+1}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
                       <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{cfg2.emoji} {p.categoria} · {H(`${fmt(p.precioCompra)} → ${fmt(p.valorMercado)} €`)}</div>
@@ -1746,7 +1836,7 @@ function App(){
           return(
             <div>
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
-                <div style={{fontWeight:700,fontSize:13,marginBottom:10}}>📊 Resumen reservas</div>
+                <div style={{fontFamily:"var(--display)",fontSize:13,marginBottom:10}}>Resumen de reservas</div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
                   {[{l:"Señal pagada",v:H(`${fmt(totalSignal)} €`),c:"var(--accent2)"},{l:"Pendiente",v:H(`${fmt(totalPend)} €`),c:totalPend>0?"var(--red)":"var(--green)"},{l:"Unidades",v:`${totalUds} uds`,c:"var(--blue)"}].map((k,i)=>(
                     <div key={i} style={{background:"var(--bg3)",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
@@ -1757,7 +1847,7 @@ function App(){
                 </div>
               </div>
               <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8}}>
-                <button onClick={()=>{setFormR(EMPTY_R);setEditId(null);setModal("reserva");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"8px 16px",cursor:"pointer",color:"#fff",fontWeight:700,fontSize:13}}>＋ Nueva reserva</button>
+                <button onClick={()=>{setFormR(EMPTY_R);setEditId(null);setModal("reserva");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"8px 16px",cursor:"pointer",color:"#fff",fontWeight:700,fontSize:13}}>+ Nueva reserva</button>
               </div>
               <div style={{...S.card,overflow:"hidden"}}>
                 {reservasActivas.map(r=>{
@@ -1768,16 +1858,21 @@ function App(){
                     <button key={r.id} onClick={()=>go("reservaDetalle",r)} style={{...S.row}}
                       onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:urg,flexShrink:0}}/>
+                      <div style={{width:46,height:46,borderRadius:12,flex:"none",display:"grid",placeContent:"center",textAlign:"center",lineHeight:1,
+                        background:(r.lanzamiento&&d>=0&&d<=21)?"var(--accent2)":"var(--bg3)",color:(r.lanzamiento&&d>=0&&d<=21)?"#fff":"var(--text)"}}>
+                        <div style={{fontFamily:"var(--display)",fontSize:15}}>{r.lanzamiento?(d>=0?d:"—"):"—"}</div>
+                        <div style={{fontSize:8,letterSpacing:.5,textTransform:"uppercase",marginTop:2,opacity:.7}}>{r.lanzamiento?(d===0?"hoy":"días"):"s/f"}</div>
+                      </div>
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
-                        <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{cfg.emoji||"🎮"} {r.plataforma} · {r.lanzamiento}</div>
+                        <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
+                        <div style={{fontSize:11.5,color:"var(--text2)",marginTop:2}}>{r.lanzamiento||"sin fecha"} · {r.unidades||0} uds
+                          <span style={{display:"inline-block",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:"var(--bg3)",color:"var(--text2)",marginLeft:6}}>{r.plataforma}</span>
+                        </div>
                       </div>
-                      <div style={{textAlign:"right",flexShrink:0}}>
-                        <span style={{color:urg,fontWeight:800,fontSize:12}}>{d>0?`${d}d`:d===0?"HOY":"¡YA!"}</span>
-                        <div style={{fontSize:10,color:"var(--text3)"}}>{H(`${fmt(r.costeTotal||0)} €`)}</div>
+                      <div style={{textAlign:"right",flex:"none"}}>
+                        <div style={{fontFamily:"var(--display)",fontSize:13}}>{H(`${fmt(r.costeTotal||0)} €`)}</div>
+                        <div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>señal</div>
                       </div>
-                      <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
                     </button>
                   );
                 })}
@@ -1792,7 +1887,7 @@ function App(){
                       <div key={r.id} style={{...S.row,justifyContent:"space-between"}}>
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{fontWeight:500,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:"var(--text2)"}}>{r.nombre}</div>
-                          <div style={{fontSize:11,color:"var(--text3)"}}>{cfg.emoji||"🎮"} {r.plataforma} · {r.lanzamiento}</div>
+                          <div style={{fontSize:11,color:"var(--text3)"}}>{r.plataforma} · {r.lanzamiento}</div>
                         </div>
                         <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_RESERVA",payload:r.id});}}
                           style={{background:"var(--red2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"var(--red)",fontWeight:700,flexShrink:0,marginLeft:8}}>
@@ -1815,15 +1910,15 @@ function App(){
                 <div style={{flex:1,minWidth:0,paddingRight:8}}>
                   <div style={{fontWeight:800,fontSize:15,marginBottom:4,lineHeight:1.3}}>{rFresh.nombre}</div>
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
-                    <span style={S.badge(rCfg.color||"var(--text)",rCfg.light||"var(--bg3)",rCfg.border||"var(--border)")}>{rCfg.emoji||"🎮"} {rFresh.plataforma}</span>
+                    <span style={S.badge(rCfg.color||"var(--text)",rCfg.light||"var(--bg3)",rCfg.border||"var(--border)")}>{rCfg.emoji||""} {rFresh.plataforma}</span>
                     <span style={{padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:800,background:rDias<=30?"var(--red2)":rDias<=90?"var(--yellow2)":"var(--green2)",color:rUrg,border:`1px solid ${rUrg}`}}>
                       {rDias>0?`${rDias}d`:rDias===0?"HOY":"Pasado"}
                     </span>
                   </div>
                 </div>
                 <div style={{display:"flex",gap:6,flexShrink:0}}>
-                  <button onClick={()=>{setFormR({...rFresh});setEditId(rFresh.id);setModal("reserva");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}>✏️</button>
-                  <button onClick={()=>{if(window.confirm("¿Eliminar reserva?")) dispatch({type:"DELETE_RESERVA",payload:rFresh.id});setTab("reservas");}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}>🗑</button>
+                  <button onClick={()=>{setFormR({...rFresh});setEditId(rFresh.id);setModal("reserva");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}><Ico d={I.lapiz} size={14}/></button>
+                  <button onClick={()=>{if(window.confirm("¿Eliminar reserva?")) dispatch({type:"DELETE_RESERVA",payload:rFresh.id});setTab("reservas");}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
                 </div>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -1840,7 +1935,7 @@ function App(){
               </div>}
               {rFresh.urlTienda&&<a href={rFresh.urlTienda} target="_blank" rel="noopener noreferrer"
                 style={{display:"block",marginTop:8,padding:"10px 14px",background:"var(--accent3)",borderRadius:8,textDecoration:"none",color:"var(--accent2)",fontWeight:700,fontSize:13,textAlign:"center"}}>
-                🔗 Ir a la tienda →
+                Ir a la tienda →
               </a>}
             </div>
           </div>
@@ -1852,16 +1947,16 @@ function App(){
             {/* Pestañas principales */}
             <div style={{display:"flex",gap:6,marginBottom:10,overflowX:"auto",paddingBottom:2}}>
               {[
-                {k:"telegram",l:"🟦 Telegram"},
-                {k:"publishers",l:"🎯 Publishers"},
-                {k:"news",l:"📰 Medios"},
-                {k:"twitter",l:"🐦 Twitter"},
-                {k:"all",l:"🌐 Todo"},
+                {k:"telegram",l:"Telegram"},
+                {k:"publishers",l:"Publishers"},
+                {k:"news",l:"Medios"},
+                {k:"twitter",l:"Twitter"},
+                {k:"all",l:"Todo"},
               ].map(t=>(
                 <button key={t.k} onClick={()=>{setRadarTab(t.k);setRadarFilter("Todas");}}
-                  style={{background:radarTab===t.k?"var(--accent2)":"#fff",color:radarTab===t.k?"#fff":"var(--text)",
+                  style={{background:radarTab===t.k?"var(--accent2)":"var(--bg2)",color:radarTab===t.k?"#fff":"var(--text2)",
                     border:`1px solid ${radarTab===t.k?"var(--accent2)":"var(--border)"}`,borderRadius:20,
-                    padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
+                    padding:"7px 15px",fontSize:12.5,fontWeight:700,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}}>
                   {t.l}
                 </button>
               ))}
@@ -1873,9 +1968,9 @@ function App(){
                 {radarNews.filter(n=>!(state.seenNews||[]).includes(n.id)).length} noticias nuevas
               </span>
               <div style={{display:"flex",gap:6}}>
-                <button onClick={()=>setRadarSettings(true)} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,color:"var(--text)",fontWeight:700}}>⚙️</button>
+                <button onClick={()=>setRadarSettings(true)} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,color:"var(--text)",fontWeight:700}}><Ico d={I.ajustes} size={14}/></button>
                 <button onClick={()=>fetchRadarNews(radarTab)} style={{background:"var(--accent3)",border:"none",borderRadius:8,padding:"5px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}>
-                  {radarLoading?"…":"🔄"}
+                  {radarLoading?"…":<Ico d={I.refrescar} size={14}/>}
                 </button>
               </div>
             </div>
@@ -1903,16 +1998,16 @@ function App(){
                   :unseen;
                 if(filtered.length===0) return(
                   <div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>
-                    <div style={{fontSize:24,marginBottom:8}}>{radarNews.length>0?"✅":"📡"}</div>
+                    <div style={{marginBottom:8,display:"flex",justifyContent:"center",color:"var(--border2)"}}><Ico d={I.lupa} size={26}/></div>
                     <div style={{fontSize:13,fontWeight:600}}>{radarNews.length>0?"Todo visto":"Sin noticias ahora mismo"}</div>
-                    <div style={{fontSize:11,marginTop:4}}>Pulsa 🔄 para buscar de nuevo</div>
+                    <div style={{fontSize:11,marginTop:4}}>Pulsa actualizar para buscar de nuevo</div>
                   </div>
                 );
                 return filtered.map((n,i)=>{
                   const kws=state.radarKeywords||[];
                   const isAlert=kws.length>0&&kws.some(k=>n.titulo.toLowerCase().includes(k));
                   return(
-                  <div key={n.id} style={{borderBottom:"1px solid #f3f4f6",padding:"12px 16px",background:isAlert?"var(--yellow2)":"var(--bg3)",borderLeft:isAlert?"3px solid #d97706":"none"}}>
+                  <div key={n.id} style={{borderBottom:"1px solid var(--border)",padding:"12px 16px",background:isAlert?"var(--yellow2)":"var(--bg3)",borderLeft:isAlert?"3px solid #d97706":"none"}}>
                     <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
                       <div style={{flex:1,minWidth:0}}>
                         {n.link
@@ -1949,11 +2044,11 @@ function App(){
       {/* ══════════════════════════ BOTTOM NAV ════════════════════════════ */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,background:"var(--bg2)",borderTop:"1px solid var(--border)",display:"flex",zIndex:100,boxShadow:"0 -8px 30px rgba(0,0,0,.4)",paddingBottom:"env(safe-area-inset-bottom)"}}>
         {[
-          {k:"home",l:"",icon:"🏠"},
-          {k:"stock",l:"",icon:"📦"},
-          {k:"pokemon",l:"",icon:"🃏"},
-          {k:"radar",l:"",icon:"📡"},
-          {k:"reservas",l:"",icon:"🔖"},
+          {k:"home",l:"Inicio",d:"M3 10.5l9-7 9 7V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20Z M9.5 21V14h5v7"},
+          {k:"stock",l:"Stock",d:"M3 8.5L12 4l9 4.5v7L12 20l-9-4.5Z M3 8.5L12 13l9-4.5 M12 13v7"},
+          {k:"pokemon",l:"Cartas",d:"M4 5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z M8 21h9a2 2 0 0 0 2-2V8"},
+          {k:"radar",l:"Radar",d:"M12 3.5a8.5 8.5 0 1 0 8.5 8.5 M12 8a4 4 0 1 0 4 4 M12 12l6-6"},
+          {k:"reservas",l:"Reservas",d:"M3.5 7.5a2.5 2.5 0 0 1 2.5-2.5h12a2.5 2.5 0 0 1 2.5 2.5v11a2.5 2.5 0 0 1-2.5 2.5H6a2.5 2.5 0 0 1-2.5-2.5Z M8 3v4 M16 3v4 M3.5 10h17"},
         ].map(t=>{
           const active=tab===t.k;
           const badge=t.k==="reservas"?reservasActivas.filter(r=>diasHasta(r.lanzamiento)<=7&&diasHasta(r.lanzamiento)>=0).length:0;
@@ -1963,9 +2058,9 @@ function App(){
           return(
             <button key={t.k} onClick={()=>{setTab(t.k);if(t.k==="pokemon") setPkScreen("home");}}
               style={{flex:1,background:"none",border:"none",padding:"10px 0 8px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,transition:"all .1s",position:"relative"}}>
-              <span style={{fontSize:22,filter:active?"":"grayscale(1) opacity(.6)"}}>{t.icon}</span>
-              {showBadge&&<div style={{position:"absolute",top:6,right:"calc(50% - 16px)",background:"var(--red)",color:"#0f0f13",borderRadius:99,fontSize:9,fontWeight:800,minWidth:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{badgeNum}</div>}
-              <span style={{fontSize:9,fontWeight:700,color:active?"var(--accent2)":"var(--text3)",letterSpacing:.3}}>{t.l}</span>
+              <svg viewBox="0 0 24 24" style={{width:21,height:21,fill:"none",stroke:active?"var(--accent2)":"var(--text3)",strokeWidth:1.9,strokeLinecap:"round",strokeLinejoin:"round"}}><path d={t.d}/></svg>
+              {showBadge&&<div style={{position:"absolute",top:6,right:"calc(50% - 16px)",background:"var(--red)",color:"#fff",borderRadius:99,fontSize:9,fontWeight:800,minWidth:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{badgeNum}</div>}
+              <span style={{fontSize:9.5,fontWeight:700,color:active?"var(--accent2)":"var(--text3)",letterSpacing:.2,marginTop:3}}>{t.l}</span>
               {active&&<div style={{width:18,height:2,background:"var(--accent2)",borderRadius:99}}/>}
             </button>
           );
@@ -1973,7 +2068,7 @@ function App(){
       </div>
 
       {/* ══════════════════════════ MODALES ════════════════════════════════ */}
-      {(modal==="add"||modal==="edit")&&<Sheet onClose={()=>setModal(null)} title={modal==="add"?"➕ Nuevo producto":"✏️ Editar producto"}>
+      {(modal==="add"||modal==="edit")&&<Sheet onClose={()=>setModal(null)} title={modal==="add"?"Nuevo producto":"Editar producto"}>
         {[["nombre","Nombre"],["sku","SKU"],["stock","Stock","number"],["precioCompra","Precio coste (€)","number"],["valorMercado","Valor mercado New/Sealed (€)","number"]].map(([k,l,t="text"])=>(
           <Field key={k} label={l}><input type={t} value={formP[k]} onChange={e=>setFormP({...formP,[k]:e.target.value})} style={S.inp()} onFocus={e=>e.target.style.borderColor="var(--accent2)"} onBlur={e=>e.target.style.borderColor="var(--border)"}/></Field>
         ))}
@@ -1981,11 +2076,15 @@ function App(){
           <Field label="Categoría"><select value={formP.categoria} onChange={e=>setFormP({...formP,categoria:e.target.value})} style={S.inp()}>{CATEGORIES_FULL.map(c=><option key={c}>{c}</option>)}</select></Field>
           <Field label="Condición"><select value={formP.condicion||"Precintado"} onChange={e=>setFormP({...formP,condicion:e.target.value})} style={S.inp()}><option>Precintado</option><option>CIB</option><option>Loose</option></select></Field>
         </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
+          <Field label="Región"><select value={formP.region||"PAL ESP"} onChange={e=>setFormP({...formP,region:e.target.value})} style={S.inp()}>{REGIONES.map(r=><option key={r}>{r}</option>)}</select></Field>
+          <Field label="Edición"><select value={formP.edicion||"Estándar"} onChange={e=>setFormP({...formP,edicion:e.target.value})} style={S.inp()}>{EDICIONES_UI.map(e2=><option key={e2}>{e2}</option>)}</select></Field>
+        </div>
         <Field label="Fecha de compra"><input type="date" value={formP.fechaCompra||""} onChange={e=>setFormP({...formP,fechaCompra:e.target.value})} style={S.inp()}/></Field>
         <Btns onCancel={()=>setModal(null)} onSave={saveP}/>
       </Sheet>}
 
-      {modal==="mov"&&<Sheet onClose={()=>setModal(null)} title="🔄 Registrar movimiento">
+      {modal==="mov"&&<Sheet onClose={()=>setModal(null)} title="Registrar movimiento">
         <Field label="Producto"><select value={movForm.productoId} onChange={e=>setMovForm({...movForm,productoId:e.target.value})} style={S.inp()}>{state.products.map(p=><option key={p.id} value={p.id}>{p.nombre} ({p.categoria}) · {p.stock} uds</option>)}</select></Field>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
           <Field label="Tipo"><select value={movForm.tipo} onChange={e=>setMovForm({...movForm,tipo:e.target.value})} style={S.inp()}><option>Venta</option><option>Entrada</option><option>Salida</option></select></Field>
@@ -1998,7 +2097,7 @@ function App(){
         <Btns onCancel={()=>setModal(null)} onSave={saveMov} saveLabel="Registrar" saveColor="var(--green)"/>
       </Sheet>}
 
-      {modal==="reserva"&&<Sheet onClose={()=>{setModal(null);setEditId(null);setFormR(EMPTY_R);}} title={editId?"✏️ Editar reserva":"🔖 Nueva reserva"}>
+      {modal==="reserva"&&<Sheet onClose={()=>{setModal(null);setEditId(null);setFormR(EMPTY_R);}} title={editId?" Editar reserva":"Nueva reserva"}>
         <Field label="Nombre"><input type="text" value={formR.nombre} onChange={e=>setFormR({...formR,nombre:e.target.value})} style={S.inp()} onFocus={e=>e.target.style.borderColor="var(--accent2)"} onBlur={e=>e.target.style.borderColor="var(--border)"}/></Field>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
           <Field label="Plataforma"><select value={formR.plataforma} onChange={e=>setFormR({...formR,plataforma:e.target.value})} style={S.inp()}>{PLATAFORMAS.map(p=><option key={p}>{p}</option>)}</select></Field>
@@ -2030,11 +2129,11 @@ function App(){
       />}
 
       {/* ── RADAR SETTINGS ── */}
-      {radarSettings&&<Sheet onClose={()=>setRadarSettings(false)} title="⚙️ Fuentes del Radar">
+      {radarSettings&&<Sheet onClose={()=>setRadarSettings(false)} title="Fuentes del Radar">
         {[
-          {key:"telegram",label:"🟦 Telegram",sources:(state.radarSources?.telegram||[])},
-          {key:"publishers",label:"🎯 Medios ES",sources:(state.radarSources?.publishers||[])},
-          {key:"news",label:"📰 Medios EN",sources:(state.radarSources?.news||[])},
+          {key:"telegram",label:"Telegram",sources:(state.radarSources?.telegram||[])},
+          {key:"publishers",label:"Medios ES",sources:(state.radarSources?.publishers||[])},
+          {key:"news",label:"Medios EN",sources:(state.radarSources?.news||[])},
         ].map(group=>(
           <div key={group.key} style={{marginBottom:16}}>
             <div style={{fontSize:11,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>{group.label}</div>
@@ -2042,7 +2141,7 @@ function App(){
               {group.sources.map((src,i)=>{
                 const active=(state.radarSources?.[group.key]||[]).includes(src);
                 return(
-                  <div key={src} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",borderBottom:i<group.sources.length-1?"1px solid #f3f4f6":"none"}}>
+                  <div key={src} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",borderBottom:i<group.sources.length-1?"1px solid var(--border)":"none"}}>
                     <span style={{fontSize:13,color:active?"var(--text)":"var(--text3)"}}>{src}</span>
                     <button onClick={()=>{
                       const current=state.radarSources?.[group.key]||[];
@@ -2059,7 +2158,7 @@ function App(){
         ))}
         <div style={{fontSize:11,color:"var(--text3)",textAlign:"center",marginTop:8}}>Los cambios se aplican al recargar las noticias</div>
         <div style={{marginTop:16}}>
-          <div style={{fontSize:11,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>🔍 Alertas por palabras clave</div>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}> Alertas por palabras clave</div>
           <div style={{fontSize:11,color:"var(--text3)",marginBottom:8}}>Separa con comas. Ej: shenmue, bloodrayne, switch 2</div>
           <textarea
             defaultValue={(state.radarKeywords||[]).join(", ")}
@@ -2069,7 +2168,7 @@ function App(){
             }}
             style={{...S.inp(),height:70,resize:"none",fontFamily:"inherit"}}
             placeholder="shenmue, bloodrayne, switch 2..."/>
-          <div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>Las noticias que contengan estas palabras aparecerán marcadas con 🔔</div>
+          <div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>Las noticias que contengan estas palabras aparecerán marcadas con </div>
         </div>
       </Sheet>}
 
