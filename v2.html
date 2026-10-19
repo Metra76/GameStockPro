@@ -348,12 +348,17 @@ function reducer(state,action){
     case "AJUSTES_1910J":{
       // Cenit Supremo: Coleccion Premium con figura, 2 Zacian y 2 Zamazenta variocolor (foto del 19/10). Valor estimado, revisar
       const ts=new Date().toISOString().split("T")[0];
-      const base={...EMPTY_P,categoria:"Cartas",condicion:"Precintado",edicion:"Estándar",ebayData:null,priceHistory:[],valorFuente:"manual",valorFecha:ts,region:"ES",stock:2,precioCompra:69.95,valorMercado:150};
+      const base={...EMPTY_P,categoria:"Cartas",condicion:"Precintado",edicion:"Estándar",ebayData:null,priceHistory:[],valorFuente:"manual",valorFecha:ts,region:"ES",stock:2,precioCompra:69.95,valorMercado:200};
       const nuevos=[
         {...base,id:1760900000031,nombre:"Cenit Supremo Colección Premium con figura Zacian variocolor – ES",sku:"PKM-CRZ-PFC-ZACIAN"},
         {...base,id:1760900000032,nombre:"Cenit Supremo Colección Premium con figura Zamazenta variocolor – ES",sku:"PKM-CRZ-PFC-ZAMAZENTA"},
       ].filter(n=>!state.products.some(p=>p.id===n.id));
       next={...state,products:[...state.products,...nuevos],flags:{...(state.flags||{}),ajustes1910j:true}};break;
+    }
+    case "AJUSTES_1910K":{
+      // Cenit Supremo: se vendieron a 200 cada una (dato de Juan, 19/10)
+      const products=state.products.map(p=>(p.id===1760900000031||p.id===1760900000032)&&p.valorMercado<200?{...p,valorMercado:200}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1910k:true}};break;
     }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
@@ -1187,6 +1192,7 @@ function App(){
     if(!f.ajustes1910h){dispatch({type:"AJUSTES_1910H"});setTimeout(()=>subirNube(),3200);}
     if(!f.ajustes1910i){dispatch({type:"AJUSTES_1910I"});setTimeout(()=>subirNube(),3600);}
     if(!f.ajustes1910j){dispatch({type:"AJUSTES_1910J"});setTimeout(()=>subirNube(),4000);}
+    if(!f.ajustes1910k){dispatch({type:"AJUSTES_1910K"});setTimeout(()=>subirNube(),4400);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
