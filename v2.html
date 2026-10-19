@@ -348,7 +348,7 @@ function reducer(state,action){
     case "AJUSTES_1910J":{
       // Cenit Supremo: Coleccion Premium con figura, 2 Zacian y 2 Zamazenta variocolor (foto del 19/10). Valor estimado, revisar
       const ts=new Date().toISOString().split("T")[0];
-      const base={...EMPTY_P,categoria:"Cartas",condicion:"Precintado",edicion:"Estándar",ebayData:null,priceHistory:[],valorFuente:"manual",valorFecha:ts,region:"ES",stock:2,precioCompra:69.95,valorMercado:200};
+      const base={...EMPTY_P,categoria:"Cartas",condicion:"Precintado",edicion:"Estándar",ebayData:null,priceHistory:[],valorFuente:"manual",valorFecha:ts,region:"ES",stock:2,precioCompra:69.95,valorMercado:150};
       const nuevos=[
         {...base,id:1760900000031,nombre:"Cenit Supremo Colección Premium con figura Zacian variocolor – ES",sku:"PKM-CRZ-PFC-ZACIAN"},
         {...base,id:1760900000032,nombre:"Cenit Supremo Colección Premium con figura Zamazenta variocolor – ES",sku:"PKM-CRZ-PFC-ZAMAZENTA"},
@@ -357,8 +357,14 @@ function reducer(state,action){
     }
     case "AJUSTES_1910K":{
       // Cenit Supremo: se vendieron a 200 cada una (dato de Juan, 19/10)
-      const products=state.products.map(p=>(p.id===1760900000031||p.id===1760900000032)&&p.valorMercado<200?{...p,valorMercado:200}:p);
+      // Anulado: Juan prefiere su baremo de mercado, no el precio de las ventas de su hijo. Lo deshace AJUSTES_1910L
+      const products=state.products;
       next={...state,products,flags:{...(state.flags||{}),ajustes1910k:true}};break;
+    }
+    case "AJUSTES_1910L":{
+      // Cenit Supremo vuelve a 150 (estimacion propia) hasta tener dato de Cardmarket
+      const products=state.products.map(p=>(p.id===1760900000031||p.id===1760900000032)&&p.valorMercado===200?{...p,valorMercado:150}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1910l:true}};break;
     }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
@@ -1193,6 +1199,7 @@ function App(){
     if(!f.ajustes1910i){dispatch({type:"AJUSTES_1910I"});setTimeout(()=>subirNube(),3600);}
     if(!f.ajustes1910j){dispatch({type:"AJUSTES_1910J"});setTimeout(()=>subirNube(),4000);}
     if(!f.ajustes1910k){dispatch({type:"AJUSTES_1910K"});setTimeout(()=>subirNube(),4400);}
+    if(!f.ajustes1910l){dispatch({type:"AJUSTES_1910L"});setTimeout(()=>subirNube(),4800);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
