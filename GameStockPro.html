@@ -300,6 +300,15 @@ function reducer(state,action){
       const products=state.products.map(p=>fix[p.id]&&/^Persona [34] /.test(p.nombre)?{...p,...fix[p.id],valorFuente:"manual",valorFecha:ts}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1910e:true}};break;
     }
+    case "AJUSTES_1910F":{
+      // Ventas historicas del Yakuza 20th Anniversary: salio el 8/12/2025, no en junio. Se pasan a diciembre manteniendo el orden
+      const movements=state.movements.map(m=>{
+        if(!m.historico||!/yakuza 20th/i.test(m.nombreProducto||"")||!/^2025-06-/.test(m.fecha||"")) return m;
+        const dia=Math.min(31,Math.max(8,8+(+m.fecha.slice(8,10))-10));
+        return {...m,fecha:`2025-12-${String(dia).padStart(2,"0")}`};
+      });
+      next={...state,movements,flags:{...(state.flags||{}),ajustes1910f:true}};break;
+    }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
@@ -1127,6 +1136,7 @@ function App(){
     if(!f.ajustes1910c){dispatch({type:"AJUSTES_1910C"});setTimeout(()=>subirNube(),1200);}
     if(!f.ajustes1910d){dispatch({type:"AJUSTES_1910D"});setTimeout(()=>subirNube(),1600);}
     if(!f.ajustes1910e){dispatch({type:"AJUSTES_1910E"});setTimeout(()=>subirNube(),2000);}
+    if(!f.ajustes1910f){dispatch({type:"AJUSTES_1910F"});setTimeout(()=>subirNube(),2400);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
