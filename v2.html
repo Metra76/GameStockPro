@@ -1146,10 +1146,16 @@ function App(){
     showToast("✓ CSV exportado");
   };
 
-  const exportJSON=()=>{
+  const exportJSON=async()=>{
+    const nombre=`stockpro_backup_${today}.json`;
     const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
-    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`stockpro_backup_${today}.json`;a.click();
-    showToast("✓ Backup exportado");
+    // En el movil abre el menu de compartir para mandarlo o guardarlo en Archivos
+    try{
+      const file=new File([blob],nombre,{type:"application/json"});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:nombre});return;}
+    }catch(e){if(e&&e.name==="AbortError") return;}
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nombre;a.click();
+    showToast("Backup exportado");
   };
 
   const importJSON=()=>{
