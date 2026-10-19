@@ -320,6 +320,21 @@ function reducer(state,action){
       ].filter(n=>!state.products.some(p=>p.id===n.id));
       next={...state,products:[...state.products,...nuevos],flags:{...(state.flags||{}),ajustes1910g:true}};break;
     }
+    case "AJUSTES_1910H":{
+      // Segunda tanda de producto Pokemon sellado (fotos del 19/10). Coste = PVP; valor = referencia de mercado de ese dia
+      const ts=new Date().toISOString().split("T")[0];
+      const base={...EMPTY_P,categoria:"Cartas",condicion:"Precintado",edicion:"Estándar",ebayData:null,priceHistory:[],valorFuente:"manual",valorFecha:ts,stock:1};
+      const nuevos=[
+        {...base,id:1760900000011,nombre:"Prismatic Evolutions Booster Bundle – EN",sku:"PKM-PRE-BB",region:"EN",precioCompra:29.99,valorMercado:70},
+        {...base,id:1760900000012,nombre:"151 Booster Bundle – EN",sku:"PKM-151-BB",region:"EN",precioCompra:29.99,valorMercado:134},
+        {...base,id:1760900000013,nombre:"Destined Rivals Booster Bundle – EN",sku:"PKM-DRI-BB",region:"EN",precioCompra:29.99,valorMercado:50},
+        {...base,id:1760900000014,nombre:"Rivales Predestinados Lote de sobres de mejora – ES",sku:"PKM-DRI-BB-ES",region:"ES",precioCompra:29.99,valorMercado:50},
+        {...base,id:1760900000015,nombre:"Prismatic Evolutions Poster Collection – EN",sku:"PKM-PRE-POSTER",region:"EN",precioCompra:17.99,valorMercado:34},
+        {...base,id:1760900000016,nombre:"Caja de Entrenador Élite Celebración 30.º Aniversario – ES",sku:"PKM-30TH-ETB",region:"ES",precioCompra:59.99,valorMercado:100},
+        {...base,id:1760900000017,nombre:"Colección con pegatinas especiales Celebración 30.º Aniversario – ES",sku:"PKM-30TH-STICKER",region:"ES",precioCompra:14.99,valorMercado:14.99},
+      ].filter(n=>!state.products.some(p=>p.id===n.id));
+      next={...state,products:[...state.products,...nuevos],flags:{...(state.flags||{}),ajustes1910h:true}};break;
+    }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
@@ -1149,6 +1164,7 @@ function App(){
     if(!f.ajustes1910e){dispatch({type:"AJUSTES_1910E"});setTimeout(()=>subirNube(),2000);}
     if(!f.ajustes1910f){dispatch({type:"AJUSTES_1910F"});setTimeout(()=>subirNube(),2400);}
     if(!f.ajustes1910g){dispatch({type:"AJUSTES_1910G"});setTimeout(()=>subirNube(),2800);}
+    if(!f.ajustes1910h){dispatch({type:"AJUSTES_1910H"});setTimeout(()=>subirNube(),3200);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
