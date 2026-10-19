@@ -335,6 +335,16 @@ function reducer(state,action){
       ].filter(n=>!state.products.some(p=>p.id===n.id));
       next={...state,products:[...state.products,...nuevos],flags:{...(state.flags||{}),ajustes1910h:true}};break;
     }
+    case "AJUSTES_1910I":{
+      // Tercera tanda Pokemon (foto del 19/10): Mewtwo ex del Team Rocket x2 y Coleccion Ilustracion Victini
+      const ts=new Date().toISOString().split("T")[0];
+      const base={...EMPTY_P,categoria:"Cartas",condicion:"Precintado",edicion:"Estándar",ebayData:null,priceHistory:[],valorFuente:"manual",valorFecha:ts,region:"ES"};
+      const nuevos=[
+        {...base,id:1760900000021,nombre:"Colección Mewtwo ex del Team Rocket – ES",sku:"PKM-DRI-MEWTWO",stock:2,precioCompra:33.95,valorMercado:45},
+        {...base,id:1760900000022,nombre:"Colección Ilustración Victini (Fulgor Negro y Llama Blanca) – ES",sku:"PKM-BLK-VICTINI",stock:1,precioCompra:31.95,valorMercado:50},
+      ].filter(n=>!state.products.some(p=>p.id===n.id));
+      next={...state,products:[...state.products,...nuevos],flags:{...(state.flags||{}),ajustes1910i:true}};break;
+    }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
@@ -1165,6 +1175,7 @@ function App(){
     if(!f.ajustes1910f){dispatch({type:"AJUSTES_1910F"});setTimeout(()=>subirNube(),2400);}
     if(!f.ajustes1910g){dispatch({type:"AJUSTES_1910G"});setTimeout(()=>subirNube(),2800);}
     if(!f.ajustes1910h){dispatch({type:"AJUSTES_1910H"});setTimeout(()=>subirNube(),3200);}
+    if(!f.ajustes1910i){dispatch({type:"AJUSTES_1910I"});setTimeout(()=>subirNube(),3600);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
