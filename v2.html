@@ -831,18 +831,23 @@ function App(){
   },[tab]);
 
   const ventas=state.movements.filter(m=>m.tipo==="Venta");
+  // Zapatillas y cartas van totalmente aparte: no cuentan en ningun total de la coleccion
+  const APARTE=["Zapatillas","Cartas"];
+  const catVenta=m=>m.historico?(m.categoriaVenta||""):((state.products.find(p=>p.id===m.productoId)||{}).categoria||"");
+  const ventasJ=ventas.filter(m=>!APARTE.includes(catVenta(m)));
+  const prodsJ=state.products.filter(p=>!APARTE.includes(p.categoria));
   const reservasOrd=useMemo(()=>[...state.reservas]
     .sort((a,b)=>(a.lanzamiento||"9999").localeCompare(b.lanzamiento||"9999")),[state.reservas]);
   const reservasActivas=useMemo(()=>reservasOrd.filter(r=>!r.lanzamiento||diasHasta(r.lanzamiento)>=-7),[reservasOrd]);
   const reservasPasadas=useMemo(()=>reservasOrd.filter(r=>diasHasta(r.lanzamiento)<-7),[reservasOrd]);
 
   const kpi=useMemo(()=>{
-    const inv=state.products.reduce((a,p)=>a+p.stock*p.precioCompra,0);
-    const vm=state.products.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0);
-    const ing=ventas.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
+    const inv=prodsJ.reduce((a,p)=>a+p.stock*p.precioCompra,0);
+    const vm=prodsJ.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0);
+    const ing=ventasJ.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
     const costeDe=m=>m.historico?(m.coste||0):((state.products.find(p=>p.id===m.productoId)||{}).precioCompra||0);
-    const cv=ventas.reduce((a,m)=>a+costeDe(m)*m.cantidad,0);
-    const fees=ventas.reduce((a,m)=>a+(m.ebayFee||0),0);
+    const cv=ventasJ.reduce((a,m)=>a+costeDe(m)*m.cantidad,0);
+    const fees=ventasJ.reduce((a,m)=>a+(m.ebayFee||0),0);
     const ben=ing-cv-fees;
     const roi=cv>0?ben/cv*100:0;
     // Dinero propio: lo gastado en total menos lo cobrado neto, más lo que hayas sacado
@@ -855,9 +860,31 @@ function App(){
     const gProp=finalV-propio;
     const pProp=propio>0?gProp/propio*100:0;
     const aProp=propio>0&&finalV>0?(Math.pow(finalV/propio,1/anos)-1)*100:0;
-    return{inv,vm,ing,ben,roi,margen:ing>0?ben/ing*100:0,stock:state.products.reduce((a,p)=>a+p.stock,0),
+    return{inv,vm,ing,ben,roi,margen:ing>0?ben/ing*100:0,stock:prodsJ.reduce((a,p)=>a+p.stock,0),
       propio,ret,gProp,pProp,aProp,anos,inicio};
   },[state,ventas]);
+
+  const aparte=useMemo(()=>APARTE.map(cat=>{
+    const prods=state.products.filter(p=>p.categoria===cat);
+    const vC=ventas.filter(m=>catVenta(m)===cat);
+    const costeDe=m=>m.historico?(m.coste||0):((state.products.find(p=>p.id===m.productoId)||{}).precioCompra||0);
+    let inv=prods.reduce((a,p)=>a+p.stock*p.precioCompra,0);
+    let vm=prods.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0);
+    let uds=prods.reduce((a,p)=>a+p.stock,0);
+    let ing=vC.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
+    let ben=ing-vC.reduce((a,m)=>a+costeDe(m)*m.cantidad+(m.ebayFee||0),0);
+    let nV=vC.length;
+    if(cat==="Cartas"){ // lo apuntado en la seccion Cartas tambien suma aqui
+      const pk=state.pokemon||[], pv=state.pokemonVentas||[];
+      inv+=pk.reduce((a,p)=>a+(p.precioCompra||0)*(p.unidades||1),0);
+      vm+=pk.reduce((a,p)=>a+(p.precioMercado||p.precioCompra||0)*(p.unidades||1),0);
+      uds+=pk.reduce((a,p)=>a+(p.unidades||1),0);
+      ing+=pv.reduce((a,v)=>a+(v.precioVenta||0)*(v.unidades||1),0);
+      ben+=pv.reduce((a,v)=>a+((v.precioVenta||0)-(v.coste||0))*(v.unidades||1)-(v.fee||0),0);
+      nV+=pv.length;
+    }
+    return {cat,inv,vm,uds,ing,ben,nV};
+  }),[state,ventas]);
 
   const catStats=useMemo(()=>Object.keys(CAT_CONFIG).map(cat=>{
     const prods=state.products.filter(p=>p.categoria===cat);
@@ -1276,6 +1303,24 @@ function App(){
             {kpi.ret>0&&!priv&&<div style={{fontSize:11,color:"var(--text3)",marginTop:7}}>Incluye {fmt(kpi.ret)} € que has sacado</div>}
           </button>
 
+          {/* Zapatillas y cartas, aparte */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+            {aparte.map(a=>{
+              const g=a.vm-a.inv;
+              return(
+              <button key={a.cat} onClick={()=>go("categoria",a.cat)} style={{...S.card,textAlign:"left",padding:"12px 13px",cursor:"pointer",color:"var(--text)"}}>
+                <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>{a.cat}</div>
+                <div style={{fontFamily:"var(--display)",fontSize:19,letterSpacing:-.5,marginTop:5}}>{H(`${fmt(a.vm)} €`)}</div>
+                {!priv&&<div style={{fontSize:11.5,fontWeight:700,marginTop:3,color:g>=0?"var(--green)":"var(--red)"}}>{g>=0?"+":""}{fmt(g)} € · {a.inv>0?(g/a.inv*100).toFixed(0):"0"} %</div>}
+                <div style={{fontSize:11,color:"var(--text2)",marginTop:7,lineHeight:1.5}}>
+                  <div>Invertido {H(`${fmt(a.inv)} €`)}</div>
+                  <div>{a.uds} uds · {a.nV} ventas</div>
+                  <div>Beneficio ventas <span style={{color:a.ben>=0?"var(--green)":"var(--red)",fontWeight:700}}>{H(`${a.ben>=0?"+":""}${fmt(a.ben)} €`)}</span></div>
+                </div>
+              </button>);
+            })}
+          </div>
+
           {/* Próximos lanzamientos */}
           {reservasActivas.length>0&&<>
             <div style={{display:"flex",alignItems:"center",gap:8,margin:"20px 0 10px"}}>
@@ -1307,7 +1352,7 @@ function App(){
           {/* Gráfica beneficios por mes — rediseño */}
           {(()=>{
             const meses={};
-            ventas.forEach(m=>{
+            ventasJ.forEach(m=>{
               const fecha=m.fecha||"";
               if(!fecha) return;
               const mes=fecha.slice(0,7);
