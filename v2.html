@@ -94,6 +94,13 @@ const GRUPOS=[
   {label:"Otros",emoji:"",key:"otros",cats:["Coleccionismo","Mandos"],color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
   {label:"Cartas",emoji:"",key:"cartas",cats:["Cartas"],color:"#0891b2",light:"#cffafe",border:"#67e8f9"},
 ];
+// Foto del movil reducida a 500px como mucho, para no inflar los datos que se guardan en Supabase
+const elegirFoto=(cb)=>{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";
+  inp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+    r.onload=ev=>{const img=new Image();img.onload=()=>{const k=Math.min(1,500/Math.max(img.width,img.height));
+      const c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",0.8));};img.src=ev.target.result;};
+    r.readAsDataURL(f);};inp.click();};
 const SECCIONES=[{k:"juegos",l:"Juegos"},{k:"zapatillas",l:"Zapatillas"},{k:"cartas",l:"Cartas"}];
 const seccionDe=cat=>cat==="Zapatillas"?"zapatillas":cat==="Cartas"?"cartas":"juegos";
 // Siempre con punto de miles, tambien en cifras de 4 digitos (es-ES no lo pone por defecto)
@@ -365,6 +372,14 @@ function reducer(state,action){
       // Cenit Supremo vuelve a 150 (estimacion propia) hasta tener dato de Cardmarket
       const products=state.products.map(p=>(p.id===1760900000031||p.id===1760900000032)&&p.valorMercado===200?{...p,valorMercado:150}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1910l:true}};break;
+    }
+    case "AJUSTES_1910M":{
+      // Fotos de producto Pokemon sellado desde el CDN de TCGplayer (id de producto de TCGplayer)
+      const T=id=>`https://tcgplayer-cdn.tcgplayer.com/product/${id}_in_400x400.jpg`;
+      const fotos={1760900000001:T(593461),1760900000002:T(622770),1760900000003:T(654213),1760900000011:T(600518),
+        1760900000016:T(704143),1760900000021:T(625695),1760900000031:T(475647),1760900000032:T(475646)};
+      const products=state.products.map(p=>fotos[p.id]&&!p.cover?{...p,cover:fotos[p.id]}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1910m:true}};break;
     }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
@@ -1087,7 +1102,7 @@ function App(){
   /* ── Auto update all covers ── */
   const [coverProgress,setCoverProgress]=useState(null);
   const updateAllCovers=useCallback(async()=>{
-    const noCover=state.products.filter(p=>!p.cover&&p.stock>0);
+    const noCover=state.products.filter(p=>!p.cover&&p.stock>0&&seccionDe(p.categoria)==="juegos");
     if(noCover.length===0){showToast("✓ Todos los productos ya tienen portada");return;}
     setCoverProgress({current:0,total:noCover.length});
     let found=0;
@@ -1200,6 +1215,7 @@ function App(){
     if(!f.ajustes1910j){dispatch({type:"AJUSTES_1910J"});setTimeout(()=>subirNube(),4000);}
     if(!f.ajustes1910k){dispatch({type:"AJUSTES_1910K"});setTimeout(()=>subirNube(),4400);}
     if(!f.ajustes1910l){dispatch({type:"AJUSTES_1910L"});setTimeout(()=>subirNube(),4800);}
+    if(!f.ajustes1910m){dispatch({type:"AJUSTES_1910M"});setTimeout(()=>subirNube(),5200);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
@@ -1694,7 +1710,7 @@ function App(){
             <button onClick={importJSON} style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)"}}>Restaurar</button>
           </div>
           <button onClick={updateAllCovers} disabled={!!coverProgress} style={{width:"100%",background:coverProgress?"var(--yellow2)":"var(--bg3)",border:"1px solid #fcd34d",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--yellow)",marginBottom:10}}>
-            Buscar portadas automáticamente ({state.products.filter(p=>!p.cover&&p.stock>0).length} sin portada)
+            Buscar portadas automáticamente ({state.products.filter(p=>!p.cover&&p.stock>0&&seccionDe(p.categoria)==="juegos").length} sin portada)
           </button>
           {/* ROI por categoría */}
           <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
@@ -1869,17 +1885,17 @@ function App(){
                     </div>
                   </div>
                   <div style={{display:"flex",gap:6,flexShrink:0,alignItems:"flex-start"}}>
-                    {p.cover&&<div style={{position:"relative",cursor:"pointer"}} onClick={()=>{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:ev.target.result}});showToast("✓ Portada actualizada");};reader.readAsDataURL(file);};inp.click();}}>
+                    {p.cover&&<div style={{position:"relative",cursor:"pointer"}} onClick={()=>elegirFoto(url=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:url}});showToast("Foto actualizada");})}>
                     <img src={p.cover} alt="" style={{width:44,height:76,objectFit:"cover",borderRadius:8}}/>
                     <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",transition:"background .2s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,.4)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(0,0,0,0)"}>
                       <span style={{fontSize:14,opacity:0}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0}></span>
                     </div>
                   </div>}
                   {!p.cover&&<div style={{display:"flex",flexDirection:"column",gap:3}}>
-                    <button onClick={()=>fetchCover(p)} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
+                    {seccionDe(p.categoria)==="juegos"&&<button onClick={()=>fetchCover(p)} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
                       <Ico d={I.lupa} size={13}/><span>IGDB</span>
-                    </button>
-                    <button onClick={()=>{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:ev.target.result}});showToast("✓ Portada subida");};reader.readAsDataURL(file);};inp.click();}} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
+                    </button>}
+                    <button onClick={()=>elegirFoto(url=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:url}});showToast("Foto puesta");})} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
                       <Ico d={I.imagen} size={13}/><span>Foto</span>
                     </button>
                   </div>}
