@@ -91,8 +91,11 @@ const PLATAFORMAS=["PS5","PS4","Switch","Switch 2","PC","Steelbook","Cartas","Co
 const GRUPOS=[
   {label:"Juegos",emoji:"",key:"juegos",cats:["PS5","PS4","Switch","Switch 2","PC","Steelbook"],color:"var(--accent2)",light:"var(--accent3)",border:"var(--accent3)"},
   {label:"Zapatillas",emoji:"",key:"zapatillas",cats:["Zapatillas"],color:"#db2777",light:"#fce7f3",border:"#f9a8d4"},
-  {label:"Otros",emoji:"",key:"otros",cats:["Cartas","Coleccionismo"],color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
+  {label:"Otros",emoji:"",key:"otros",cats:["Coleccionismo","Mandos"],color:"#ea580c",light:"#ffedd5",border:"#fdba74"},
+  {label:"Cartas",emoji:"",key:"cartas",cats:["Cartas"],color:"#0891b2",light:"#cffafe",border:"#67e8f9"},
 ];
+const SECCIONES=[{k:"juegos",l:"Juegos"},{k:"zapatillas",l:"Zapatillas"},{k:"cartas",l:"Cartas"}];
+const seccionDe=cat=>cat==="Zapatillas"?"zapatillas":cat==="Cartas"?"cartas":"juegos";
 const fmt=n=>Number(n).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2});
 const HIDDEN="•••";
 // De donde sale el valor de mercado de cada ficha
@@ -830,29 +833,38 @@ function App(){
     if(tab==="pokemon") go("pokemon");
   },[tab]);
 
-  const ventas=state.movements.filter(m=>m.tipo==="Venta");
-  // Zapatillas y cartas van totalmente aparte: no cuentan en ningun total de la coleccion
-  const APARTE=["Zapatillas","Cartas"];
+  // Tres secciones totalmente separadas: juegos, zapatillas y cartas. Todo lo que se ve depende de la elegida
+  const [seccion,setSeccionRaw]=useState(()=>{try{return localStorage.getItem("gsp_seccion")||"juegos";}catch(e){return "juegos";}});
+  const setSeccion=v=>{setSeccionRaw(v);try{localStorage.setItem("gsp_seccion",v);}catch(e){}};
   const catVenta=m=>m.historico?(m.categoriaVenta||""):((state.products.find(p=>p.id===m.productoId)||{}).categoria||"");
-  const ventasJ=ventas.filter(m=>!APARTE.includes(catVenta(m)));
-  const prodsJ=state.products.filter(p=>!APARTE.includes(p.categoria));
+  const ventasTodas=state.movements.filter(m=>m.tipo==="Venta");
+  const ventas=ventasTodas.filter(m=>seccionDe(catVenta(m))===seccion);
+  const prodsS=state.products.filter(p=>seccionDe(p.categoria)===seccion);
   const reservasOrd=useMemo(()=>[...state.reservas]
     .sort((a,b)=>(a.lanzamiento||"9999").localeCompare(b.lanzamiento||"9999")),[state.reservas]);
   const reservasActivas=useMemo(()=>reservasOrd.filter(r=>!r.lanzamiento||diasHasta(r.lanzamiento)>=-7),[reservasOrd]);
   const reservasPasadas=useMemo(()=>reservasOrd.filter(r=>diasHasta(r.lanzamiento)<-7),[reservasOrd]);
 
   const kpi=useMemo(()=>{
-    const inv=prodsJ.reduce((a,p)=>a+p.stock*p.precioCompra,0);
-    const vm=prodsJ.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0);
-    const ing=ventasJ.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
+    let inv=prodsS.reduce((a,p)=>a+p.stock*p.precioCompra,0);
+    let vm=prodsS.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0);
+    let ing=ventas.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
     const costeDe=m=>m.historico?(m.coste||0):((state.products.find(p=>p.id===m.productoId)||{}).precioCompra||0);
-    const cv=ventasJ.reduce((a,m)=>a+costeDe(m)*m.cantidad,0);
-    const fees=ventasJ.reduce((a,m)=>a+(m.ebayFee||0),0);
+    let cv=ventas.reduce((a,m)=>a+costeDe(m)*m.cantidad,0);
+    let fees=ventas.reduce((a,m)=>a+(m.ebayFee||0),0);
+    if(seccion==="cartas"){ // lo apuntado en la coleccion Pokemon tambien es de cartas
+      const pk=state.pokemon||[], pv=state.pokemonVentas||[];
+      inv+=pk.reduce((a,p)=>a+(p.precioCompra||0)*(p.unidades||1),0);
+      vm+=pk.reduce((a,p)=>a+(p.precioMercado||p.precioCompra||0)*(p.unidades||1),0);
+      ing+=pv.reduce((a,v)=>a+(v.precioVenta||0)*(v.unidades||1),0);
+      cv+=pv.reduce((a,v)=>a+(v.coste||0)*(v.unidades||1),0);
+      fees+=pv.reduce((a,v)=>a+(v.fee||0),0);
+    }
     const ben=ing-cv-fees;
     const roi=cv>0?ben/cv*100:0;
     // Dinero propio: lo gastado en total menos lo cobrado neto, más lo que hayas sacado
     const cap=state.capital||{};
-    const ret=(cap.retiradas||[]).reduce((a,r)=>a+(+r.importe||0),0);
+    const ret=seccion==="juegos"?(cap.retiradas||[]).reduce((a,r)=>a+(+r.importe||0),0):0;
     const propio=inv-ben+ret;
     const inicio=cap.inicio||"2024-10-01";
     const anos=Math.max((Date.now()-new Date(inicio).getTime())/(365.25*864e5),0.1);
@@ -860,33 +872,11 @@ function App(){
     const gProp=finalV-propio;
     const pProp=propio>0?gProp/propio*100:0;
     const aProp=propio>0&&finalV>0?(Math.pow(finalV/propio,1/anos)-1)*100:0;
-    return{inv,vm,ing,ben,roi,margen:ing>0?ben/ing*100:0,stock:prodsJ.reduce((a,p)=>a+p.stock,0),
+    return{inv,vm,ing,ben,roi,margen:ing>0?ben/ing*100:0,stock:prodsS.reduce((a,p)=>a+p.stock,0),
       propio,ret,gProp,pProp,aProp,anos,inicio};
-  },[state,ventas]);
+  },[state,ventas,seccion]);
 
-  const aparte=useMemo(()=>APARTE.map(cat=>{
-    const prods=state.products.filter(p=>p.categoria===cat);
-    const vC=ventas.filter(m=>catVenta(m)===cat);
-    const costeDe=m=>m.historico?(m.coste||0):((state.products.find(p=>p.id===m.productoId)||{}).precioCompra||0);
-    let inv=prods.reduce((a,p)=>a+p.stock*p.precioCompra,0);
-    let vm=prods.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0);
-    let uds=prods.reduce((a,p)=>a+p.stock,0);
-    let ing=vC.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
-    let ben=ing-vC.reduce((a,m)=>a+costeDe(m)*m.cantidad+(m.ebayFee||0),0);
-    let nV=vC.length;
-    if(cat==="Cartas"){ // lo apuntado en la seccion Cartas tambien suma aqui
-      const pk=state.pokemon||[], pv=state.pokemonVentas||[];
-      inv+=pk.reduce((a,p)=>a+(p.precioCompra||0)*(p.unidades||1),0);
-      vm+=pk.reduce((a,p)=>a+(p.precioMercado||p.precioCompra||0)*(p.unidades||1),0);
-      uds+=pk.reduce((a,p)=>a+(p.unidades||1),0);
-      ing+=pv.reduce((a,v)=>a+(v.precioVenta||0)*(v.unidades||1),0);
-      ben+=pv.reduce((a,v)=>a+((v.precioVenta||0)-(v.coste||0))*(v.unidades||1)-(v.fee||0),0);
-      nV+=pv.length;
-    }
-    return {cat,inv,vm,uds,ing,ben,nV};
-  }),[state,ventas]);
-
-  const catStats=useMemo(()=>Object.keys(CAT_CONFIG).map(cat=>{
+  const catStats=useMemo(()=>Object.keys(CAT_CONFIG).filter(cat=>seccionDe(cat)===seccion).map(cat=>{
     const prods=state.products.filter(p=>p.categoria===cat);
     const vCat=ventas.filter(m=>(m.historico?m.categoriaVenta:(state.products.find(p=>p.id===m.productoId)?.categoria||""))===cat);
     const ing=vCat.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
@@ -895,12 +885,12 @@ function App(){
       inv:prods.reduce((a,p)=>a+p.stock*p.precioCompra,0),
       vm:prods.reduce((a,p)=>a+p.stock*(p.valorMercado||p.precioCompra),0),
       ing,ben:ing-cv,nVentas:vCat.length};
-  }),[state,ventas]);
+  }),[state,ventas,seccion]);
 
   const oportunidades=useMemo(()=>
-    state.products.filter(p=>p.valorMercado>0&&p.valorMercado>p.precioCompra*1.5&&p.stock>0)
+    prodsS.filter(p=>p.valorMercado>0&&p.valorMercado>p.precioCompra*1.5&&p.stock>0)
       .sort((a,b)=>(b.valorMercado-b.precioCompra)-(a.valorMercado-a.precioCompra)),
-  [state.products]);
+  [state.products,seccion]);
 
   const catProducts=useMemo(()=>{
     if(nav.screen!=="categoria") return [];
@@ -951,7 +941,7 @@ function App(){
     }catch(e){}
   };
   const updateAllPrices=useCallback(async(auto)=>{
-    const lista=state.products.filter(p=>p.stock>0&&!(auto===true&&p.valorFuente==="ebay-vendidos-es"));
+    const lista=state.products.filter(p=>p.stock>0&&seccionDe(p.categoria)===seccion&&!(auto===true&&p.valorFuente==="ebay-vendidos-es"));
     if(!lista.length){showToast("No hay productos con stock");return;}
     setUpdateProgress({current:0,total:lista.length});
     let subidos=0,igual=0,sinDatos=0;
@@ -979,7 +969,7 @@ function App(){
     await new Promise(res=>setTimeout(res,600));
     await subirNube();
     showToast(`${subidos} al alza \u00b7 ${igual} sin cambio \u00b7 ${sinDatos} sin datos`);
-  },[state.products]);
+  },[state.products,seccion]);
 
   /* ── Auto update all covers ── */
   const [coverProgress,setCoverProgress]=useState(null);
@@ -1190,7 +1180,7 @@ function App(){
   const pFresh=screen==="producto"?state.products.find(x=>x.id===data?.id)||data:null;
   const pCfg=pFresh?CAT_CONFIG[pFresh.categoria]||{}:{};
   const pPlusval=pFresh&&pFresh.precioCompra>0&&pFresh.valorMercado>0?((pFresh.valorMercado-pFresh.precioCompra)/pFresh.precioCompra*100):null;
-  const pVentas=pFresh?ventas.filter(m=>m.nombreProducto===pFresh.nombre||(m.productoId===pFresh.id)):[];
+  const pVentas=pFresh?ventasTodas.filter(m=>m.nombreProducto===pFresh.nombre||(m.productoId===pFresh.id)):[];
   const vData=screen==="ventaDetalle"?data:null;
   const vProd=vData?state.products.find(p=>p.id===vData.productoId):null;
   const vNombre=vData?(vData.historico?vData.nombreProducto:(vProd?.nombre||"—")):"";
@@ -1246,13 +1236,22 @@ function App(){
           {(screen==="home"||screen==="stock")&&<>
             <button onClick={()=>{setMovForm({productoId:state.products[0]?.id||"",tipo:"Venta",cantidad:1,nota:"",precioVenta:""});setModal("mov");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:"var(--text)",fontWeight:600}}><Ico d={I.refrescar} size={14}/></button>
             <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}><Ico d={I.lupa} size={14}/></button>
-            <button onClick={()=>{setFormP(EMPTY_P);setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}><Ico d={I.mas} size={15} c="#fff"/></button>
+            <button onClick={()=>{setFormP({...EMPTY_P,...(seccion==="zapatillas"?{categoria:"Zapatillas"}:seccion==="cartas"?{categoria:"Cartas"}:{})});setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}><Ico d={I.mas} size={15} c="#fff"/></button>
           </>}
-          {screen==="stock"&&<button onClick={()=>updateAllPrices(false)} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700,display:"flex",alignItems:"center",gap:5}}><Ico d={I.rayo} size={14}/>{updateProgress?"Actualizando…":"Actualizar precios"}</button>}
+          {screen==="stock"&&<button onClick={()=>updateAllPrices(false)} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700,display:"flex",alignItems:"center",gap:5}}><Ico d={I.rayo} size={14}/>{updateProgress?"…":"Precios"}</button>}
         </div>
       </div>
 
       <div style={{padding:"14px 14px 8px",maxWidth:640,margin:"0 auto"}}>
+
+        {/* ── Selector de seccion ── */}
+        {(screen==="home"||screen==="stock"||screen==="ventas"||screen==="oportunidades")&&
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:4,background:"var(--bg3)",borderRadius:12,padding:4,marginBottom:12}}>
+            {SECCIONES.map(x=>(
+              <button key={x.k} onClick={()=>setSeccion(x.k)} style={{border:"none",borderRadius:9,padding:"8px 0",cursor:"pointer",fontSize:13,fontWeight:700,
+                background:seccion===x.k?"var(--bg2)":"transparent",color:seccion===x.k?"var(--accent2)":"var(--text2)",boxShadow:seccion===x.k?"var(--card-shadow)":"none"}}>{x.l}</button>
+            ))}
+          </div>}
 
         {/* ── UPDATE PROGRESS ── */}
         {updateProgress&&<UpdateProgress current={updateProgress.current} total={updateProgress.total}/>}
@@ -1303,24 +1302,6 @@ function App(){
             {kpi.ret>0&&!priv&&<div style={{fontSize:11,color:"var(--text3)",marginTop:7}}>Incluye {fmt(kpi.ret)} € que has sacado</div>}
           </button>
 
-          {/* Zapatillas y cartas, aparte */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-            {aparte.map(a=>{
-              const g=a.vm-a.inv;
-              return(
-              <button key={a.cat} onClick={()=>go("categoria",a.cat)} style={{...S.card,textAlign:"left",padding:"12px 13px",cursor:"pointer",color:"var(--text)"}}>
-                <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>{a.cat}</div>
-                <div style={{fontFamily:"var(--display)",fontSize:19,letterSpacing:-.5,marginTop:5}}>{H(`${fmt(a.vm)} €`)}</div>
-                {!priv&&<div style={{fontSize:11.5,fontWeight:700,marginTop:3,color:g>=0?"var(--green)":"var(--red)"}}>{g>=0?"+":""}{fmt(g)} € · {a.inv>0?(g/a.inv*100).toFixed(0):"0"} %</div>}
-                <div style={{fontSize:11,color:"var(--text2)",marginTop:7,lineHeight:1.5}}>
-                  <div>Invertido {H(`${fmt(a.inv)} €`)}</div>
-                  <div>{a.uds} uds · {a.nV} ventas</div>
-                  <div>Beneficio ventas <span style={{color:a.ben>=0?"var(--green)":"var(--red)",fontWeight:700}}>{H(`${a.ben>=0?"+":""}${fmt(a.ben)} €`)}</span></div>
-                </div>
-              </button>);
-            })}
-          </div>
-
           {/* Próximos lanzamientos */}
           {reservasActivas.length>0&&<>
             <div style={{display:"flex",alignItems:"center",gap:8,margin:"20px 0 10px"}}>
@@ -1352,7 +1333,7 @@ function App(){
           {/* Gráfica beneficios por mes — rediseño */}
           {(()=>{
             const meses={};
-            ventasJ.forEach(m=>{
+            ventas.forEach(m=>{
               const fecha=m.fecha||"";
               if(!fecha) return;
               const mes=fecha.slice(0,7);
@@ -1497,7 +1478,7 @@ function App(){
         {screen==="stock"&&<div className="fade-in">
           <div style={{position:"relative",marginBottom:10}}>
             <svg viewBox="0 0 24 24" style={{position:"absolute",left:13,top:13,width:17,height:17,fill:"none",stroke:"var(--text3)",strokeWidth:2,strokeLinecap:"round"}}><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-3.6-3.6"/></svg>
-            <input value={q} onChange={e=>setQ(e.target.value)} placeholder={`Buscar en ${state.products.length} referencias…`}
+            <input value={q} onChange={e=>setQ(e.target.value)} placeholder={`Buscar en ${prodsS.length} referencias…`}
               style={{width:"100%",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:14,
                 padding:"11px 38px 11px 38px",fontSize:13.5,color:"var(--text)",outline:"none",boxShadow:"var(--card-shadow)"}}/>
             {q&&<button onClick={()=>setQ("")} style={{position:"absolute",right:10,top:9,width:24,height:24,borderRadius:8,background:"var(--bg3)",border:"none",cursor:"pointer",color:"var(--text2)",fontSize:13}}>×</button>}
@@ -1505,7 +1486,7 @@ function App(){
 
           {q.trim().length>0&&(()=>{
             const t=q.trim().toLowerCase();
-            const res=state.products.filter(p=>(p.nombre||"").toLowerCase().includes(t)||(p.sku||"").toLowerCase().includes(t));
+            const res=prodsS.filter(p=>(p.nombre||"").toLowerCase().includes(t)||(p.sku||"").toLowerCase().includes(t));
             return(
               <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
                 <div style={{padding:"11px 14px",borderBottom:"1px solid var(--border)",fontSize:11.5,fontWeight:700,color:"var(--text2)"}}>
@@ -1529,6 +1510,14 @@ function App(){
               </div>
             );
           })()}
+
+          {seccion==="cartas"&&<button onClick={()=>{setTab("pokemon");setPkScreen("home");}} style={{...S.card,width:"100%",textAlign:"left",display:"flex",alignItems:"center",gap:10,padding:"13px 14px",marginBottom:10,cursor:"pointer",color:"var(--text)"}}>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:700,fontSize:13.5}}>Colección Pokémon</div>
+              <div style={{fontSize:11.5,color:"var(--text3)",marginTop:2}}>{(state.pokemon||[]).length} cartas o productos · {(state.pokemonVentas||[]).length} ventas</div>
+            </div>
+            <span style={{color:"var(--accent2)",fontWeight:700}}>→</span>
+          </button>}
 
           <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
             <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
@@ -2223,7 +2212,6 @@ function App(){
         {[
           {k:"home",l:"Inicio",d:"M3 10.5l9-7 9 7V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20Z M9.5 21V14h5v7"},
           {k:"stock",l:"Stock",d:"M3 8.5L12 4l9 4.5v7L12 20l-9-4.5Z M3 8.5L12 13l9-4.5 M12 13v7"},
-          {k:"pokemon",l:"Cartas",d:"M4 5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z M8 21h9a2 2 0 0 0 2-2V8"},
           {k:"radar",l:"Radar",d:"M12 3.5a8.5 8.5 0 1 0 8.5 8.5 M12 8a4 4 0 1 0 4 4 M12 12l6-6"},
           {k:"reservas",l:"Reservas",d:"M3.5 7.5a2.5 2.5 0 0 1 2.5-2.5h12a2.5 2.5 0 0 1 2.5 2.5v11a2.5 2.5 0 0 1-2.5 2.5H6a2.5 2.5 0 0 1-2.5-2.5Z M8 3v4 M16 3v4 M3.5 10h17"},
         ].map(t=>{
