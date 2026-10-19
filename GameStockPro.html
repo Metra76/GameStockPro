@@ -198,6 +198,8 @@ function reducer(state,action){
       next={...state,radarSources:{...state.radarSources,...action.payload}};break;
     case "SET_RADAR_KEYWORDS":
       next={...state,radarKeywords:action.payload};break;
+    case "SET_CAPITAL":
+      next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
       next={...state,...action.payload};break;
     case "ADD_POKEMON":
@@ -744,6 +746,7 @@ function App(){
   const [toast,setToast]=useState(null);
   const [q,setQ]=useState("");
   const [priv,setPriv]=useState(true);
+  const [capForm,setCapForm]=useState({inicio:"",fecha:"",importe:""});
   const [search,setSearch]=useState("");
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
   const [loadingEbay,setLoadingEbay]=useState(null); // product id being fetched
@@ -790,7 +793,18 @@ function App(){
     const fees=ventas.reduce((a,m)=>a+(m.ebayFee||0),0);
     const ben=ing-cv-fees;
     const roi=cv>0?ben/cv*100:0;
-    return{inv,vm,ing,ben,roi,margen:ing>0?ben/ing*100:0,stock:state.products.reduce((a,p)=>a+p.stock,0)};
+    // Dinero propio: lo gastado en total menos lo cobrado neto, más lo que hayas sacado
+    const cap=state.capital||{};
+    const ret=(cap.retiradas||[]).reduce((a,r)=>a+(+r.importe||0),0);
+    const propio=inv-ben+ret;
+    const inicio=cap.inicio||"2024-10-01";
+    const anos=Math.max((Date.now()-new Date(inicio).getTime())/(365.25*864e5),0.1);
+    const finalV=vm+ret;
+    const gProp=finalV-propio;
+    const pProp=propio>0?gProp/propio*100:0;
+    const aProp=propio>0&&finalV>0?(Math.pow(finalV/propio,1/anos)-1)*100:0;
+    return{inv,vm,ing,ben,roi,margen:ing>0?ben/ing*100:0,stock:state.products.reduce((a,p)=>a+p.stock,0),
+      propio,ret,gProp,pProp,aProp,anos,inicio};
   },[state,ventas]);
 
   const catStats=useMemo(()=>Object.keys(CAT_CONFIG).map(cat=>{
@@ -1158,6 +1172,24 @@ function App(){
               </button>
             ))}
           </div>
+
+          {/* Rentabilidad sobre tu dinero */}
+          <button onClick={()=>{setCapForm({inicio:kpi.inicio,fecha:today,importe:""});setModal("capital");}} style={{...S.card,width:"100%",textAlign:"left",padding:"14px 16px",marginBottom:10,cursor:"pointer",color:"var(--text)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+              <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Sobre tu dinero</div>
+              <div style={{fontSize:11,color:"var(--text3)"}}>{kpi.anos.toFixed(1).replace(".",",")} años</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:9}}>
+              {[{l:"Puesto por ti",v:H(`${fmt(kpi.propio)} €`),c:"var(--text)"},
+                {l:"Rentab. total",v:H(`${kpi.pProp>=0?"+":""}${kpi.pProp.toFixed(0)} %`),c:kpi.pProp>=0?"var(--green)":"var(--red)"},
+                {l:"Al año",v:H(`${kpi.aProp>=0?"+":""}${kpi.aProp.toFixed(0)} %`),c:kpi.aProp>=0?"var(--green)":"var(--red)"}].map((k,i)=>(
+                <div key={i}>
+                  <div style={{fontSize:10,color:"var(--text3)",fontWeight:600}}>{k.l}</div>
+                  <div style={{fontFamily:"var(--display)",fontSize:16,letterSpacing:-.4,marginTop:2,color:k.c}}>{k.v}</div>
+                </div>))}
+            </div>
+            {kpi.ret>0&&!priv&&<div style={{fontSize:11,color:"var(--text3)",marginTop:7}}>Incluye {fmt(kpi.ret)} € que has sacado</div>}
+          </button>
 
           {/* Próximos lanzamientos */}
           {reservasActivas.length>0&&<>
@@ -2110,6 +2142,30 @@ function App(){
         <Field label="Plataforma / nota"><input type="text" value={movForm.nota} onChange={e=>setMovForm({...movForm,nota:e.target.value})} placeholder="eBay, Wallapop…" style={S.inp()}/></Field>
         <Field label="Fecha de venta"><input type="date" value={movForm.fecha||today} onChange={e=>setMovForm({...movForm,fecha:e.target.value})} style={S.inp()}/></Field>
         <Btns onCancel={()=>setModal(null)} onSave={saveMov} saveLabel="Registrar" saveColor="var(--green)"/>
+      </Sheet>}
+
+      {modal==="capital"&&<Sheet onClose={()=>setModal(null)} title="Tu dinero en el negocio">
+        <div style={{fontSize:12.5,color:"var(--text2)",lineHeight:1.45,marginBottom:13}}>
+          Lo puesto por ti es todo lo que has gastado menos lo que has cobrado en ventas (ya descontadas comisiones). El dinero de las ventas que vuelves a meter no cuenta como tuyo. Si alguna vez sacas dinero para ti, apúntalo aquí.
+        </div>
+        <Field label="Empezaste en"><input type="date" value={capForm.inicio||""} onChange={e=>{setCapForm({...capForm,inicio:e.target.value});dispatch({type:"SET_CAPITAL",payload:{inicio:e.target.value}});}} style={S.inp()}/></Field>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:.6,textTransform:"uppercase",color:"var(--text3)",margin:"6px 0 8px"}}>Dinero sacado</div>
+        {((state.capital||{}).retiradas||[]).length===0&&<div style={{fontSize:12.5,color:"var(--text3)",marginBottom:10}}>Nada sacado hasta ahora.</div>}
+        {((state.capital||{}).retiradas||[]).map(r=>(
+          <div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:"1px solid var(--border)"}}>
+            <span style={{flex:1,fontSize:13}}>{r.fecha}</span>
+            <span style={{fontWeight:700,fontSize:13}}>{H(`${fmt(+r.importe)} €`)}</span>
+            <button onClick={()=>dispatch({type:"SET_CAPITAL",payload:{retiradas:(state.capital.retiradas||[]).filter(x=>x.id!==r.id)}})} style={{background:"none",border:"none",color:"var(--red)",cursor:"pointer",fontSize:12,fontWeight:700}}>Quitar</button>
+          </div>))}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,margin:"12px 0 13px"}}>
+          <Field label="Fecha"><input type="date" value={capForm.fecha||today} onChange={e=>setCapForm({...capForm,fecha:e.target.value})} style={S.inp()}/></Field>
+          <Field label="Importe (€)"><input type="number" min={0} step={0.01} value={capForm.importe} onChange={e=>setCapForm({...capForm,importe:e.target.value})} style={S.inp()} placeholder="0.00"/></Field>
+        </div>
+        <Btns onCancel={()=>setModal(null)} onSave={()=>{
+          const imp=+capForm.importe;
+          if(imp>0){dispatch({type:"SET_CAPITAL",payload:{retiradas:[...((state.capital||{}).retiradas||[]),{id:Date.now(),fecha:capForm.fecha||today,importe:imp}]}});setCapForm({...capForm,importe:""});showToast("Retirada apuntada");}
+          else setModal(null);
+        }} saveLabel="Apuntar retirada"/>
       </Sheet>}
 
       {modal==="reserva"&&<Sheet onClose={()=>{setModal(null);setEditId(null);setFormR(EMPTY_R);}} title={editId?" Editar reserva":"Nueva reserva"}>
