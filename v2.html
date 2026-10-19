@@ -147,7 +147,6 @@ const GRUPOS_ED=[
   ["collection","coleccion"],["trilogy","trilogia"],["dual","twin","doble","double"],["collector","collectors","coleccionista"],
   ["signature"],["premium"],["deluxe"],["steelbook"],["limited","limitada","limitado"],
 ];
-const CORR_1910={56:[105.15,2],66:[99,1],109:[51.45,1],115:[37.66,15],143:[43.06,18],163:[69.97,5],184:[96.25,10],194:[48.14,7],200:[106.99,5],208:[80.92,8],237:[35.28,9],238:[38,13],291:[57.59,3],295:[37.44,9]};
 const ESPECIALES=[7,8,9,10,11,12]; // collector, signature, premium, deluxe, steelbook, limited
 const PAREJAS=[["diamante brillante","perla reluciente","brilliant diamond","shining pearl"],["escarlata","purpura","scarlet","violet"],["espada","escudo","sword","shield"],["lets go pikachu","lets go eevee"]];
 const BASURA=/ \d ?ivs? | ivs | shiny | vaina | compendium | solo caja | caja vacia | empty box | sin juego | no game | solo manual | manual only | codigo | code only | amiibo card | carta | runas | runes | in game | wata | vga | ukg | cgc | graded | calificado | grado \d+ /;
@@ -353,57 +352,6 @@ function reducer(state,action){
       next={...state,radarKeywords:action.payload};break;
     case "SET_FLAGS":
       next={...state,flags:{...(state.flags||{}),...action.payload}};break;
-    case "AJUSTES_1910":{
-      const ts=new Date().toISOString().split("T")[0];
-      const products=state.products.map(p=>{
-        const t=nrm(p.nombre);
-        if(t.includes(" breath of the wild ")&&t.includes(" expansion ")&&(p.valorMercado||0)<140)
-          return {...p,valorMercado:140,valorFuente:"manual",valorFecha:ts};
-        return p;
-      });
-      next={...state,products,flags:{...(state.flags||{}),ajustes1910:true}};break;
-    }
-    case "AJUSTES_1910B":{
-      // Repaso del 19/10: valores que estaban inflados o cortos por anuncios que no eran el producto
-      const ts=new Date().toISOString().split("T")[0];
-      const products=state.products.map(p=>{
-        let q=p;
-        const c=CORR_1910[p.id];
-        if(c&&(p.valorFuente==="ebay-mediana"||p.valorFuente==="ebay-pocos"))
-          q={...q,valorMercado:c[0],valorFuente:c[1]>=4?"ebay-mediana":"ebay-pocos",valorAnuncios:c[1],valorFecha:ts};
-        if(p.id===340&&/requiem/i.test(p.nombre)) q={...q,nombre:"Castlevania: Belmont's Curse – Midnight Edition (Steelbook) – Switch"};
-        return q;
-      });
-      next={...state,products,flags:{...(state.flags||{}),ajustes1910b:true}};break;
-    }
-    case "AJUSTES_1910C":{
-      // Precios de compra que estaban como total en vez de por unidad, y stock de The Alters (confirmado por Juan el 19/10)
-      const fix={13:{precioCompra:30},77:{precioCompra:35},122:{precioCompra:30},116:{precioCompra:21},210:{precioCompra:19.9},74:{precioCompra:15},3:{stock:1}};
-      const products=state.products.map(p=>fix[p.id]?{...p,...fix[p.id]}:p);
-      next={...state,products,flags:{...(state.flags||{}),ajustes1910c:true}};break;
-    }
-    case "AJUSTES_1910D":{
-      // Mandos DualSense: 2 del 30 Aniversario y 1 de The Last of Us, 150 cada uno (Juan, 19/10)
-      const ts=new Date().toISOString().split("T")[0];
-      const products=state.products.map(p=>(p.id===305||p.id===306)?{...p,valorMercado:150,valorFuente:"manual",valorFecha:ts}:p);
-      next={...state,products,flags:{...(state.flags||{}),ajustes1910d:true}};break;
-    }
-    case "AJUSTES_1910E":{
-      // Persona 3 y 4 son la edicion normal de Limited Run (Juan, 19/10). Mediana de anuncios nuevos/precintados de esa edicion en eBay
-      const ts=new Date().toISOString().split("T")[0];
-      const fix={114:{nombre:"Persona 4 Golden – Limited Run #214",valorMercado:134},220:{nombre:"Persona 3 Portable – Limited Run #213",valorMercado:105}};
-      const products=state.products.map(p=>fix[p.id]&&/^Persona [34] /.test(p.nombre)?{...p,...fix[p.id],valorFuente:"manual",valorFecha:ts}:p);
-      next={...state,products,flags:{...(state.flags||{}),ajustes1910e:true}};break;
-    }
-    case "AJUSTES_1910F":{
-      // Ventas historicas del Yakuza 20th Anniversary: salio el 8/12/2025, no en junio. Se pasan a diciembre manteniendo el orden
-      const movements=state.movements.map(m=>{
-        if(!m.historico||!/yakuza 20th/i.test(m.nombreProducto||"")||!/^2025-06-/.test(m.fecha||"")) return m;
-        const dia=Math.min(31,Math.max(8,8+(+m.fecha.slice(8,10))-10));
-        return {...m,fecha:`2025-12-${String(dia).padStart(2,"0")}`};
-      });
-      next={...state,movements,flags:{...(state.flags||{}),ajustes1910f:true}};break;
-    }
     case "AJUSTES_1910G":{
       // Producto Pokemon sellado que Juan tiene (fotos del 19/10). Coste = PVP; valor = referencia de mercado de ese dia
       const ts=new Date().toISOString().split("T")[0];
@@ -450,12 +398,6 @@ function reducer(state,action){
       ].filter(n=>!state.products.some(p=>p.id===n.id));
       next={...state,products:[...state.products,...nuevos],flags:{...(state.flags||{}),ajustes1910j:true}};break;
     }
-    case "AJUSTES_1910K":{
-      // Cenit Supremo: se vendieron a 200 cada una (dato de Juan, 19/10)
-      // Anulado: Juan prefiere su baremo de mercado, no el precio de las ventas de su hijo. Lo deshace AJUSTES_1910L
-      const products=state.products;
-      next={...state,products,flags:{...(state.flags||{}),ajustes1910k:true}};break;
-    }
     case "AJUSTES_1910L":{
       // Cenit Supremo vuelve a 150 (estimacion propia) hasta tener dato de Cardmarket
       const products=state.products.map(p=>(p.id===1760900000031||p.id===1760900000032)&&p.valorMercado===200?{...p,valorMercado:150}:p);
@@ -478,12 +420,24 @@ function reducer(state,action){
       const products=state.products.some(p=>p.id===n.id)?state.products:[...state.products,n];
       next={...state,products,flags:{...(state.flags||{}),ajustes1910n:true}};break;
     }
+    case "RESERVA_A_STOCK":{
+      // La reserva ya esta en casa: se crea el producto y la reserva queda marcada
+      const {r,stock,precio,categoria}=action.payload;
+      const ts=new Date().toISOString().split("T")[0];
+      const prod={...EMPTY_P,id:Date.now(),nombre:r.nombre,categoria,stock,precioCompra:precio,valorMercado:precio,
+        fechaCompra:r.lanzamiento||ts,ebayData:null,priceHistory:[],sku:""};
+      next={...state,products:[...state.products,prod],reservas:state.reservas.map(x=>x.id===r.id?{...x,enStock:true,enStockFecha:ts}:x)};break;
+    }
     case "SET_HIST":{
       // Una foto al dia del invertido y valor por seccion
       const h=[...(state.historial||[])];
       if(h.length&&h[h.length-1].d===action.payload.d) h[h.length-1]=action.payload; else h.push(action.payload);
       next={...state,historial:h};break;
     }
+    case "SET_PRECIOS_SEMANA":
+      next={...state,preciosSemana:action.payload};break;
+    case "SET_RESUMEN_VISTO":
+      next={...state,resumenVisto:action.payload};break;
     case "SET_VENTA_CFG":
       next={...state,ventaCfg:{...(state.ventaCfg||{}),...action.payload}};break;
     case "AJUSTES_1910O":{
@@ -1044,6 +998,8 @@ function App(){
   const [capForm,setCapForm]=useState({inicio:"",fecha:"",importe:""});
   const [copias,setCopias]=useState([]);
   const [ventaForm,setVentaForm]=useState({comision:12,envio:0});
+  const [stockForm,setStockForm]=useState({});
+  const [resumen,setResumen]=useState(null);
   const [search,setSearch]=useState("");
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
   const [loadingEbay,setLoadingEbay]=useState(null); // product id being fetched
@@ -1084,7 +1040,9 @@ function App(){
   const prodsS=state.products.filter(p=>seccionDe(p.categoria)===seccion);
   const reservasOrd=useMemo(()=>[...state.reservas]
     .sort((a,b)=>(a.lanzamiento||"9999").localeCompare(b.lanzamiento||"9999")),[state.reservas]);
-  const reservasActivas=useMemo(()=>reservasOrd.filter(r=>!r.lanzamiento||diasHasta(r.lanzamiento)>=-7),[reservasOrd]);
+  const reservasActivas=useMemo(()=>reservasOrd.filter(r=>!r.enStock&&(!r.lanzamiento||diasHasta(r.lanzamiento)>=-7)),[reservasOrd]);
+  // Reservas cuyo lanzamiento ya ha llegado y aun no estan en stock
+  const salidas=useMemo(()=>reservasOrd.filter(r=>!r.enStock&&r.lanzamiento&&diasHasta(r.lanzamiento)<=0&&r.posponer!==today),[reservasOrd]);
   const reservasPasadas=useMemo(()=>reservasOrd.filter(r=>diasHasta(r.lanzamiento)<-7),[reservasOrd]);
 
   const kpi=useMemo(()=>{
@@ -1179,9 +1137,14 @@ function App(){
   /* ── Auto update all prices ── */
   const stateRef=useRef(state); stateRef.current=state;
   const subirNube=async()=>{await guardar(stateRef.current);};
-  const updateAllPrices=useCallback(async(auto)=>{
-    const lista=state.products.filter(p=>p.stock>0&&seccionDe(p.categoria)===seccion&&!(auto===true&&p.valorFuente==="ebay-vendidos-es"));
-    if(!lista.length){showToast("No hay productos con stock");return;}
+  const updateAllPrices=useCallback(async(auto,sec)=>{
+    const S0=sec||seccion;
+    const hace6=Date.now()-6*864e5;
+    // En la pasada semanal automatica no se tocan los valores puestos a mano, de vendidos ni de StockX,
+    // y se salta lo ya actualizado esta semana (por si la pasada anterior se corto)
+    const lista=stateRef.current.products.filter(p=>p.stock>0&&seccionDe(p.categoria)===S0&&
+      !(auto===true&&(["ebay-vendidos-es","manual","stockx"].includes(p.valorFuente)||(p.ebayData?.fetchedAt&&new Date(p.ebayData.fetchedAt).getTime()>hace6))));
+    if(!lista.length){if(auto!==true) showToast("No hay productos con stock");return true;}
     setUpdateProgress({current:0,total:lista.length});
     let subidos=0,igual=0,sinDatos=0;
     for(let i=0;i<lista.length;i++){
@@ -1204,10 +1167,10 @@ function App(){
       if((i+1)%40===0) await subirNube();
     }
     setUpdateProgress(null);
-    if(auto===true) dispatch({type:"SET_FLAGS",payload:{reval1910:true}});
     await new Promise(res=>setTimeout(res,600));
     await subirNube();
     showToast(`${subidos} al alza \u00b7 ${igual} sin cambio \u00b7 ${sinDatos} sin datos`);
+    return true;
   },[state.products,seccion]);
 
   /* ── Auto update all covers ── */
@@ -1340,6 +1303,51 @@ function App(){
     },5000);
     return()=>clearTimeout(t);
   },[user,authLoading,state.products,state.pokemon]);
+  // Resumen semanal: la primera vez que abres la app cada semana, si hay al menos 6 dias de historial
+  useEffect(()=>{
+    if(!user||authLoading||!state.products.length) return;
+    const t=setTimeout(()=>{
+      const hoy=new Date();
+      const lunes=new Date(hoy);lunes.setDate(hoy.getDate()-((hoy.getDay()+6)%7));
+      const semana=lunes.toISOString().split("T")[0];
+      if(stateRef.current.resumenVisto===semana) return;
+      (async()=>{
+      // 1) precios de los juegos una vez por semana, antes del resumen
+      if(stateRef.current.preciosSemana!==semana){
+        showToast("Actualizando los precios de la semana, deja la app abierta");
+        const ok=await updateAllPrices(true,"juegos");
+        if(!ok) return;
+        dispatch({type:"SET_FLAGS",payload:{}});
+        dispatch({type:"SET_PRECIOS_SEMANA",payload:semana});
+        await new Promise(r=>setTimeout(r,800));
+      }
+      // 2) resumen con los valores ya actualizados
+      const st=stateRef.current;
+      const h=st.historial||[];
+      const hace7=new Date(Date.now()-7*864e5).toISOString().split("T")[0];
+      const base=[...h].reverse().find(e=>e.d<=hace7);
+      if(!base) return;
+      const ult={d:today,...totalesSeccion(st)};
+      dispatch({type:"SET_HIST",payload:ult});
+      const secs=SECCIONES.map(x=>({k:x.k,l:x.l,ahora:ult[x.k]?ult[x.k][1]:0,antes:base[x.k]?base[x.k][1]:0})).map(x=>({...x,dif:x.ahora-x.antes}));
+      const vs=st.movements.filter(m=>m.tipo==="Venta"&&(m.fecha||"")>hace7);
+      const costeDe=m=>m.historico?(m.coste||0):((st.products.find(p=>p.id===m.productoId)||{}).precioCompra||0);
+      const ing=vs.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
+      const ben=ing-vs.reduce((a,m)=>a+costeDe(m)*m.cantidad+(m.ebayFee||0),0);
+      const vender=st.products.map(p=>({p,m:momentoVenta(p)})).filter(x=>x.m).sort((a,b)=>(b.p.valorMercado-b.p.precioCompra)*b.p.stock-(a.p.valorMercado-a.p.precioCompra)*a.p.stock).slice(0,5);
+      setResumen({desde:base.d,secs,nVentas:vs.length,ing,ben,vender});
+      setModal("resumen");
+      dispatch({type:"SET_RESUMEN_VISTO",payload:semana});
+      try{
+        if("Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker){
+          const tot=secs.reduce((a,x)=>a+x.dif,0);
+          navigator.serviceWorker.ready.then(reg=>reg.showNotification("Resumen de la semana",{body:`La colección ${tot>=0?"sube":"baja"} ${fmt(Math.abs(tot))} € esta semana · ${vender.length} para vender`,tag:"resumen-"+semana}));
+        }
+      }catch(e){}
+      })();
+    },7000);
+    return()=>clearTimeout(t);
+  },[user,authLoading]);
   // Copia semanal automatica en este dispositivo
   useEffect(()=>{
     if(!user||authLoading||!state.products.length) return;
@@ -1347,21 +1355,14 @@ function App(){
     return()=>clearTimeout(t);
   },[user,authLoading]);
 
-  // Ajuste puntual de datos del 19/10 (Zelda BotW + Expansion a 140 como minimo). No busca precios.
+  // Altas y ajustes de datos del 19/10 que se aplican una sola vez (quitar cuando consten aplicados)
   useEffect(()=>{
     if(!user||authLoading||!state.products.length) return;
     const f=state.flags||{};
-    if(!f.ajustes1910) dispatch({type:"AJUSTES_1910"});
-    if(!f.ajustes1910b){dispatch({type:"AJUSTES_1910B"});setTimeout(()=>subirNube(),800);}
-    if(!f.ajustes1910c){dispatch({type:"AJUSTES_1910C"});setTimeout(()=>subirNube(),1200);}
-    if(!f.ajustes1910d){dispatch({type:"AJUSTES_1910D"});setTimeout(()=>subirNube(),1600);}
-    if(!f.ajustes1910e){dispatch({type:"AJUSTES_1910E"});setTimeout(()=>subirNube(),2000);}
-    if(!f.ajustes1910f){dispatch({type:"AJUSTES_1910F"});setTimeout(()=>subirNube(),2400);}
     if(!f.ajustes1910g){dispatch({type:"AJUSTES_1910G"});setTimeout(()=>subirNube(),2800);}
     if(!f.ajustes1910h){dispatch({type:"AJUSTES_1910H"});setTimeout(()=>subirNube(),3200);}
     if(!f.ajustes1910i){dispatch({type:"AJUSTES_1910I"});setTimeout(()=>subirNube(),3600);}
     if(!f.ajustes1910j){dispatch({type:"AJUSTES_1910J"});setTimeout(()=>subirNube(),4000);}
-    if(!f.ajustes1910k){dispatch({type:"AJUSTES_1910K"});setTimeout(()=>subirNube(),4400);}
     if(!f.ajustes1910l){dispatch({type:"AJUSTES_1910L"});setTimeout(()=>subirNube(),4800);}
     if(!f.ajustes1910m){dispatch({type:"AJUSTES_1910M"});setTimeout(()=>subirNube(),5200);}
     if(!f.ajustes1910n){dispatch({type:"AJUSTES_1910N"});setTimeout(()=>subirNube(),5600);}
@@ -1561,6 +1562,20 @@ function App(){
 
         {/* ══════════════════════════ HOME ══════════════════════════════ */}
         {screen==="home"&&<div className="fade-in">
+          {/* Reservas que ya han salido */}
+          {seccion==="juegos"&&salidas.length>0&&<div style={{...S.card,padding:"14px 16px",marginBottom:10,border:"1px solid var(--accent2)"}}>
+            <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--accent2)"}}>Ya han salido</div>
+            {salidas.map(r=>(
+              <div key={r.id} style={{marginTop:10}}>
+                <div style={{fontWeight:600,fontSize:13.5,lineHeight:1.3}}>{r.nombre}</div>
+                <div style={{fontSize:11.5,color:"var(--text3)",marginTop:2}}>{r.unidades||0} uds · {r.tienda||"sin tienda"} · salió el {r.lanzamiento.split("-").reverse().join("/")}</div>
+                <div style={{display:"flex",gap:8,marginTop:7}}>
+                  <button onClick={()=>{setStockForm({r,stock:r.unidades||1,precio:r.precioFinal>0?r.precioFinal:"",categoria:CAT_CONFIG[r.plataforma]?r.plataforma:"PS5"});setModal("aStock");}} style={{flex:1,background:"var(--accent2)",color:"#fff",border:"none",borderRadius:9,padding:"8px 0",fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Ya la tengo</button>
+                  <button onClick={()=>dispatch({type:"UPDATE_RESERVA",payload:{...r,posponer:today}})} style={{flex:1,background:"var(--bg3)",color:"var(--text)",border:"none",borderRadius:9,padding:"8px 0",fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Aún no</button>
+                </div>
+              </div>))}
+          </div>}
+
           {/* Héroe: valor de la colección */}
           <button onClick={()=>go("oportunidades")} style={{...S.card,width:"100%",textAlign:"left",padding:"18px 18px 16px",marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden",color:"var(--text)"}}>
             <div style={{position:"absolute",right:-50,top:-50,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,var(--accent2) 0%,transparent 70%)",opacity:.16,pointerEvents:"none"}}/>
@@ -2693,6 +2708,40 @@ function App(){
         <Field label="Plataforma / nota"><input type="text" value={movForm.nota} onChange={e=>setMovForm({...movForm,nota:e.target.value})} placeholder="eBay, Wallapop…" style={S.inp()}/></Field>
         <Field label="Fecha de venta"><input type="date" value={movForm.fecha||today} onChange={e=>setMovForm({...movForm,fecha:e.target.value})} style={S.inp()}/></Field>
         <Btns onCancel={()=>setModal(null)} onSave={saveMov} saveLabel="Registrar" saveColor="var(--green)"/>
+      </Sheet>}
+
+      {modal==="aStock"&&stockForm.r&&<Sheet onClose={()=>setModal(null)} title="Pasar a stock">
+        <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>{stockForm.r.nombre}</div>
+        <div style={{fontSize:12.5,color:"var(--text2)",lineHeight:1.45,marginBottom:12}}>Se crea el producto en tu stock y la reserva desaparece de pendientes. El precio es lo que te ha costado cada unidad en total, con la señal incluida.</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
+          <Field label="Unidades"><input type="number" min={1} value={stockForm.stock} onChange={e=>setStockForm({...stockForm,stock:e.target.value})} style={S.inp()}/></Field>
+          <Field label="Precio por unidad (€)"><input type="number" min={0} step={0.01} value={stockForm.precio} onChange={e=>setStockForm({...stockForm,precio:e.target.value})} style={S.inp()} placeholder="0.00"/></Field>
+        </div>
+        <Field label="Categoría"><select value={stockForm.categoria} onChange={e=>setStockForm({...stockForm,categoria:e.target.value})} style={S.inp()}>{Object.keys(CAT_CONFIG).map(c=><option key={c}>{c}</option>)}</select></Field>
+        <Btns onCancel={()=>setModal(null)} onSave={()=>{
+          if(!(+stockForm.precio>0)){showToast("Pon el precio por unidad","var(--red)");return;}
+          dispatch({type:"RESERVA_A_STOCK",payload:{r:stockForm.r,stock:Math.max(1,+stockForm.stock||1),precio:+stockForm.precio,categoria:stockForm.categoria}});
+          setModal(null);showToast("Añadido al stock");
+        }} saveLabel="Pasar a stock"/>
+      </Sheet>}
+
+      {modal==="resumen"&&resumen&&<Sheet onClose={()=>setModal(null)} title={`Resumen de la semana`}>
+        <div style={{fontSize:12,color:"var(--text3)",marginBottom:10}}>Del {resumen.desde.split("-").reverse().join("/")} a hoy</div>
+        {resumen.secs.map(x=>(
+          <div key={x.k} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"9px 0",borderBottom:"1px solid var(--border)"}}>
+            <span style={{fontWeight:700,fontSize:13.5}}>{x.l}</span>
+            <span style={{textAlign:"right"}}>
+              <span style={{fontFamily:"var(--display)",fontSize:14}}>{H(`${fmt(x.ahora)} €`)}</span>
+              <span style={{display:"block",fontSize:11.5,fontWeight:700,color:x.dif>=0?"var(--green)":"var(--red)"}}>{H(`${x.dif>=0?"+":""}${fmt(x.dif)} €`)}{!priv&&x.antes>0?` (${x.dif>=0?"+":""}${(x.dif/x.antes*100).toFixed(1)} %)`:""}</span>
+            </span>
+          </div>))}
+        <div style={{fontSize:13,margin:"12px 0 4px",fontWeight:700}}>Ventas de la semana</div>
+        <div style={{fontSize:13,color:"var(--text2)"}}>{resumen.nVentas===0?"Ninguna.":H(`${resumen.nVentas} ventas · ${fmt(resumen.ing)} € · beneficio ${resumen.ben>=0?"+":""}${fmt(resumen.ben)} €`)}</div>
+        {resumen.vender.length>0&&<>
+          <div style={{fontSize:13,margin:"12px 0 4px",fontWeight:700}}>Para vender</div>
+          {resumen.vender.map(({p,m})=><div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:8,fontSize:12.5,padding:"3px 0"}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</span><span style={{flex:"none",color:"var(--green)",fontWeight:700}}>{m.motivo}</span></div>)}
+        </>}
+        <div style={{marginTop:14}}><Btns onCancel={()=>setModal(null)} onSave={()=>setModal(null)} saveLabel="Entendido"/></div>
       </Sheet>}
 
       {modal==="ventaCfg"&&<Sheet onClose={()=>setModal(null)} title="Cálculo de venta">
