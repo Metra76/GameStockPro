@@ -108,6 +108,46 @@ const today=new Date().toISOString().split("T")[0];
 const diasHasta=f=>Math.ceil((new Date(f)-new Date(today))/86400000);
 
 
+
+/* ── Filtro fino de anuncios eBay (lo que iba a hacer el Worker v18, hecho en la app) ── */
+const nrm=t=>(" "+String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ")+" ");
+// Grupos de palabras: si el producto lleva una, el anuncio tiene que llevarla; si el anuncio la lleva y el producto no, es otra cosa
+const GRUPOS_ED=[
+  ["expansion","dlc"],["pass","pase"],["bundle","pack","lote","lot"],["complete","completa","completo","goty"],
+  ["collection","coleccion"],["trilogy","trilogia"],["dual","twin","doble","double"],["collector","collectors","coleccionista"],
+  ["signature"],["premium"],["deluxe"],["steelbook"],["limited","limitada","limitado"],
+];
+const ESPECIALES=[7,8,9,10,11,12]; // collector, signature, premium, deluxe, steelbook, limited
+const PAREJAS=[["diamante brillante","perla reluciente","brilliant diamond","shining pearl"],["escarlata","purpura","scarlet","violet"],["espada","escudo","sword","shield"],["lets go pikachu","lets go eevee"]];
+const BASURA=/ \d ?ivs? | ivs | shiny | vaina | compendium | solo caja | caja vacia | empty box | sin juego | no game | solo manual | manual only | codigo | code only | amiibo card | carta | runas | runes | in game /;
+const tiene=(t,w)=>t.includes(" "+w+" ");
+function refinarPrecio(prod,data){
+  const L=(data&&data.listings)||[];
+  if(!L.length) return {mediana:(data&&(data.mediana??data.median))||0,min:(data&&data.min)||0,max:(data&&data.max)||0,count:(data&&data.count)||0,listings:L};
+  const nom=nrm(`${prod.nombre} ${prod.edicion&&!/^(est[áa]ndar|standard|normal)$/i.test(prod.edicion)?prod.edicion:""} ${prod.categoria==="Steelbook"?"steelbook":""}`);
+  const especial=ESPECIALES.some(gi=>GRUPOS_ED[gi].some(w=>tiene(nom,w)));
+  const ok=L.filter(l=>{
+    const t=nrm(l.title);
+    if(BASURA.test(t)) return false;
+    for(let gi=0;gi<GRUPOS_ED.length;gi++){
+      const g=GRUPOS_ED[gi];
+      const enNom=g.some(w=>tiene(nom,w)), enAnu=g.some(w=>tiene(t,w));
+      if(enNom&&!enAnu) return false;
+      // Un anuncio de edicion especial no vale para la estandar; entre especiales los vendedores mezclan nombres
+      if(!enNom&&enAnu&&!(ESPECIALES.includes(gi)&&especial)) return false;
+    }
+    for(const par of PAREJAS){
+      const mios=par.filter(w=>nom.includes(" "+w+" "));
+      if(mios.length&&par.some(w=>!mios.includes(w)&&t.includes(" "+w+" "))) return false;
+    }
+    return true;
+  });
+  const med=a=>{const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length?(s.length%2?s[m]:(s[m-1]+s[m])/2):0;};
+  let pr=ok.map(l=>+l.price||0).filter(x=>x>0);
+  const m0=med(pr); pr=pr.filter(x=>x>=m0*0.3);
+  const lst=ok.filter(l=>(+l.price||0)>=m0*0.3);
+  return {mediana:Math.round(med(pr)*100)/100,min:pr.length?Math.min(...pr):0,max:pr.length?Math.max(...pr):0,count:pr.length,listings:lst};
+}
 /* ═══════════════════════ LS HELPERS ════════════════════════════════════ */
 const LS_KEY="gsp_v3";
 function loadState(){
@@ -198,6 +238,18 @@ function reducer(state,action){
       next={...state,radarSources:{...state.radarSources,...action.payload}};break;
     case "SET_RADAR_KEYWORDS":
       next={...state,radarKeywords:action.payload};break;
+    case "SET_FLAGS":
+      next={...state,flags:{...(state.flags||{}),...action.payload}};break;
+    case "AJUSTES_1910":{
+      const ts=new Date().toISOString().split("T")[0];
+      const products=state.products.map(p=>{
+        const t=nrm(p.nombre);
+        if(t.includes(" breath of the wild ")&&t.includes(" expansion ")&&(p.valorMercado||0)<140)
+          return {...p,valorMercado:140,valorFuente:"manual",valorFecha:ts};
+        return p;
+      });
+      next={...state,products,flags:{...(state.flags||{}),ajustes1910:true}};break;
+    }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
@@ -836,8 +888,9 @@ function App(){
       const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(product.nombre)}&cat=${encodeURIComponent(product.categoria)}&region=${encodeURIComponent(product.region||"PAL ESP")}&edicion=${encodeURIComponent(product.edicion&&product.edicion!=="Estándar"?product.edicion:"")}`);
       if(!r.ok) throw new Error("Error eBay");
       const data=await r.json();
-      dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{mediana:(data.mediana??data.median)||0,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
-      showToast(`✓ Precio eBay: ${fmt((data.mediana??data.median)||0)} €`);
+      const rf=refinarPrecio(product,data);
+      dispatch({type:"UPDATE_EBAY",payload:{id:product.id,ebayData:{...rf,fetchedAt:new Date().toISOString()}}});
+      showToast(rf.mediana>0?`Precio eBay: ${fmt(rf.mediana)} €`:"Sin anuncios que encajen");
     }catch(e){showToast("Error al obtener precio eBay","var(--red)");}
     finally{setLoadingEbay(null);}
   },[]);
@@ -863,8 +916,15 @@ function App(){
   },[state.products]);
 
   /* ── Auto update all prices ── */
-  const updateAllPrices=useCallback(async()=>{
-    const lista=state.products.filter(p=>p.stock>0);
+  const stateRef=useRef(state); stateRef.current=state;
+  const subirNube=async()=>{
+    try{
+      const {data:{session}}=await sb.auth.refreshSession();
+      if(session?.user) await sb.from("gsp_data").upsert({user_id:session.user.id,data:stateRef.current},{onConflict:"user_id"});
+    }catch(e){}
+  };
+  const updateAllPrices=useCallback(async(auto)=>{
+    const lista=state.products.filter(p=>p.stock>0&&!(auto===true&&p.valorFuente==="ebay-vendidos-es"));
     if(!lista.length){showToast("No hay productos con stock");return;}
     setUpdateProgress({current:0,total:lista.length});
     let subidos=0,igual=0,sinDatos=0;
@@ -875,17 +935,22 @@ function App(){
         const r=await fetch(`${WORKER}/price?q=${encodeURIComponent(p.nombre)}&cat=${encodeURIComponent(p.categoria||"")}&region=${encodeURIComponent(p.region||"PAL ESP")}&edicion=${encodeURIComponent(ed)}`);
         if(r.ok){
           const data=await r.json();
-          const med=(data.mediana??data.median)||0;
+          const rf=refinarPrecio(p,data);
+          const med=rf.mediana;
           if(med>0){
-            dispatch({type:"UPDATE_EBAY",payload:{id:p.id,soloSubir:true,ebayData:{mediana:med,min:data.min||0,max:data.max||0,count:data.count||0,listings:data.listings||[],fetchedAt:new Date().toISOString()}}});
+            dispatch({type:"UPDATE_EBAY",payload:{id:p.id,soloSubir:true,ebayData:{...rf,fetchedAt:new Date().toISOString()}}});
             if(med>(p.valorMercado||0)) subidos++; else igual++;
           } else sinDatos++;
         } else sinDatos++;
       }catch(e){sinDatos++;}
       setUpdateProgress({current:i+1,total:lista.length});
       await new Promise(res=>setTimeout(res,800));
+      if((i+1)%40===0) await subirNube();
     }
     setUpdateProgress(null);
+    if(auto===true) dispatch({type:"SET_FLAGS",payload:{reval1910:true}});
+    await new Promise(res=>setTimeout(res,600));
+    await subirNube();
     showToast(`${subidos} al alza \u00b7 ${igual} sin cambio \u00b7 ${sinDatos} sin datos`);
   },[state.products]);
 
@@ -988,6 +1053,22 @@ function App(){
     },30000);
     return()=>clearInterval(interval);
   },[user,state]);
+
+  // Tanda del 19/10: se lanza sola una vez, al abrir la app con la sesión ya cargada
+  const autoLanzado=useRef(false);
+  useEffect(()=>{
+    if(!user||authLoading||autoLanzado.current||!state.products.length) return;
+    const f=state.flags||{};
+    if(f.reval1910&&f.ajustes1910) return;
+    const t=setTimeout(async()=>{
+      if(autoLanzado.current) return;
+      autoLanzado.current=true;
+      if(!f.ajustes1910) dispatch({type:"AJUSTES_1910"});
+      if(!f.reval1910){showToast("Revalorando la colección, deja la app abierta unos minutos");await updateAllPrices(true);}
+      else {await new Promise(r=>setTimeout(r,600));await subirNube();}
+    },4000);
+    return()=>clearTimeout(t);
+  },[user,authLoading,state.products.length]);
 
   const handleLogin=(u)=>{
     setUser(u);
@@ -1136,7 +1217,7 @@ function App(){
             <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}><Ico d={I.lupa} size={14}/></button>
             <button onClick={()=>{setFormP(EMPTY_P);setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}><Ico d={I.mas} size={15} c="#fff"/></button>
           </>}
-          {screen==="stock"&&<button onClick={updateAllPrices} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700,display:"flex",alignItems:"center",gap:5}}><Ico d={I.rayo} size={14}/>{updateProgress?"Actualizando…":"Actualizar precios"}</button>}
+          {screen==="stock"&&<button onClick={()=>updateAllPrices(false)} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700,display:"flex",alignItems:"center",gap:5}}><Ico d={I.rayo} size={14}/>{updateProgress?"Actualizando…":"Actualizar precios"}</button>}
         </div>
       </div>
 
