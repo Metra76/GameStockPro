@@ -101,6 +101,24 @@ const elegirFoto=(cb)=>{const inp=document.createElement("input");inp.type="file
       const c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
       c.getContext("2d").drawImage(img,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",0.8));};img.src=ev.target.result;};
     r.readAsDataURL(f);};inp.click();};
+// Invertido y valor de cada seccion (cartas incluye la coleccion Pokemon)
+const totalesSeccion=(state)=>{
+  const o={juegos:[0,0],zapatillas:[0,0],cartas:[0,0]};
+  for(const p of state.products||[]){const k=seccionDe(p.categoria);o[k][0]+=p.stock*p.precioCompra;o[k][1]+=p.stock*(p.valorMercado||p.precioCompra);}
+  for(const p of state.pokemon||[]){const u=p.unidades||1;o.cartas[0]+=(p.precioCompra||0)*u;o.cartas[1]+=(p.precioMercado||p.precioCompra||0)*u;}
+  for(const k in o) o[k]=o[k].map(x=>Math.round(x*100)/100);
+  return o;
+};
+// Productos en buen momento para vender: 3 veces su coste o en su maximo de precio
+const momentoVenta=(p)=>{
+  if(!(p.stock>0)||!(p.precioCompra>0)||!(p.valorMercado>0)) return null;
+  const x=p.valorMercado/p.precioCompra;
+  const ph=(p.priceHistory||[]).map(h=>h.price).filter(v=>v>0);
+  const pico=ph.length>=3&&p.valorMercado>=Math.max(...ph)&&x>=1.5;
+  if(x>=3) return {x,motivo:pico?`x${x.toFixed(1)} y en su máximo`:`x${x.toFixed(1)} sobre coste`};
+  if(pico) return {x,motivo:`en su máximo (x${x.toFixed(1)})`};
+  return null;
+};
 const SECCIONES=[{k:"juegos",l:"Juegos"},{k:"zapatillas",l:"Zapatillas"},{k:"cartas",l:"Cartas"}];
 const seccionDe=cat=>cat==="Zapatillas"?"zapatillas":cat==="Cartas"?"cartas":"juegos";
 // Siempre con punto de miles, tambien en cifras de 4 digitos (es-ES no lo pone por defecto)
@@ -200,6 +218,75 @@ async function saveToSupabase(userId,state){
     await sb.from("gsp_data").upsert({user_id:userId,data:state},{onConflict:"user_id"});
   }catch(e){}
 }
+
+/* ── Guardado protegido ──
+   Cada guardado lleva savedAt. Antes de escribir se mira el savedAt que hay en la nube:
+   si no es el que esta pestana cargo o escribio, otro dispositivo o pestana ha guardado despues
+   y esta copia esta desfasada, asi que NO se escribe y se avisa para recargar. */
+const SYNC={base:null,bloqueo:null,ultimo:"",onBloqueo:null,enCurso:false,pendiente:null};
+const bloquearSync=(motivo)=>{if(SYNC.bloqueo)return;SYNC.bloqueo=motivo;SYNC.onBloqueo&&SYNC.onBloqueo(motivo);};
+async function remotoSavedAt(userId){
+  const {data,error}=await sb.from("gsp_data").select("s:data->>savedAt").eq("user_id",userId).maybeSingle();
+  if(error) throw error;
+  return data?data.s||null:undefined; // undefined = no hay fila todavia
+}
+async function guardar(state,{forzar=false}={}){
+  if(SYNC.bloqueo&&!forzar) return false;
+  if(!state||!state.products) return false;
+  const {savedAt,...limpio}=state;
+  const json=JSON.stringify(limpio);
+  if(json===SYNC.ultimo&&!forzar) return true;
+  if(SYNC.enCurso){SYNC.pendiente=state;return false;}
+  SYNC.enCurso=true;
+  try{
+    let {data:{session}}=await sb.auth.getSession();
+    if(!session||(session.expires_at&&session.expires_at*1000<Date.now()+60000)){
+      const r=await sb.auth.refreshSession();session=r.data.session;
+    }
+    if(!session?.user) return false;
+    const uid=session.user.id;
+    if(!forzar){
+      const rem=await remotoSavedAt(uid);
+      if(rem!==undefined&&rem!==null&&SYNC.base!==null&&rem!==SYNC.base){bloquearSync("otro");return false;}
+      if(rem!==undefined&&rem!==null&&SYNC.base===null){bloquearSync("otro");return false;}
+    }
+    const nuevo=new Date().toISOString();
+    const escribir=async()=>sb.from("gsp_data").upsert({user_id:uid,data:{...limpio,savedAt:nuevo}},{onConflict:"user_id"}).select("user_id");
+    let {data,error}=await escribir();
+    if(error||!data||!data.length){ // token caducado: Supabase devuelve exito con 0 filas
+      await sb.auth.refreshSession();
+      ({data,error}=await escribir());
+      if(error||!data||!data.length) return false;
+    }
+    SYNC.base=nuevo;SYNC.ultimo=json;
+    return true;
+  }catch(e){return false;}
+  finally{
+    SYNC.enCurso=false;
+    if(SYNC.pendiente){const p=SYNC.pendiente;SYNC.pendiente=null;setTimeout(()=>guardar(p),500);}
+  }
+}
+
+/* ── Copias automaticas en este dispositivo (IndexedDB), una por semana, se guardan las 8 ultimas ── */
+const COPIAS={
+  db(){return new Promise((ok,ko)=>{const r=indexedDB.open("gsp_copias",1);r.onupgradeneeded=()=>r.result.createObjectStore("c");r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error);});},
+  async lista(){try{const db=await this.db();return await new Promise(ok=>{const t=db.transaction("c").objectStore("c").getAllKeys();t.onsuccess=()=>ok((t.result||[]).sort().reverse());t.onerror=()=>ok([]);});}catch(e){return [];}},
+  async leer(k){const db=await this.db();return await new Promise((ok,ko)=>{const t=db.transaction("c").objectStore("c").get(k);t.onsuccess=()=>ok(t.result);t.onerror=()=>ko(t.error);});},
+  async guardar(k,v){const db=await this.db();return await new Promise((ok,ko)=>{const t=db.transaction("c","readwrite");t.objectStore("c").put(v,k);t.oncomplete=()=>ok();t.onerror=()=>ko(t.error);});},
+  async borrar(k){const db=await this.db();return await new Promise(ok=>{const t=db.transaction("c","readwrite");t.objectStore("c").delete(k);t.oncomplete=()=>ok();t.onerror=()=>ok();});},
+  async semanal(state){
+    try{
+      if(!state?.products?.length) return;
+      const ks=await this.lista();
+      const sem=ks.filter(k=>/^\d{4}-\d\d-\d\d$/.test(k));
+      const hoy=new Date().toISOString().split("T")[0];
+      if(sem[0]&&(Date.now()-new Date(sem[0]).getTime())<6.5*864e5) return;
+      await this.guardar(hoy,JSON.stringify(state));
+      for(const k of sem.slice(7)) await this.borrar(k);
+      for(const k of ks.filter(k=>!/^\d{4}-\d\d-\d\d$/.test(k)).slice(4)) await this.borrar(k);
+    }catch(e){}
+  },
+};
 
 
 function getInitialState(){
@@ -390,6 +477,14 @@ function reducer(state,action){
       const products=state.products.some(p=>p.id===n.id)?state.products:[...state.products,n];
       next={...state,products,flags:{...(state.flags||{}),ajustes1910n:true}};break;
     }
+    case "SET_HIST":{
+      // Una foto al dia del invertido y valor por seccion
+      const h=[...(state.historial||[])];
+      if(h.length&&h[h.length-1].d===action.payload.d) h[h.length-1]=action.payload; else h.push(action.payload);
+      next={...state,historial:h};break;
+    }
+    case "SET_VENTA_CFG":
+      next={...state,ventaCfg:{...(state.ventaCfg||{}),...action.payload}};break;
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
@@ -939,6 +1034,8 @@ function App(){
   const [q,setQ]=useState("");
   const [priv,setPriv]=useState(true);
   const [capForm,setCapForm]=useState({inicio:"",fecha:"",importe:""});
+  const [copias,setCopias]=useState([]);
+  const [ventaForm,setVentaForm]=useState({comision:12,envio:0});
   const [search,setSearch]=useState("");
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
   const [loadingEbay,setLoadingEbay]=useState(null); // product id being fetched
@@ -1024,6 +1121,8 @@ function App(){
       ing,ben:ing-cv,nVentas:vCat.length};
   }),[state,ventas,seccion]);
 
+  const paraVender=useMemo(()=>prodsS.map(p=>({p,m:momentoVenta(p)})).filter(x=>x.m)
+    .sort((a,b)=>(b.p.valorMercado-b.p.precioCompra)*b.p.stock-(a.p.valorMercado-a.p.precioCompra)*a.p.stock),[state.products,seccion]);
   const oportunidades=useMemo(()=>
     prodsS.filter(p=>p.valorMercado>0&&p.valorMercado>p.precioCompra*1.5&&p.stock>0)
       .sort((a,b)=>(b.valorMercado-b.precioCompra)-(a.valorMercado-a.precioCompra)),
@@ -1071,12 +1170,7 @@ function App(){
 
   /* ── Auto update all prices ── */
   const stateRef=useRef(state); stateRef.current=state;
-  const subirNube=async()=>{
-    try{
-      const {data:{session}}=await sb.auth.refreshSession();
-      if(session?.user) await sb.from("gsp_data").upsert({user_id:session.user.id,data:stateRef.current},{onConflict:"user_id"});
-    }catch(e){}
-  };
+  const subirNube=async()=>{await guardar(stateRef.current);};
   const updateAllPrices=useCallback(async(auto)=>{
     const lista=state.products.filter(p=>p.stock>0&&seccionDe(p.categoria)===seccion&&!(auto===true&&p.valorFuente==="ebay-vendidos-es"));
     if(!lista.length){showToast("No hay productos con stock");return;}
@@ -1179,12 +1273,12 @@ function App(){
         loadFromSupabase(session.user.id).then(remoteData=>{
           if(remoteData&&remoteData.products&&remoteData.products.length>0){
             // Use remote data — save to localStorage and dispatch to state
-            localStorage.setItem(LS_KEY,JSON.stringify(remoteData));
+            SYNC.base=remoteData.savedAt||null;SYNC.ultimo="";localStorage.setItem(LS_KEY,JSON.stringify(remoteData));
             dispatch({type:"LOAD_STATE",payload:remoteData});
           } else {
             // No remote data — upload local if exists
             const local=loadState();
-            if(local&&local.products) saveToSupabase(session.user.id,local);
+            if(local&&local.products) guardar(local,{forzar:true});
           }
           setAuthLoading(false);
         });
@@ -1199,14 +1293,51 @@ function App(){
     return()=>subscription.unsubscribe();
   },[]);
 
-  // Auto-sync to Supabase every 30 seconds if logged in
+  // Guardado en la nube: 3 s despues del ultimo cambio, y solo si esta copia no esta desfasada
+  const [syncBloqueo,setSyncBloqueo]=useState(null);
+  useEffect(()=>{SYNC.onBloqueo=m=>setSyncBloqueo(m);},[]);
+  useEffect(()=>{
+    if(!user||authLoading) return;
+    const t=setTimeout(()=>guardar(state),3000);
+    return()=>clearTimeout(t);
+  },[user,authLoading,state]);
+  // Otra pestana abierta: la nueva avisa y las anteriores dejan de guardar
+  useEffect(()=>{
+    let bc;try{bc=new BroadcastChannel("gsp");}catch(e){return;}
+    const yo=Math.random().toString(36).slice(2);
+    bc.onmessage=ev=>{if(ev.data&&ev.data.t==="hola"&&ev.data.id!==yo) bloquearSync("pestana");};
+    bc.postMessage({t:"hola",id:yo});
+    return()=>bc.close();
+  },[]);
+  // Al volver a la app, comprobar si otro dispositivo ha guardado mientras tanto
   useEffect(()=>{
     if(!user) return;
-    const interval=setInterval(()=>{
-      saveToSupabase(user.id,state);
-    },30000);
-    return()=>clearInterval(interval);
-  },[user,state]);
+    const mirar=async()=>{
+      if(document.visibilityState!=="visible"||SYNC.bloqueo||SYNC.base===null) return;
+      try{const r=await remotoSavedAt(user.id);if(r&&r!==SYNC.base) bloquearSync("otro");}catch(e){}
+    };
+    document.addEventListener("visibilitychange",mirar);
+    return()=>document.removeEventListener("visibilitychange",mirar);
+  },[user]);
+  // Foto diaria del valor por seccion para la grafica de evolucion
+  useEffect(()=>{
+    if(!user||authLoading||!state.products.length) return;
+    const t=setTimeout(()=>{
+      const d=new Date().toISOString().split("T")[0];
+      const tot=totalesSeccion(stateRef.current);
+      const h=stateRef.current.historial||[];
+      const ult=h[h.length-1];
+      if(ult&&ult.d===d&&JSON.stringify({...ult,d:0})===JSON.stringify({...tot,d:0})) return;
+      dispatch({type:"SET_HIST",payload:{d,...tot}});
+    },5000);
+    return()=>clearTimeout(t);
+  },[user,authLoading,state.products,state.pokemon]);
+  // Copia semanal automatica en este dispositivo
+  useEffect(()=>{
+    if(!user||authLoading||!state.products.length) return;
+    const t=setTimeout(()=>COPIAS.semanal(stateRef.current),8000);
+    return()=>clearTimeout(t);
+  },[user,authLoading]);
 
   // Ajuste puntual de datos del 19/10 (Zelda BotW + Expansion a 140 como minimo). No busca precios.
   useEffect(()=>{
@@ -1245,11 +1376,11 @@ function App(){
     setUser(u);
     loadFromSupabase(u.id).then(remoteData=>{
       if(remoteData&&remoteData.products&&remoteData.products.length>0){
-        localStorage.setItem(LS_KEY,JSON.stringify(remoteData));
+        SYNC.base=remoteData.savedAt||null;SYNC.ultimo="";localStorage.setItem(LS_KEY,JSON.stringify(remoteData));
         dispatch({type:"LOAD_STATE",payload:remoteData});
       } else {
         const local=loadState();
-        if(local&&local.products) saveToSupabase(u.id,local);
+        if(local&&local.products) guardar(local,{forzar:true});
       }
     });
   };
@@ -1264,9 +1395,7 @@ function App(){
     dispatch(action);
   },[]);
 
-  useEffect(()=>{
-    if(user) saveToSupabase(user.id,state);
-  },[state]);
+  // (el guardado continuo va por guardar(), arriba)
 
   /* ── Handlers ── */
   const saveP=()=>{
@@ -1320,7 +1449,7 @@ function App(){
           if(!data.products||!data.movements) throw new Error("Formato inválido");
                     localStorage.setItem("gsp_v3",JSON.stringify(data));
           showToast("✓ Backup restaurado — subiendo a la nube…","var(--accent2)");
-          if(user){saveToSupabase(user.id,data).then(()=>window.location.reload());}
+          if(user){guardar(data,{forzar:true}).then(()=>window.location.reload());}
           else{setTimeout(()=>window.location.reload(),1500);}
               }catch(err){showToast("Error al importar backup","var(--red)");}
       };
@@ -1375,7 +1504,7 @@ function App(){
             <button onClick={()=>{
               if(screen==="producto"||screen==="categoria"||screen==="grupo"){setTab("stock");go("stock");}
               else if(screen==="reservaDetalle"){setTab("reservas");go("reservas");}
-              else if(screen==="oportunidades"||screen==="ventas"||screen==="ventaDetalle"){setTab("home");go("home");}
+              else if(screen==="oportunidades"||screen==="vender"||screen==="ventas"||screen==="ventaDetalle"){setTab("home");go("home");}
               else {setTab("home");go("home");}
             }} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:13,fontWeight:600,color:"var(--text)",display:"flex",alignItems:"center",gap:4}}>← Atrás</button>
           }
@@ -1400,8 +1529,17 @@ function App(){
 
       <div style={{padding:"14px 14px 8px",maxWidth:640,margin:"0 auto"}}>
 
+        {/* ── Aviso: esta copia esta desfasada y ya no guarda ── */}
+        {syncBloqueo&&<div style={{...S.card,background:"var(--red2)",border:"1px solid #fca5a5",padding:"12px 14px",marginBottom:12}}>
+          <div style={{fontWeight:800,fontSize:13.5,color:"var(--red)"}}>Esta pantalla ya no guarda</div>
+          <div style={{fontSize:12.5,color:"var(--text2)",marginTop:4,lineHeight:1.45}}>
+            {syncBloqueo==="pestana"?"La app se ha abierto en otra pestaña. Para no pisar sus cambios, esta deja de guardar.":"Se han guardado cambios desde otro dispositivo o pestaña. Para no borrarlos, esta deja de guardar."} Recarga para seguir con los datos al día.
+          </div>
+          <button onClick={()=>window.location.reload()} style={{marginTop:9,background:"var(--red)",color:"#fff",border:"none",borderRadius:9,padding:"8px 14px",fontWeight:700,fontSize:13,cursor:"pointer"}}>Recargar</button>
+        </div>}
+
         {/* ── Selector de seccion ── */}
-        {(screen==="home"||screen==="stock"||screen==="ventas"||screen==="oportunidades")&&
+        {(screen==="home"||screen==="stock"||screen==="ventas"||screen==="oportunidades"||screen==="vender")&&
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:4,background:"var(--bg3)",borderRadius:12,padding:4,marginBottom:12}}>
             {SECCIONES.map(x=>(
               <button key={x.k} onClick={()=>setSeccion(x.k)} style={{border:"none",borderRadius:9,padding:"8px 0",cursor:"pointer",fontSize:13,fontWeight:700,
@@ -1459,6 +1597,52 @@ function App(){
             </div>
             {kpi.ret>0&&!priv&&<div style={{fontSize:11,color:"var(--text3)",marginTop:7}}>Incluye {fmt(kpi.ret)} € que has sacado</div>}
           </button>
+
+          {/* Evolucion del valor de la seccion */}
+          {(()=>{
+            const h=(state.historial||[]).filter(e=>e[seccion]).map(e=>({d:e.d,inv:e[seccion][0],vm:e[seccion][1]}));
+            const W=320,Hh=110,pad=6;
+            const ult=h[h.length-1], pri=h[0];
+            const dif=ult&&pri?ult.vm-pri.vm:0;
+            let svg=null;
+            if(h.length>=2){
+              const xs=i=>pad+i*(W-2*pad)/(h.length-1);
+              const max=Math.max(...h.map(e=>Math.max(e.vm,e.inv))),min=Math.min(...h.map(e=>Math.min(e.vm,e.inv)));
+              const ys=v=>Hh-pad-(max===min?0.5:(v-min)/(max-min))*(Hh-2*pad);
+              const linea=k=>h.map((e,i)=>`${i?"L":"M"}${xs(i).toFixed(1)},${ys(e[k]).toFixed(1)}`).join(" ");
+              svg=(<svg viewBox={`0 0 ${W} ${Hh}`} style={{width:"100%",height:110,display:"block"}}>
+                <path d={linea("vm")+` L${xs(h.length-1)},${Hh} L${xs(0)},${Hh} Z`} fill="var(--accent3)" opacity=".6"/>
+                <path d={linea("vm")} fill="none" stroke="var(--accent2)" strokeWidth="2.2" strokeLinejoin="round"/>
+                <path d={linea("inv")} fill="none" stroke="var(--text3)" strokeWidth="1.4" strokeDasharray="4 4"/>
+              </svg>);
+            }
+            return(
+            <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+                <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Evolución del valor</div>
+                {h.length>=2&&!priv&&<div style={{fontSize:12,fontWeight:700,color:dif>=0?"var(--green)":"var(--red)"}}>{dif>=0?"+":""}{fmt(dif)} € desde {pri.d.split("-").reverse().slice(0,2).join("/")}</div>}
+              </div>
+              {svg?<div style={{marginTop:8}}>{priv?<div style={{height:110,display:"grid",placeContent:"center",color:"var(--text3)",fontSize:12}}>Oculto</div>:svg}</div>
+                :<div style={{fontSize:12.5,color:"var(--text3)",marginTop:8,lineHeight:1.45}}>La app guarda una foto del valor cada día. En cuanto haya dos días verás aquí cómo crece.</div>}
+              {svg&&!priv&&<div style={{display:"flex",gap:14,marginTop:6,fontSize:11,color:"var(--text3)"}}>
+                <span><span style={{display:"inline-block",width:12,height:3,background:"var(--accent2)",verticalAlign:"middle",marginRight:5,borderRadius:2}}/>Valor</span>
+                <span><span style={{display:"inline-block",width:12,borderTop:"2px dashed var(--text3)",verticalAlign:"middle",marginRight:5}}/>Invertido</span>
+              </div>}
+            </div>);
+          })()}
+
+          {/* Buen momento para vender */}
+          {paraVender.length>0&&<button onClick={()=>go("vender")} style={{...S.card,width:"100%",textAlign:"left",padding:"14px 16px",marginBottom:10,cursor:"pointer",color:"var(--text)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+              <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Buen momento para vender</div>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>{paraVender.length} →</span>
+            </div>
+            {paraVender.slice(0,3).map(({p,m})=>(
+              <div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:10,marginTop:8,fontSize:12.5}}>
+                <span style={{flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:600}}>{p.nombre}</span>
+                <span style={{flex:"none",color:"var(--green)",fontWeight:700}}>{m.motivo}</span>
+              </div>))}
+          </button>}
 
           {/* Próximos lanzamientos (solo juegos) */}
           {seccion==="juegos"&&reservasActivas.length>0&&<>
@@ -1719,6 +1903,7 @@ function App(){
             <button onClick={exportJSON} style={{background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>Backup JSON</button>
             <button onClick={importJSON} style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)"}}>Restaurar</button>
           </div>
+          <button onClick={async()=>{setCopias(await COPIAS.lista());setModal("copias");}} style={{width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:10}}>Copias automáticas</button>
           <button onClick={updateAllCovers} disabled={!!coverProgress} style={{width:"100%",background:coverProgress?"var(--yellow2)":"var(--bg3)",border:"1px solid #fcd34d",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--yellow)",marginBottom:10}}>
             Buscar portadas automáticamente ({state.products.filter(p=>!p.cover&&p.stock>0&&seccionDe(p.categoria)==="juegos").length} sin portada)
           </button>
@@ -1955,6 +2140,46 @@ function App(){
                 )}
               </div>
 
+              {/* Si lo vendes hoy */}
+              {(()=>{
+                const cfgV={comision:12,envio:0,...(state.ventaCfg||{})};
+                const pv=p.valorMercado||0;
+                if(!(pv>0)) return null;
+                const com=pv*cfgV.comision/100, neto=pv-com-cfgV.envio, gan=neto-p.precioCompra;
+                const mv=momentoVenta(p);
+                return(
+                <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{fontWeight:700,fontSize:13}}>Si lo vendes a su valor</span>
+                    <button onClick={()=>{setVentaForm({comision:cfgV.comision,envio:cfgV.envio});setModal("ventaCfg");}} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,fontWeight:700,cursor:"pointer"}}>Ajustar</button>
+                  </div>
+                  {mv&&<div style={{display:"inline-block",marginTop:8,background:"#dcfce7",color:"var(--green)",fontWeight:700,fontSize:11.5,padding:"4px 9px",borderRadius:999}}>Buen momento para vender · {mv.motivo}</div>}
+                  <div style={{marginTop:10,fontSize:13,lineHeight:1.9}}>
+                    <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"var(--text2)"}}>Precio de venta</span><b>{H(`${fmt(pv)} €`)}</b></div>
+                    <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"var(--text2)"}}>Comisión ({cfgV.comision} %)</span><span>{H(`−${fmt(com)} €`)}</span></div>
+                    {cfgV.envio>0&&<div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"var(--text2)"}}>Envío que pagas tú</span><span>{H(`−${fmt(cfgV.envio)} €`)}</span></div>}
+                    <div style={{display:"flex",justifyContent:"space-between",borderTop:"1px solid var(--border)",marginTop:4,paddingTop:4}}><span style={{color:"var(--text2)"}}>Te quedan</span><b>{H(`${fmt(neto)} €`)}</b></div>
+                    <div style={{display:"flex",justifyContent:"space-between"}}><span style={{color:"var(--text2)"}}>Ganas por unidad</span><b style={{color:gan>=0?"var(--green)":"var(--red)"}}>{H(`${gan>=0?"+":""}${fmt(gan)} €`)}{!priv&&p.precioCompra>0?` (${gan>=0?"+":""}${(gan/p.precioCompra*100).toFixed(0)} %)`:""}</b></div>
+                  </div>
+                </div>);
+              })()}
+
+              {/* Zapatillas: no hay fuente automatica, accesos directos para mirar el precio */}
+              {p.categoria==="Zapatillas"&&(()=>{
+                const q=encodeURIComponent(p.nombre.replace(/\s+T\d+(\.\d)?.*$/,"").replace(/[–—]/g," ").trim());
+                const b={flex:1,textAlign:"center",textDecoration:"none",background:"var(--bg3)",borderRadius:9,padding:"9px 0",fontSize:12.5,fontWeight:700,color:"var(--text)"};
+                return(
+                <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:4}}>Precio de mercado</div>
+                  <div style={{fontSize:12,color:"var(--text3)",lineHeight:1.45,marginBottom:10}}>Para zapatillas no hay precio automático. Mira tu talla en estas webs y apunta el valor con el lápiz.</div>
+                  <div style={{display:"flex",gap:8}}>
+                    <a href={`https://stockx.com/es-es/search?s=${q}`} target="_blank" rel="noopener" style={b}>StockX</a>
+                    <a href={`https://www.laced.com/search?search%5Bterm%5D=${q}`} target="_blank" rel="noopener" style={b}>Laced</a>
+                    <a href={`https://www.ebay.es/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1`} target="_blank" rel="noopener" style={b}>eBay vendidos</a>
+                  </div>
+                </div>);
+              })()}
+
               {/* eBay precio */}
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
@@ -2139,6 +2364,27 @@ function App(){
         )}
 
         {/* ══════════════════════════ OPORTUNIDADES ═════════════════════ */}
+        {screen==="vender"&&(
+          <div>
+            <div style={{fontFamily:"var(--display)",fontSize:15,margin:"2px 2px 4px"}}>Buen momento para vender</div>
+            <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Productos que valen 3 veces o más lo que te costaron, o que están en el precio más alto que ha registrado la app.</div>
+            <div style={{...S.card,overflow:"hidden"}}>
+              {paraVender.map(({p,m})=>(
+                <button key={p.id} onClick={()=>go("producto",p)} style={{...S.row}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
+                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{p.categoria} · {p.stock} uds · {m.motivo}</div>
+                  </div>
+                  <div style={{textAlign:"right",flex:"none"}}>
+                    <div style={{fontFamily:"var(--display)",fontSize:13}}>{H(`${fmt(p.valorMercado)} €`)}</div>
+                    <div style={{fontSize:11,color:"var(--green)",fontWeight:700}}>{H(`+${fmt((p.valorMercado-p.precioCompra)*p.stock)} €`)}</div>
+                  </div>
+                </button>))}
+              {paraVender.length===0&&<div style={{padding:30,textAlign:"center",color:"var(--text3)",fontSize:13}}>Nada ahora mismo</div>}
+            </div>
+          </div>
+        )}
+
         {screen==="oportunidades"&&(
           <div>
             <div style={{...S.card,padding:"12px 16px",marginBottom:10,background:"var(--bg3)",border:"1px solid #fcd34d"}}>
@@ -2438,6 +2684,36 @@ function App(){
         <Field label="Plataforma / nota"><input type="text" value={movForm.nota} onChange={e=>setMovForm({...movForm,nota:e.target.value})} placeholder="eBay, Wallapop…" style={S.inp()}/></Field>
         <Field label="Fecha de venta"><input type="date" value={movForm.fecha||today} onChange={e=>setMovForm({...movForm,fecha:e.target.value})} style={S.inp()}/></Field>
         <Btns onCancel={()=>setModal(null)} onSave={saveMov} saveLabel="Registrar" saveColor="var(--green)"/>
+      </Sheet>}
+
+      {modal==="ventaCfg"&&<Sheet onClose={()=>setModal(null)} title="Cálculo de venta">
+        <div style={{fontSize:12.5,color:"var(--text2)",lineHeight:1.45,marginBottom:12}}>Se aplica a todas las fichas. La comisión por defecto es el 12 %, la que te cobró eBay en tus ventas registradas.</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
+          <Field label="Comisión (%)"><input type="number" min={0} step={0.1} value={ventaForm.comision} onChange={e=>setVentaForm({...ventaForm,comision:e.target.value})} style={S.inp()}/></Field>
+          <Field label="Envío que pagas (€)"><input type="number" min={0} step={0.01} value={ventaForm.envio} onChange={e=>setVentaForm({...ventaForm,envio:e.target.value})} style={S.inp()}/></Field>
+        </div>
+        <Btns onCancel={()=>setModal(null)} onSave={()=>{dispatch({type:"SET_VENTA_CFG",payload:{comision:+ventaForm.comision||0,envio:+ventaForm.envio||0}});setModal(null);}}/>
+      </Sheet>}
+
+      {modal==="copias"&&<Sheet onClose={()=>setModal(null)} title="Copias automáticas">
+        <div style={{fontSize:12.5,color:"var(--text2)",lineHeight:1.45,marginBottom:12}}>
+          Cada semana la app guarda una copia de todo en este dispositivo y conserva las 8 últimas. Si algo se rompe, puedes volver a una de ellas.
+        </div>
+        {copias.length===0&&<div style={{fontSize:13,color:"var(--text3)",padding:"8px 0"}}>Todavía no hay ninguna. La primera se hace sola al abrir la app.</div>}
+        {copias.map(k=>(
+          <div key={k} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:"1px solid var(--border)"}}>
+            <span style={{flex:1,fontSize:13.5,fontWeight:600}}>{k}</span>
+            <button onClick={async()=>{
+              if(!window.confirm(`¿Volver a la copia del ${k}? Se perderá lo que hayas cambiado después.`)) return;
+              try{const data=JSON.parse(await COPIAS.leer(k));
+                await COPIAS.guardar(new Date().toISOString().split("T")[0]+" (antes de restaurar)",JSON.stringify(stateRef.current));
+                localStorage.setItem(LS_KEY,JSON.stringify(data));
+                if(user) await guardar(data,{forzar:true});
+                window.location.reload();
+              }catch(e){showToast("No se pudo restaurar","var(--red)");}
+            }} style={{background:"var(--accent3)",border:"none",borderRadius:8,padding:"6px 11px",color:"var(--accent2)",fontWeight:700,fontSize:12,cursor:"pointer"}}>Restaurar</button>
+          </div>))}
+        <Btns onCancel={()=>setModal(null)} onSave={async()=>{await COPIAS.guardar(new Date().toISOString().split("T")[0]+" (manual)",JSON.stringify(stateRef.current));setCopias(await COPIAS.lista());showToast("Copia hecha");}} saveLabel="Hacer copia ahora"/>
       </Sheet>}
 
       {modal==="capital"&&<Sheet onClose={()=>setModal(null)} title="Tu dinero en el negocio">
