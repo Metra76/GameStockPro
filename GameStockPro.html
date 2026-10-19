@@ -131,6 +131,7 @@ const FUENTE=p=>{
   if(p.valorFuente==="ebay-pocos") return {t:`eBay · solo ${n} anuncio${n===1?"":"s"}`,c:"var(--yellow)"};
   if(p.valorFuente==="ebay-vendidos-es") return {t:"eBay vendidos",c:"var(--green)"};
   if(p.valorFuente==="ebay-usado") return {t:"precio de usado",c:"var(--yellow)"};
+  if(p.valorFuente==="stockx") return {t:"StockX · media 3 meses",c:"var(--green)"};
   return {t:"puesto a mano",c:"var(--text3)"};
 };
 const today=new Date().toISOString().split("T")[0];
@@ -485,6 +486,13 @@ function reducer(state,action){
     }
     case "SET_VENTA_CFG":
       next={...state,ventaCfg:{...(state.ventaCfg||{}),...action.payload}};break;
+    case "AJUSTES_1910O":{
+      // Zapatillas: media de venta de 3 meses en StockX (19/10), dolares pasados a euros a 0,86
+      const ts=new Date().toISOString().split("T")[0];
+      const v={308:244,309:611,313:328,322:244,334:268,333:246,335:323,336:267,331:105,332:93};
+      const products=state.products.map(p=>v[p.id]&&p.categoria==="Zapatillas"?{...p,valorMercado:v[p.id],valorFuente:"stockx",valorFecha:ts}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1910o:true}};break;
+    }
     case "SET_CAPITAL":
       next={...state,capital:{...(state.capital||{}),...action.payload}};break;
     case "LOAD_STATE":
@@ -1357,6 +1365,7 @@ function App(){
     if(!f.ajustes1910l){dispatch({type:"AJUSTES_1910L"});setTimeout(()=>subirNube(),4800);}
     if(!f.ajustes1910m){dispatch({type:"AJUSTES_1910M"});setTimeout(()=>subirNube(),5200);}
     if(!f.ajustes1910n){dispatch({type:"AJUSTES_1910N"});setTimeout(()=>subirNube(),5600);}
+    if(!f.ajustes1910o){dispatch({type:"AJUSTES_1910O"});setTimeout(()=>subirNube(),6000);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
