@@ -877,7 +877,7 @@ function App(){
   const [radarSettings,setRadarSettings]=useState(false);
 
   const H=v=>priv?HIDDEN:v;
-  const go=(screen,data=null)=>{setSearch("");setNav({screen,data});};
+  const go=(screen,data=null)=>{setSearch("");setNav({screen,data});try{window.scrollTo(0,0);}catch(e){}};
   const showToast=(msg,c="var(--green)")=>{setToast({msg,c});setTimeout(()=>setToast(null),2800);};
 
   /* Sync tab with screen */
@@ -1344,7 +1344,7 @@ function App(){
               {l:"ROI ventas",v:H(`${fmt(kpi.roi)}%`),c:kpi.roi>=0?"var(--green)":"var(--red)",nav:"ventas"},
               {l:"Multiplicador",v:H(`×${kpi.inv>0?(kpi.vm/kpi.inv).toFixed(2):"∞"}`),c:"var(--yellow)",nav:"oportunidades"},
             ].map((k,i)=>(
-              <button key={i} onClick={()=>go(k.nav)} style={{...S.card,flex:"none",minWidth:112,padding:"10px 13px",cursor:"pointer",textAlign:"left"}}>
+              <button key={i} onClick={()=>{if(k.nav==="ventas") setVentasMes(null);go(k.nav);}} style={{...S.card,flex:"none",minWidth:112,padding:"10px 13px",cursor:"pointer",textAlign:"left"}}>
                 <div style={{fontSize:10,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"var(--text3)"}}>{k.l}</div>
                 <div style={{fontFamily:"var(--display)",fontSize:16,letterSpacing:-.4,marginTop:3,color:k.c}}>{k.v}</div>
               </button>
@@ -1439,7 +1439,7 @@ function App(){
                       const isBest=i===best&&v>0;
                       const label=MESES[parseInt(mes.slice(5))-1]+" "+mes.slice(2,4);
                       return(
-                        <button key={mes} onClick={()=>{setVentasMes(ventasMes===mes?null:mes);go("ventas");}} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:barW,background:"none",border:"none",cursor:"pointer",padding:0,opacity:ventasMes&&ventasMes!==mes?0.4:1,transition:"opacity .2s"}}>
+                        <button key={mes} onClick={()=>{setVentasMes(mes);go("ventas");}} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:barW,background:"none",border:"none",cursor:"pointer",padding:0,opacity:ventasMes&&ventasMes!==mes?0.4:1,transition:"opacity .2s"}}>
                           {isBest&&<div style={{fontSize:8,color:"var(--accent2)",fontWeight:800,marginBottom:2}}>▲</div>}
                           {!isBest&&<div style={{height:14}}/>}
                           <div style={{
@@ -1963,19 +1963,39 @@ function App(){
         {/* ══════════════════════════ VENTAS ════════════════════════════ */}
         {screen==="ventas"&&(
           <div>
-            {/* Resumen */}
-            {!priv&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-              {[{l:"Ingresos totales",v:`${fmt(kpi.ing)} €`,c:"var(--blue)"},{l:"Beneficio",v:`${kpi.ben>=0?"+":""}${fmt(kpi.ben)} €`,c:kpi.ben>=0?"var(--green)":"var(--red)"}].map((k,i)=>(
-                <div key={i} style={{...S.card,padding:"14px"}}>
-                  <div style={{fontSize:10,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>{k.l}</div>
-                  <div style={{fontSize:17,fontWeight:800,color:k.c}}>{k.v}</div>
+            {/* Resumen: del mes elegido en la grafica, o de todo si no hay filtro */}
+            {(()=>{
+              const lista=ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes):ventas;
+              const costeDe=m=>m.historico?(m.coste||0):((state.products.find(p=>p.id===m.productoId)||{}).precioCompra||0);
+              const ing=lista.reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
+              const cos=lista.reduce((a,m)=>a+costeDe(m)*m.cantidad,0);
+              const fee=lista.reduce((a,m)=>a+(m.ebayFee||0),0);
+              const ben=ing-cos-fee, uds=lista.reduce((a,m)=>a+m.cantidad,0);
+              const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+              const titulo=ventasMes?`${MESES[+ventasMes.slice(5,7)-1]} ${ventasMes.slice(0,4)}`:"Todas las ventas";
+              const tiles=[
+                {l:"Ingresos",v:H(`${fmt(ing)} €`),c:"var(--blue)"},
+                {l:"Beneficio",v:H(`${ben>=0?"+":""}${fmt(ben)} €`),c:ben>=0?"var(--green)":"var(--red)"},
+                {l:"Coste de lo vendido",v:H(`${fmt(cos)} €`),c:"var(--text)"},
+                {l:"Comisiones",v:H(`${fmt(fee)} €`),c:"var(--text)"},
+                {l:"Unidades",v:`${uds}`,c:"var(--text)"},
+                {l:"Rentabilidad",v:H(cos>0?`${ben>=0?"+":""}${(ben/cos*100).toFixed(0)} %`:"—"),c:ben>=0?"var(--green)":"var(--red)"},
+              ];
+              return(<>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"2px 2px 8px"}}>
+                  <span style={{fontFamily:"var(--display)",fontSize:15,textTransform:"capitalize"}}>{titulo}</span>
+                  {ventasMes&&<button onClick={()=>setVentasMes(null)} style={{background:"var(--accent3)",border:"none",borderRadius:999,padding:"5px 11px",color:"var(--accent2)",cursor:"pointer",fontSize:12,fontWeight:700}}>Ver todas</button>}
                 </div>
-              ))}
-            </div>}
-            {ventasMes&&<div style={{...S.card,padding:"10px 14px",marginBottom:8,background:"var(--accent3)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>Filtrando: {ventasMes}</span>
-              <button onClick={()=>setVentasMes(null)} style={{background:"none",border:"none",color:"var(--accent2)",cursor:"pointer",fontSize:12,fontWeight:700}}>✕ Quitar filtro</button>
-            </div>}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
+                  {tiles.map((k,i)=>(
+                    <div key={i} style={{...S.card,padding:"11px 12px"}}>
+                      <div style={{fontSize:9.5,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.4,marginBottom:4}}>{k.l}</div>
+                      <div style={{fontSize:15,fontWeight:800,color:k.c}}>{k.v}</div>
+                    </div>
+                  ))}
+                </div>
+              </>);
+            })()}
             <div style={{...S.card,overflow:"hidden"}}>
               <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <span style={{fontFamily:"var(--display)",fontSize:13}}>{ventasMes?`Ventas de ${ventasMes}`:"Todas las ventas"} ({ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes).length:ventas.length})</span>
