@@ -441,6 +441,12 @@ function reducer(state,action){
       next={...state,resumenVisto:action.payload};break;
     case "SET_VENTA_CFG":
       next={...state,ventaCfg:{...(state.ventaCfg||{}),...action.payload}};break;
+    case "AJUSTES_2010F":{
+      // Valor Mortis: ventas eBay 12-18/10, nuevo precintado, precio + envio
+      const ts=new Date().toISOString().split("T")[0];
+      const products=state.products.map(p=>p.id===1760900000061?{...p,valorMercado:76,valorFuente:"ebay-vendidos-es",valorFecha:ts,priceHistory:[...(p.priceHistory||[]),{date:ts,price:76}]}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes2010f:true}};break;
+    }
     case "AJUSTES_2010E":{
       // Alta de Valor Mortis PS5 comprado a 35,95 el 20/10
       const ts=new Date().toISOString().split("T")[0];
@@ -1495,6 +1501,7 @@ function App(){
     if(!f.ajustes2010c){dispatch({type:"AJUSTES_2010C"});setTimeout(()=>subirNube(),7600);}
     if(!f.ajustes2010d){dispatch({type:"AJUSTES_2010D"});setTimeout(()=>subirNube(),8000);}
     if(!f.ajustes2010e){dispatch({type:"AJUSTES_2010E"});setTimeout(()=>subirNube(),8400);}
+    if(!f.ajustes2010f){dispatch({type:"AJUSTES_2010F"});setTimeout(()=>subirNube(),8800);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
