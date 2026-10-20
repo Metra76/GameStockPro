@@ -441,6 +441,13 @@ function reducer(state,action){
       next={...state,resumenVisto:action.payload};break;
     case "SET_VENTA_CFG":
       next={...state,ventaCfg:{...(state.ventaCfg||{}),...action.payload}};break;
+    case "AJUSTES_2010B":{
+      // Valores segun ventas reales de eBay (vendidos, precio + envio) del 20/10. Lumiere y Game & Watch no se tocan
+      const ts=new Date().toISOString().split("T")[0];
+      const v={2:242,340:110,39:222,4:241,263:95,280:392,42:380,55:189,262:175,297:164,192:152,61:111,36:100,86:94,217:97,38:137,106:127,337:152,271:95,77:103,248:101,148:75,10:80,168:87,27:65,245:46,200:135,112:131,54:74,258:78,229:48,94:149,150:119};
+      const products=state.products.map(p=>v[p.id]?{...p,valorMercado:v[p.id],valorFuente:"ebay-vendidos-es",valorFecha:ts,priceHistory:[...(p.priceHistory||[]),{date:ts,price:v[p.id]}]}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes2010b:true}};break;
+    }
     case "AJUSTES_2010A":{
       // Ventas eBay del Castlevania: Chipre (Switch) y Mexico (PS5). Comision = tarifas eBay + envio que paga Juan
       const nuevas=[
@@ -1391,6 +1398,7 @@ function App(){
     if(!f.ajustes1910o){dispatch({type:"AJUSTES_1910O"});setTimeout(()=>subirNube(),6000);}
     if(!f.ajustes1910p){dispatch({type:"AJUSTES_1910P"});setTimeout(()=>subirNube(),6400);}
     if(!f.ajustes2010a){dispatch({type:"AJUSTES_2010A"});setTimeout(()=>subirNube(),6800);}
+    if(!f.ajustes2010b){dispatch({type:"AJUSTES_2010B"});setTimeout(()=>subirNube(),7200);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
