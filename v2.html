@@ -441,6 +441,14 @@ function reducer(state,action){
       next={...state,resumenVisto:action.payload};break;
     case "SET_VENTA_CFG":
       next={...state,ventaCfg:{...(state.ventaCfg||{}),...action.payload}};break;
+    case "AJUSTES_2010A":{
+      // Ventas eBay del Castlevania: Chipre (Switch) y Mexico (PS5). Comision = tarifas eBay + envio que paga Juan
+      const nuevas=[
+        {id:1760900000101,tipo:"Venta",historico:true,productoId:null,nombreProducto:"Castlevania Belmont's Curse – Midnight Edition (Steelbook) – Switch",categoriaVenta:"Switch",coste:39.9,cantidad:1,precioVenta:179,ebayFee:37.87,fecha:"2026-10-02",nota:"eBay · Chipre · tarifas 21,69 + envío 16,18"},
+        {id:1760900000102,tipo:"Venta",historico:true,productoId:null,nombreProducto:"Castlevania Belmont's Curse – Midnight Edition (Steelbook) – PS5",categoriaVenta:"PS5",coste:39.9,cantidad:1,precioVenta:164,ebayFee:53.45,fecha:"2026-09-26",nota:"eBay · México · tarifas 26,45 + envío 27"}];
+      const movements=[...state.movements.filter(m=>!nuevas.some(n=>n.id===m.id)),...nuevas];
+      next={...state,movements,flags:{...(state.flags||{}),ajustes2010a:true}};break;
+    }
     case "AJUSTES_1910O":{
       // Zapatillas: media de venta de 3 meses en StockX (19/10), dolares pasados a euros a 0,86
       const ts=new Date().toISOString().split("T")[0];
@@ -1382,6 +1390,7 @@ function App(){
     if(!f.ajustes1910n){dispatch({type:"AJUSTES_1910N"});setTimeout(()=>subirNube(),5600);}
     if(!f.ajustes1910o){dispatch({type:"AJUSTES_1910O"});setTimeout(()=>subirNube(),6000);}
     if(!f.ajustes1910p){dispatch({type:"AJUSTES_1910P"});setTimeout(()=>subirNube(),6400);}
+    if(!f.ajustes2010a){dispatch({type:"AJUSTES_2010A"});setTimeout(()=>subirNube(),6800);}
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
