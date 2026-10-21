@@ -1034,59 +1034,64 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
 
 /* ═══════════════════════ MAIN APP ═════════════════════════════════════ */
 function MapaEnvios({envios,fmt,H}){
-  const [geo,setGeo]=useState(null);
+  const caja=useRef(null), mapa=useRef(null);
   const [err,setErr]=useState(false);
-  const [vista,setVista]=useState("mundo");
   const [sel,setSel]=useState(null);
+  const [capa,setCapa]=useState("relieve");
+  const porPais=useMemo(()=>{const m={};envios.forEach(e=>{const k=e.pais;(m[k]=m[k]||{pais:k,n:0,tot:0});m[k].n++;m[k].tot+=e.total||0;});return Object.values(m).sort((a,b)=>b.n-a.n||b.tot-a.tot);},[envios]);
+  const porCiudad=useMemo(()=>{const m={};envios.forEach(e=>{const k=e.ciudad+"|"+e.pais;(m[k]=m[k]||{k,ciudad:e.ciudad,pais:e.pais,lat:e.lat,lon:e.lon,items:[]}).items.push(e);});return Object.values(m);},[envios]);
   useEffect(()=>{
     let vivo=true;
     const cargar=async()=>{
       try{
-        if(!window.topojson){await new Promise((ok,ko)=>{const sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js";sc.onload=ok;sc.onerror=ko;document.head.appendChild(sc);});}
-        const w=await (await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json")).json();
-        if(vivo) setGeo(window.topojson.feature(w,w.objects.countries).features);
+        if(!window.L){
+          const css=document.createElement("link");css.rel="stylesheet";css.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";document.head.appendChild(css);const st=document.createElement("style");st.textContent=".leaflet-interactive:focus{outline:none}";document.head.appendChild(st);
+          await new Promise((ok,ko)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";sc.onload=ok;sc.onerror=ko;document.head.appendChild(sc);});
+        }
+        if(!vivo||!caja.current||mapa.current) return;
+        const L=window.L;
+        const m=L.map(caja.current,{zoomControl:true,attributionControl:true,worldCopyJump:true,minZoom:1,maxZoom:18}).setView([30,10],1);
+        const at="Tiles &copy; Esri";
+        const relieve=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:8,maxZoom:18,attribution:at});
+        const sat=L.layerGroup([
+          L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,attribution:at}),
+          L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:18})]);
+        relieve.addTo(m);
+        const ajustar=()=>{const z=m.getZoom();if(z>=6){if(m.hasLayer(relieve)){m.removeLayer(relieve);sat.addTo(m);setCapa("satelite");}}else{if(m.hasLayer(sat)){m.removeLayer(sat);relieve.addTo(m);setCapa("relieve");}}};
+        m.on("zoomend",ajustar);
+        const maxN=Math.max(1,...porCiudad.map(c=>c.items.length));
+        L.circleMarker([41.45,2.25],{radius:6,color:"#fff",weight:2,fillColor:"#111",fillOpacity:1}).addTo(m).bindTooltip("Badalona");
+        porCiudad.forEach(c=>{
+          const mk=L.circleMarker([c.lat,c.lon],{radius:5+6*Math.sqrt(c.items.length/maxN),color:"#fff",weight:1.5,fillColor:"#f97316",fillOpacity:.9}).addTo(m);
+          mk.bindTooltip(`${c.ciudad} · ${c.items.length}`);
+          mk.on("click",()=>{setSel(c);m.flyTo([c.lat,c.lon],Math.max(m.getZoom(),9),{duration:1.2});});
+        });
+        const b=L.latLngBounds(porCiudad.map(c=>[c.lat,c.lon]));if(b.isValid()) m.fitBounds(b,{padding:[18,18]});
+        mapa.current=m;setTimeout(()=>m.invalidateSize(),200);
       }catch(e){if(vivo)setErr(true);}
     };
-    cargar();return()=>{vivo=false;};
-  },[]);
-  const W=1000,H0=372,LAT0=78,LAT1=-56;
-  const X=lon=>(lon+180)/360*W, Y=lat=>(LAT0-lat)/(LAT0-LAT1)*H0;
-  const ring=r=>{let d="",prev=null;r.forEach(([lo,la],i)=>{const x=X(lo),y=Y(Math.max(LAT1,Math.min(LAT0,la)));d+=(i===0||(prev!==null&&Math.abs(lo-prev)>180)?"M":"L")+x.toFixed(1)+","+y.toFixed(1);prev=lo;});return d+"Z";};
-  const pathDe=g=>!g?"":g.type==="Polygon"?g.coordinates.map(ring).join(""):g.type==="MultiPolygon"?g.coordinates.map(pl=>pl.map(ring).join("")).join(""):"";
-  const ALIAS={"United States":"United States of America"};
-  const porPais=useMemo(()=>{const m={};envios.forEach(e=>{const k=e.pais;(m[k]=m[k]||{pais:k,en:ALIAS[e.pais_en]||e.pais_en,n:0,tot:0});m[k].n++;m[k].tot+=e.total||0;});return Object.values(m).sort((a,b)=>b.n-a.n||b.tot-a.tot);},[envios]);
-  const paisesEn=useMemo(()=>new Set(porPais.map(x=>x.en)),[porPais]);
-  const porCiudad=useMemo(()=>{const m={};envios.forEach(e=>{const k=e.ciudad+"|"+e.pais;(m[k]=m[k]||{k,ciudad:e.ciudad,pais:e.pais,lat:e.lat,lon:e.lon,items:[]}).items.push(e);});return Object.values(m);},[envios]);
-  const maxN=Math.max(1,...porCiudad.map(c=>c.items.length));
-  const vb=vista==="europa"?`${X(-26)} ${Y(62)} ${X(46)-X(-26)} ${Y(26)-Y(62)}`:`0 0 ${W} ${H0}`;
-  const esc=vista==="europa"?0.32:1;
+    cargar();
+    return()=>{vivo=false;if(mapa.current){mapa.current.remove();mapa.current=null;}};
+  },[porCiudad]);
+  const ir=(ll,z)=>{if(mapa.current){setSel(null);mapa.current.flyTo(ll,z,{duration:1});}};
   const total=envios.reduce((a,e)=>a+(e.total||0),0);
   const lejos=[...porCiudad].sort((a,b)=>{const d=c=>Math.hypot(c.lat-41.45,(c.lon-2.25)*Math.cos(41.45*Math.PI/180));return d(b)-d(a);})[0];
   return(<div className="fade-in">
     <div style={{fontFamily:"var(--display)",fontSize:15,margin:"2px 2px 4px"}}>Mapa de envíos</div>
-    <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Ventas de eBay enviadas desde Badalona. Toca un punto para ver qué se vendió allí.</div>
+    <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Ventas de eBay enviadas desde Badalona. Acércate con los dedos: al entrar en una zona pasa a vista satélite. Toca un punto para ver qué se vendió allí.</div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
       {[["Envíos",envios.length],["Países",porPais.length],["Ciudades",porCiudad.length]].map(([l,v])=>(
         <div key={l} style={{...S.card,padding:"10px 12px"}}><div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>{l}</div><div style={{fontFamily:"var(--display)",fontSize:20,marginTop:2}}>{v}</div></div>))}
     </div>
-    <div style={{...S.card,padding:8,marginBottom:10,position:"relative"}}>
+    <div style={{...S.card,padding:8,marginBottom:10}}>
       <div style={{display:"flex",gap:4,justifyContent:"space-between",alignItems:"center",margin:"2px 2px 8px"}}>
-        <span style={{fontSize:11.5,color:"var(--text3)"}}><span style={{display:"inline-block",width:8,height:8,borderRadius:9,background:"var(--text)",marginRight:5}}/>Badalona</span>
+        <span style={{fontSize:11.5,color:"var(--text3)"}}>{capa==="satelite"?"Vista satélite":"Vista relieve"}</span>
         <div style={{display:"flex",gap:4}}>
-        {[["mundo","Mundo"],["europa","Europa"]].map(([k,l])=><button key={k} onClick={()=>{setVista(k);setSel(null);}} style={{border:"none",borderRadius:8,padding:"5px 10px",fontSize:11.5,fontWeight:700,cursor:"pointer",background:vista===k?"var(--accent2)":"var(--bg3)",color:vista===k?"#fff":"var(--text2)"}}>{l}</button>)}
+          {[["Mundo",[30,10],1],["Europa",[45,8],4],["España",[38.5,-4],5]].map(([l,ll,z])=><button key={l} onClick={()=>ir(ll,z)} style={{border:"none",borderRadius:8,padding:"5px 10px",fontSize:11.5,fontWeight:700,cursor:"pointer",background:"var(--bg3)",color:"var(--text2)"}}>{l}</button>)}
         </div>
       </div>
-      {err&&<div style={{padding:30,textAlign:"center",color:"var(--text3)",fontSize:13}}>No se ha podido cargar el mapa. Revisa la conexión.</div>}
-      {!err&&<svg viewBox={vb} style={{width:"100%",display:"block",background:"var(--bg3)",borderRadius:10}} preserveAspectRatio="xMidYMid meet">
-        {(geo||[]).map((f,i)=><path key={i} d={pathDe(f.geometry)} fill={paisesEn.has(f.properties.name)?"var(--accent3)":"var(--bg2)"} stroke={paisesEn.has(f.properties.name)?"var(--accent2)":"var(--border)"} strokeWidth={0.6*esc}/>)}
-        {!geo&&<text x={W/2} y={H0/2} textAnchor="middle" fontSize="16" fill="var(--text3)">Cargando mapa…</text>}
-        <circle cx={X(2.25)} cy={Y(41.45)} r={5*esc} fill="var(--text)" stroke="#fff" strokeWidth={1.5*esc}/>
-        {porCiudad.map(c=>{const r=(4+6*Math.sqrt(c.items.length/maxN))*esc;const on=sel&&sel.k===c.k;return(
-          <g key={c.k} onClick={()=>setSel(on?null:c)} style={{cursor:"pointer"}}>
-            <circle cx={X(c.lon)} cy={Y(c.lat)} r={r+6*esc} fill="transparent"/>
-            <circle cx={X(c.lon)} cy={Y(c.lat)} r={r} fill={on?"var(--green)":"var(--accent2)"} fillOpacity={.85} stroke="#fff" strokeWidth={1.2*esc}/>
-          </g>);})}
-      </svg>}
+      {err?<div style={{padding:30,textAlign:"center",color:"var(--text3)",fontSize:13}}>No se ha podido cargar el mapa. Revisa la conexión.</div>
+        :<div ref={caja} style={{width:"100%",height:360,borderRadius:10,overflow:"hidden",background:"#a9cfe3"}}/>}
       {sel&&<div style={{padding:"10px 6px 4px"}}>
         <div style={{fontWeight:800,fontSize:13.5}}>{sel.ciudad} · {sel.pais}</div>
         {sel.items.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",gap:8,fontSize:12,marginTop:5}}>
