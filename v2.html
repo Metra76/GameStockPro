@@ -115,26 +115,30 @@ function historialEstimado(state,seccion){
   const dentro=cat=>seccion==="todo"||seccionDe(cat)===seccion;
   const hoy=new Date().toISOString().split("T")[0];
   const ms=d=>new Date(d+"T00:00:00Z").getTime();
+  const N=x=>{const n=typeof x==="string"?parseFloat(x.replace(",",".")):+x;return Number.isFinite(n)?n:0;};
+  const iso=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}/.test(d)?d.slice(0,10):null;
   const tramos=[], ventas=[];
   const prod={};for(const p of state.products||[]) prod[p.id]=p;
   for(const p of state.products||[]){
     if(!dentro(p.categoria)) continue;
-    let d0=p.fechaCompra||p.lanzamiento||HIST_INICIO; if(d0<HIST_INICIO) d0=HIST_INICIO; if(d0>hoy) d0=hoy;
-    const c=p.precioCompra||0;
-    if(p.stock>0) tramos.push({a:d0,b:null,c:c*p.stock,v:(p.valorMercado||c)*p.stock});
+    let d0=iso(p.fechaCompra)||iso(p.lanzamiento)||HIST_INICIO; if(d0<HIST_INICIO) d0=HIST_INICIO; if(d0>hoy) d0=hoy;
+    const c=N(p.precioCompra), st=N(p.stock);
+    if(st>0) tramos.push({a:d0,b:null,c:c*st,v:(N(p.valorMercado)||c)*st});
   }
   for(const m of state.movements||[]){
-    if(m.tipo!=="Venta"||!m.fecha) continue;
+    if(m.tipo!=="Venta"||!iso(m.fecha)) continue;
+    const mf=iso(m.fecha);
     const p=m.productoId!=null?prod[m.productoId]:null;
     const cat=p?p.categoria:(m.categoriaVenta||"PS5"); if(!dentro(cat)) continue;
-    const q=m.cantidad||1, c=(m.historico?(m.coste||0):(p?p.precioCompra||0:0));
-    let d0=p?(p.fechaCompra||p.lanzamiento||HIST_INICIO):null;
-    if(!d0||d0>m.fecha){const x=new Date(ms(m.fecha)-45*864e5).toISOString().split("T")[0];d0=x;}
+    const q=N(m.cantidad)||1, c=(m.historico?N(m.coste):(p?N(p.precioCompra):0));
+    let d0=p?(iso(p.fechaCompra)||iso(p.lanzamiento)||HIST_INICIO):null;
+    if(!d0||d0>mf){d0=new Date(ms(mf)-45*864e5).toISOString().split("T")[0];}
     if(d0<HIST_INICIO) d0=HIST_INICIO;
-    tramos.push({a:d0,b:m.fecha,c:c*q,v:(m.precioVenta||0)*q});
-    ventas.push({d:m.fecha,ing:(m.precioVenta||0)*q,ben:((m.precioVenta||0)-c)*q-(m.ebayFee||0)});
+    const pv=N(m.precioVenta);
+    tramos.push({a:d0,b:mf,c:c*q,v:pv*q});
+    ventas.push({d:mf,ing:pv*q,ben:(pv-c)*q-N(m.ebayFee)});
   }
-  if(seccion==="cartas"||seccion==="todo") for(const p of state.pokemon||[]){const u=p.unidades||1;tramos.push({a:HIST_INICIO,b:null,c:(p.precioCompra||0)*u,v:(p.precioMercado||p.precioCompra||0)*u});}
+  if(seccion==="cartas"||seccion==="todo") for(const p of state.pokemon||[]){const u=N(p.unidades)||1;tramos.push({a:HIST_INICIO,b:null,c:N(p.precioCompra)*u,v:(N(p.precioMercado)||N(p.precioCompra))*u});}
   const fechas=[];let y=2023,mo=7;while(true){const d=`${y}-${String(mo).padStart(2,"0")}-01`;if(d>hoy)break;fechas.push(d);mo++;if(mo>12){mo=1;y++;}}
   fechas.push(hoy);
   return fechas.map(d=>{
@@ -1877,7 +1881,7 @@ function App(){
             const est=historialEstimado(state,seccion);
             const corte=real.length?real[0].d:"9999";
             const benDe=d=>{let b=0;for(const e of est) if(e.d<=d) b=e.ben;return b;};
-            const h=[...est.filter(e=>e.d<corte),...real.map(e=>({...e,ben:benDe(e.d)}))].filter(e=>e.inv>0||e.vm>0);
+            const h=[...est.filter(e=>e.d<corte),...real.map(e=>({...e,ben:benDe(e.d)}))].filter(e=>Number.isFinite(e.inv)&&Number.isFinite(e.vm)&&Number.isFinite(e.ben||0)&&/^\d{4}-\d{2}-\d{2}/.test(e.d||"")&&(e.inv>0||e.vm>0));
             const W=320,Hh=130,pad=6;
             const ult=h[h.length-1], pri=h[0];
             let svg=null;
