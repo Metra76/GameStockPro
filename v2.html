@@ -1095,8 +1095,10 @@ function MapaEnvios({envios,fmt,H}){
     const cargar=async()=>{
       try{
         if(!window.L){
-          const css=document.createElement("link");css.rel="stylesheet";css.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";document.head.appendChild(css);const st=document.createElement("style");st.textContent=".leaflet-interactive:focus{outline:none}";document.head.appendChild(st);
-          await new Promise((ok,ko)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";sc.onload=ok;sc.onerror=ko;document.head.appendChild(sc);});
+          const css=document.createElement("link");css.rel="stylesheet";css.href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css";document.head.appendChild(css);const st=document.createElement("style");st.textContent=".leaflet-interactive:focus{outline:none}";document.head.appendChild(st);
+          const cargarJs=src=>new Promise((ok,ko)=>{const sc=document.createElement("script");sc.src=src;sc.onload=ok;sc.onerror=ko;document.head.appendChild(sc);});
+          try{await cargarJs("https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js");}catch(e){await cargarJs("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js");}
+          await new Promise(ok=>{if(css.sheet)ok();else{css.onload=ok;css.onerror=ok;setTimeout(ok,2500);}});
         }
         if(!vivo||!caja.current||mapa.current) return;
         const L=window.L;
@@ -1107,6 +1109,16 @@ function MapaEnvios({envios,fmt,H}){
           L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,attribution:at}),
           L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:18})]);
         relieve.addTo(m);
+        // Paises a los que has enviado, coloreados encima del relieve
+        (async()=>{try{
+          if(!window.topojson) await new Promise((ok,ko)=>{const sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js";sc.onload=ok;sc.onerror=ko;document.head.appendChild(sc);});
+          const w=await (await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json")).json();
+          const ALIAS={"United States":"United States of America"};
+          const set=new Set(envios.map(e=>ALIAS[e.pais_en]||e.pais_en));
+          const feats=window.topojson.feature(w,w.objects.countries).features.filter(f=>set.has(f.properties.name));
+          if(!vivo||!mapa.current) return;
+          L.geoJSON({type:"FeatureCollection",features:feats},{interactive:false,style:{color:"#ea580c",weight:1.2,fillColor:"#f97316",fillOpacity:.28}}).addTo(m).bringToBack();
+        }catch(e){}})();
         const ajustar=()=>{const z=m.getZoom();if(z>=6){if(m.hasLayer(relieve)){m.removeLayer(relieve);sat.addTo(m);setCapa("satelite");}}else{if(m.hasLayer(sat)){m.removeLayer(sat);relieve.addTo(m);setCapa("relieve");}}};
         m.on("zoomend",ajustar);
         const maxN=Math.max(1,...porCiudad.map(c=>c.items.length));
