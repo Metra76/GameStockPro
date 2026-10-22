@@ -109,6 +109,41 @@ const totalesSeccion=(state)=>{
   for(const k in o) o[k]=o[k].map(x=>Math.round(x*100)/100);
   return o;
 };
+// Historial estimado hacia atras: compra = fecha de compra o, si no hay, fecha de lanzamiento; el valor sube en linea recta desde el coste hasta el valor actual (o el precio de venta)
+const HIST_INICIO="2023-07-01";
+function historialEstimado(state,seccion){
+  const dentro=cat=>seccion==="todo"||seccionDe(cat)===seccion;
+  const hoy=new Date().toISOString().split("T")[0];
+  const ms=d=>new Date(d+"T00:00:00Z").getTime();
+  const tramos=[], ventas=[];
+  const prod={};for(const p of state.products||[]) prod[p.id]=p;
+  for(const p of state.products||[]){
+    if(!dentro(p.categoria)) continue;
+    let d0=p.fechaCompra||p.lanzamiento||HIST_INICIO; if(d0<HIST_INICIO) d0=HIST_INICIO; if(d0>hoy) d0=hoy;
+    const c=p.precioCompra||0;
+    if(p.stock>0) tramos.push({a:d0,b:null,c:c*p.stock,v:(p.valorMercado||c)*p.stock});
+  }
+  for(const m of state.movements||[]){
+    if(m.tipo!=="Venta"||!m.fecha) continue;
+    const p=m.productoId!=null?prod[m.productoId]:null;
+    const cat=p?p.categoria:(m.categoriaVenta||"PS5"); if(!dentro(cat)) continue;
+    const q=m.cantidad||1, c=(m.historico?(m.coste||0):(p?p.precioCompra||0:0));
+    let d0=p?(p.fechaCompra||p.lanzamiento||HIST_INICIO):null;
+    if(!d0||d0>m.fecha){const x=new Date(ms(m.fecha)-45*864e5).toISOString().split("T")[0];d0=x;}
+    if(d0<HIST_INICIO) d0=HIST_INICIO;
+    tramos.push({a:d0,b:m.fecha,c:c*q,v:(m.precioVenta||0)*q});
+    ventas.push({d:m.fecha,ing:(m.precioVenta||0)*q,ben:((m.precioVenta||0)-c)*q-(m.ebayFee||0)});
+  }
+  if(seccion==="cartas"||seccion==="todo") for(const p of state.pokemon||[]){const u=p.unidades||1;tramos.push({a:HIST_INICIO,b:null,c:(p.precioCompra||0)*u,v:(p.precioMercado||p.precioCompra||0)*u});}
+  const fechas=[];let y=2023,mo=7;while(true){const d=`${y}-${String(mo).padStart(2,"0")}-01`;if(d>hoy)break;fechas.push(d);mo++;if(mo>12){mo=1;y++;}}
+  fechas.push(hoy);
+  return fechas.map(d=>{
+    const t=ms(d);let inv=0,vm=0,ing=0,ben=0;
+    for(const r of tramos){if(d<r.a||(r.b&&d>=r.b)) continue;const fin=ms(r.b||hoy),ini=ms(r.a);const k=fin>ini?Math.min(1,Math.max(0,(t-ini)/(fin-ini))):1;inv+=r.c;vm+=r.c+(r.v-r.c)*k;}
+    for(const v of ventas) if(v.d<=d){ing+=v.ing;ben+=v.ben;}
+    return {d,inv:Math.round(inv),vm:Math.round(vm),ing:Math.round(ing),ben:Math.round(ben),est:true};
+  });
+}
 // Productos en buen momento para vender: 3 veces su coste o en su maximo de precio
 const momentoVenta=(p)=>{
   if(!(p.stock>0)||!(p.precioCompra>0)||!(p.valorMercado>0)) return null;
@@ -1815,39 +1850,54 @@ function App(){
             </div>);
           })()}
 
-          {/* Evolucion del valor de la seccion */}
+          {/* Evolucion del valor de la seccion: estimado hacia atras + fotos diarias reales */}
           {(()=>{
-            const h=(state.historial||[]).map(e=>{
+            const real=(state.historial||[]).map(e=>{
               if(seccion!=="todo") return e[seccion]?{d:e.d,inv:e[seccion][0],vm:e[seccion][1]}:null;
               const t=SECCIONES.reduce((a,x)=>e[x.k]?[a[0]+e[x.k][0],a[1]+e[x.k][1]]:a,[0,0]);return {d:e.d,inv:t[0],vm:t[1]};
             }).filter(Boolean);
-            const W=320,Hh=110,pad=6;
+            const est=historialEstimado(state,seccion);
+            const corte=real.length?real[0].d:"9999";
+            const benDe=d=>{let b=0;for(const e of est) if(e.d<=d) b=e.ben;return b;};
+            const h=[...est.filter(e=>e.d<corte),...real.map(e=>({...e,ben:benDe(e.d)}))].filter(e=>e.inv>0||e.vm>0);
+            const W=320,Hh=130,pad=6;
             const ult=h[h.length-1], pri=h[0];
-            const dif=ult&&pri?ult.vm-pri.vm:0;
             let svg=null;
             if(h.length>=2){
-              const xs=i=>pad+i*(W-2*pad)/(h.length-1);
-              const max=Math.max(...h.map(e=>Math.max(e.vm,e.inv))),min=Math.min(...h.map(e=>Math.min(e.vm,e.inv)));
+              const t=d=>new Date(d+"T00:00:00Z").getTime(), t0=t(pri.d), t1=t(ult.d);
+              const xs=d=>pad+(t1>t0?(t(d)-t0)/(t1-t0):0)*(W-2*pad);
+              const max=Math.max(...h.map(e=>Math.max(e.vm,e.inv,e.ben||0))),min=Math.min(0,...h.map(e=>Math.min(e.vm,e.inv,e.ben||0)));
               const ys=v=>Hh-pad-(max===min?0.5:(v-min)/(max-min))*(Hh-2*pad);
-              const linea=k=>h.map((e,i)=>`${i?"L":"M"}${xs(i).toFixed(1)},${ys(e[k]).toFixed(1)}`).join(" ");
-              svg=(<svg viewBox={`0 0 ${W} ${Hh}`} style={{width:"100%",height:110,display:"block"}}>
-                <path d={linea("vm")+` L${xs(h.length-1)},${Hh} L${xs(0)},${Hh} Z`} fill="var(--accent3)" opacity=".6"/>
-                <path d={linea("vm")} fill="none" stroke="var(--accent2)" strokeWidth="2.2" strokeLinejoin="round"/>
-                <path d={linea("inv")} fill="none" stroke="var(--text3)" strokeWidth="1.4" strokeDasharray="4 4"/>
+              const linea=(arr,k)=>arr.map((e,i)=>`${i?"L":"M"}${xs(e.d).toFixed(1)},${ys(e[k]).toFixed(1)}`).join(" ");
+              const hEst=h.filter(e=>e.est), hReal=h.filter(e=>!e.est);
+              const vmEst=hReal.length&&hEst.length?[...hEst,hReal[0]]:hEst;
+              const xc=hReal.length?xs(hReal[0].d):null;
+              const años=[];for(let y=+pri.d.slice(0,4)+1;y<=+ult.d.slice(0,4);y++)años.push(y);
+              svg=(<svg viewBox={`0 0 ${W} ${Hh+14}`} style={{width:"100%",display:"block"}}>
+                {años.map(y=>{const x=xs(`${y}-01-01`);return <g key={y}><line x1={x} x2={x} y1={pad} y2={Hh} stroke="var(--border)" strokeWidth=".6"/><text x={x} y={Hh+11} fontSize="8.5" textAnchor="middle" fill="var(--text3)">{y}</text></g>;})}
+                <path d={linea(h,"vm")+` L${xs(ult.d)},${Hh} L${xs(pri.d)},${Hh} Z`} fill="var(--accent3)" opacity=".5"/>
+                {vmEst.length>1&&<path d={linea(vmEst,"vm")} fill="none" stroke="var(--accent2)" strokeWidth="2" strokeDasharray="5 3" opacity=".75" strokeLinejoin="round"/>}
+                {hReal.length>1&&<path d={linea(hReal,"vm")} fill="none" stroke="var(--accent2)" strokeWidth="2.4" strokeLinejoin="round"/>}
+                <path d={linea(h,"inv")} fill="none" stroke="var(--text3)" strokeWidth="1.4" strokeDasharray="4 4"/>
+                <path d={linea(h,"ben")} fill="none" stroke="var(--green)" strokeWidth="1.6" strokeLinejoin="round"/>
+                {xc!=null&&<circle cx={xc} cy={ys(hReal[0].vm)} r="2.6" fill="var(--accent2)"/>}
               </svg>);
             }
+            const dif=ult&&pri?ult.vm-pri.vm:0;
             return(
             <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
                 <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Evolución del valor</div>
-                {h.length>=2&&!priv&&<div style={{fontSize:12,fontWeight:700,color:dif>=0?"var(--green)":"var(--red)"}}>{dif>=0?"+":""}{fmt(dif)} € desde {pri.d.split("-").reverse().slice(0,2).join("/")}</div>}
+                {h.length>=2&&!priv&&<div style={{fontSize:12,fontWeight:700,color:dif>=0?"var(--green)":"var(--red)"}}>{dif>=0?"+":""}{fmt(dif)} € desde {["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][+pri.d.slice(5,7)-1]} {pri.d.slice(0,4)}</div>}
               </div>
-              {svg?<div style={{marginTop:8}}>{priv?<div style={{height:110,display:"grid",placeContent:"center",color:"var(--text3)",fontSize:12}}>Oculto</div>:svg}</div>
-                :<div style={{fontSize:12.5,color:"var(--text3)",marginTop:8,lineHeight:1.45}}>La app guarda una foto del valor cada día. En cuanto haya dos días verás aquí cómo crece.</div>}
-              {svg&&!priv&&<div style={{display:"flex",gap:14,marginTop:6,fontSize:11,color:"var(--text3)"}}>
+              {svg?<div style={{marginTop:8}}>{priv?<div style={{height:130,display:"grid",placeContent:"center",color:"var(--text3)",fontSize:12}}>Oculto</div>:svg}</div>
+                :<div style={{fontSize:12.5,color:"var(--text3)",marginTop:8,lineHeight:1.45}}>Aún no hay datos suficientes.</div>}
+              {svg&&!priv&&<><div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px",marginTop:6,fontSize:11,color:"var(--text3)"}}>
                 <span><span style={{display:"inline-block",width:12,height:3,background:"var(--accent2)",verticalAlign:"middle",marginRight:5,borderRadius:2}}/>Valor</span>
                 <span><span style={{display:"inline-block",width:12,borderTop:"2px dashed var(--text3)",verticalAlign:"middle",marginRight:5}}/>Invertido</span>
-              </div>}
+                <span><span style={{display:"inline-block",width:12,height:3,background:"var(--green)",verticalAlign:"middle",marginRight:5,borderRadius:2}}/>Beneficio de ventas</span>
+              </div>
+              <div style={{fontSize:10.5,color:"var(--text3)",marginTop:5,lineHeight:1.4}}>Antes del {corte!=="9999"?corte.split("-").reverse().join("/"):"hoy"} el valor (línea discontinua) es estimado: compra en la fecha de lanzamiento y subida gradual hasta el valor actual. Las ventas son reales.</div></>}
             </div>);
           })()}
 
