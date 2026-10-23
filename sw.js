@@ -1,4 +1,4 @@
-const CACHE = 'gsp-v2';
+const CACHE = 'gsp-v3';
 
 self.addEventListener('install', e => self.skipWaiting());
 
@@ -10,7 +10,9 @@ self.addEventListener('fetch', e => {
   const u = e.request.url;
   if (!u.startsWith('http')) return;
   if (u.includes('supabase.co') || e.request.method !== 'GET') return;
-  e.respondWith(fetch(e.request).catch(() => new Response('offline')));
+  // La app y sus datos siempre frescos (GitHub Pages deja guardar 10 min en cache)
+  const fresco = e.request.mode === 'navigate' || /\.(html|json)(\?|$)/.test(u) || /sw\.js/.test(u);
+  e.respondWith((fresco ? fetch(u, { cache: 'no-cache', credentials: 'same-origin' }) : fetch(e.request)).catch(() => fetch(e.request)).catch(() => new Response('offline')));
 });
 
 self.addEventListener('message', e => {

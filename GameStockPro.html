@@ -312,11 +312,13 @@ const seccionDe=cat=>cat==="Zapatillas"?"zapatillas":cat==="Cartas"?"cartas":"ju
 const fmt=n=>{const v=Number(n)||0;const [e,d]=Math.abs(v).toFixed(2).split(".");return (v<0?"-":"")+e.replace(/\B(?=(\d{3})+(?!\d))/g,".")+","+d;};
 const HIDDEN="•••";
 // De donde sale el valor de mercado de cada ficha
+const FACTOR_VENDIDO=0.79; // mediana de vendido/anunciado en 41 juegos (20/10/2026)
 const FUENTE=p=>{
   const n=p.valorAnuncios||0;
+  if(p.valorFuente==="ebay-estimado") return {t:`estimado · ${n} anuncios ×0,79`,c:"var(--yellow)"};
   if(p.valorFuente==="ebay-mediana") return {t:`eBay · ${n} anuncios`,c:"var(--green)"};
   if(p.valorFuente==="ebay-pocos") return {t:`eBay · solo ${n} anuncio${n===1?"":"s"}`,c:"var(--yellow)"};
-  if(p.valorFuente==="ebay-vendidos-es") return {t:"eBay vendidos",c:"var(--green)"};
+  if(p.valorFuente==="ebay-vendidos-es") return {t:`eBay vendidos${p.valorVentas?` · ${p.valorVentas} ventas`:""}`,c:"var(--green)"};
   if(p.valorFuente==="ebay-usado") return {t:"precio de usado",c:"var(--yellow)"};
   if(p.valorFuente==="stockx") return {t:"StockX · media 3 meses",c:"var(--green)"};
   return {t:"puesto a mano",c:"var(--text3)"};
@@ -499,23 +501,38 @@ function reducer(state,action){
     case "DELETE_PRODUCT":
       next={...state,products:state.products.filter(p=>p.id!==action.payload)};break;
     case "UPDATE_EBAY":{
+      // Los anuncios activos piden mas de lo que se vende: se guardan como referencia y el valor se estima al 79 % (medido con ventas reales).
+      // Nunca pisan un valor de ventas reales, uno puesto a mano ni el de StockX.
       const {id,ebayData}=action.payload;
       const ts=new Date().toISOString().split("T")[0];
       const products=state.products.map(p=>{
         if(p.id!==id) return p;
-        const ph=[...(p.priceHistory||[])];
-        if(ebayData.mediana>0){
-          const last=ph[ph.length-1];
-          if(!last||last.date!==ts) ph.push({date:ts,price:ebayData.mediana});
-          else ph[ph.length-1]={date:ts,price:ebayData.mediana};
-        }
-        const sb=ebayData.mediana>0&&(!action.payload.soloSubir||ebayData.mediana>(p.valorMercado||0));
-        if(!sb) return {...p,ebayData,priceHistory:ph};
-        return {...p,ebayData,valorMercado:ebayData.mediana,priceHistory:ph,
-          valorFuente:(ebayData.count||0)>=4?"ebay-mediana":"ebay-pocos",
-          valorFecha:ts,valorAnuncios:ebayData.count||0};
+        if(["ebay-vendidos-es","manual","stockx"].includes(p.valorFuente)||!(ebayData.mediana>0)) return {...p,ebayData};
+        const est=Math.round(ebayData.mediana*FACTOR_VENDIDO*100)/100;
+        const ph=[...(p.priceHistory||[])];const last=ph[ph.length-1];
+        if(!last||last.date!==ts) ph.push({date:ts,price:est}); else ph[ph.length-1]={date:ts,price:est};
+        return {...p,ebayData,valorMercado:est,priceHistory:ph,valorFuente:"ebay-estimado",valorFecha:ts,valorAnuncios:ebayData.count||0};
       });
       next={...state,products};break;
+    }
+    case "APLICAR_VENDIDOS":{
+      // Valores de ventas reales de eBay (vendidos.json, lo actualiza el repaso semanal)
+      const {actualizado,items}=action.payload;
+      const m={};for(const it of items||[]) m[it.id]=it;
+      const products=state.products.map(p=>{
+        const it=m[p.id];if(!it||!(it.valor>0)) return p;
+        if(["manual","stockx"].includes(p.valorFuente)) return p;
+        if(p.valorFuente==="ebay-vendidos-es"&&(p.valorFecha||"")>=it.fecha&&p.valorMercado===it.valor) return p;
+        const ph=[...(p.priceHistory||[])];const last=ph[ph.length-1];
+        if(!last||last.date!==it.fecha) ph.push({date:it.fecha,price:it.valor});
+        return {...p,valorMercado:it.valor,valorFuente:"ebay-vendidos-es",valorFecha:it.fecha,valorVentas:it.n||0,priceHistory:ph};
+      });
+      next={...state,products,vendidosAplicado:actualizado};break;
+    }
+    case "AJUSTES_2310A":{
+      // Valores que Juan fija a mano: Lumiere y las Game & Watch
+      const products=state.products.map(p=>[1,184,205].includes(p.id)?{...p,valorFuente:"manual"}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes2310a:true}};break;
     }
     case "ADD_MOVEMENT":{
       const {productoId,tipo,cantidad}=action.payload;
@@ -1464,7 +1481,7 @@ function App(){
       const data=await r.json();
       const rf=refinarPrecio(product,data);
       dispatch({type:"UPDATE_EBAY",payload:{id:product.id,soloSubir:soloSubir===true,ebayData:{...rf,fetchedAt:new Date().toISOString()}}});
-      if(soloSubir!==true) showToast(rf.mediana>0?`Precio eBay: ${fmt(rf.mediana)} €`:"Sin anuncios que encajen");
+      if(soloSubir!==true) showToast(rf.mediana>0?(["ebay-vendidos-es","manual","stockx"].includes(product.valorFuente)?"Valor de ventas reales: no se toca":`Estimado: ${fmt(Math.round(rf.mediana*FACTOR_VENDIDO*100)/100)} €`):"Sin anuncios que encajen");
     }catch(e){showToast("Error al obtener precio eBay","var(--red)");}
     finally{setLoadingEbay(null);}
   },[]);
@@ -1730,6 +1747,11 @@ function App(){
     if(!f.ajustes2010e){dispatch({type:"AJUSTES_2010E"});setTimeout(()=>subirNube(),8400);}
     if(!f.ajustes2010f){dispatch({type:"AJUSTES_2010F"});setTimeout(()=>subirNube(),8800);}
     if(!f.ajustes2210a){dispatch({type:"AJUSTES_2210A"});setTimeout(()=>subirNube(),9200);}
+    if(!f.ajustes2310a){dispatch({type:"AJUSTES_2310A"});setTimeout(()=>subirNube(),9600);}
+    // Ventas reales del repaso semanal
+    fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
+      if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
+    }).catch(()=>{});
   },[user,authLoading,state.products.length]);
 
   // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
