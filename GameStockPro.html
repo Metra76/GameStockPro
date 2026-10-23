@@ -1348,6 +1348,93 @@ function MapaEnvios({envios,fmt,H}){
   </div>);
 }
 
+// ── Modo escaparate: la coleccion con portadas y sin ningun dato de dinero; para salir hace falta el PIN ──
+async function hashPin(pin){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("gsp-"+pin));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}catch(e){return "p"+pin.split("").reverse().join("");}}
+function PinPad({titulo,sub,onPin,onCancel,error}){
+  const [v,setV]=useState("");
+  useEffect(()=>{if(v.length===4){const x=v;setTimeout(()=>{onPin(x);setV("");},150);}},[v]);
+  const k=d=>setV(x=>x.length<4?x+d:x);
+  return(<div style={{position:"fixed",inset:0,zIndex:9500,background:"rgba(15,15,20,.55)",display:"grid",placeItems:"center",padding:16}}>
+    <div style={{...S.card,width:"100%",maxWidth:320,padding:"22px 18px",textAlign:"center"}}>
+      <div style={{fontFamily:"var(--display)",fontSize:16}}>{titulo}</div>
+      {sub&&<div style={{fontSize:12,color:"var(--text3)",marginTop:4}}>{sub}</div>}
+      <div style={{display:"flex",justifyContent:"center",gap:12,margin:"18px 0 6px"}}>{[0,1,2,3].map(i=><span key={i} style={{width:14,height:14,borderRadius:9,background:i<v.length?"var(--accent2)":"var(--bg3)",border:"1px solid var(--border)"}}/>)}</div>
+      <div style={{minHeight:18,fontSize:12,color:"var(--red)",fontWeight:700}}>{error||""}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginTop:6}}>
+        {["1","2","3","4","5","6","7","8","9","","0","⌫"].map((d,i)=>d===""?<span key={i}/>:
+          <button key={i} onClick={()=>d==="⌫"?setV(x=>x.slice(0,-1)):k(d)} style={{height:54,borderRadius:14,border:"none",background:"var(--bg3)",fontSize:20,fontWeight:700,color:"var(--text)",cursor:"pointer"}}>{d}</button>)}
+      </div>
+      {onCancel&&<button onClick={onCancel} style={{marginTop:14,background:"none",border:"none",color:"var(--text3)",fontSize:13,fontWeight:600,cursor:"pointer"}}>Cancelar</button>}
+    </div>
+  </div>);
+}
+function PortadaEsc({x,grande}){const [mal,setMal]=useState(false);return x.cover&&!mal
+    ?<img src={x.cover} alt="" loading="lazy" onError={()=>setMal(true)} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:grande?14:9,display:"block",background:"var(--bg3)"}}/>
+    :<div style={{width:"100%",aspectRatio:"3/4",borderRadius:grande?14:9,background:(CAT_CONFIG[x.cat]||{}).light||"var(--bg3)",display:"grid",placeItems:"center",padding:8,textAlign:"center",fontSize:grande?16:11,fontWeight:700,color:(CAT_CONFIG[x.cat]||{}).color||"var(--text2)"}}>{x.nombre}</div>;}
+function Escaparate({state,onSalir,onOlvido}){
+  const [sec,setSec]=useState("todo");
+  const [plat,setPlat]=useState("");
+  const [q,setQ]=useState("");
+  const [orden,setOrden]=useState("nuevos");
+  const [ver,setVer]=useState(null);
+  const [pin,setPin]=useState(false);
+  const [err,setErr]=useState("");
+  const items=useMemo(()=>{
+    const a=(state.products||[]).filter(p=>p.stock>0).map(p=>({k:"p"+p.id,nombre:p.nombre,cat:p.categoria,sec:seccionDe(p.categoria),ed:p.edicion&&!/^(est[áa]ndar|standard|normal)$/i.test(p.edicion)?p.edicion:"",region:p.region||"",cond:p.condicion||"",cover:p.cover||"",uds:p.stock,lanz:p.lanzamiento||p.fechaCompra||""}));
+    const b=(state.pokemon||[]).filter(x=>(x.unidades||1)>0).map(x=>({k:"k"+x.id,nombre:x.nombre,cat:"Pokémon",sec:"cartas",ed:[x.set,x.numero].filter(Boolean).join(" · "),region:"",cond:x.condicion||"",cover:x.image||"",uds:x.unidades||1,lanz:""}));
+    return [...a,...b];
+  },[state.products,state.pokemon]);
+  const enSec=items.filter(x=>sec==="todo"||x.sec===sec);
+  const plats=[...new Set(enSec.map(x=>x.cat))].sort();
+  const lista=enSec.filter(x=>(!plat||x.cat===plat)&&(!q||x.nombre.toLowerCase().includes(q.toLowerCase())))
+    .sort(orden==="az"?(a,b)=>a.nombre.localeCompare(b.nombre,"es"):(a,b)=>(b.lanz||"0").localeCompare(a.lanz||"0")||a.nombre.localeCompare(b.nombre,"es"));
+  const cuenta=k=>items.filter(x=>x.sec===k).reduce((a,x)=>a+x.uds,0);
+  const chip=(on,l,f)=><button key={l} onClick={f} style={{flex:"none",border:"none",borderRadius:999,padding:"6px 12px",fontSize:12,fontWeight:700,cursor:"pointer",background:on?"var(--accent2)":"var(--bg3)",color:on?"#fff":"var(--text2)"}}>{l}</button>;
+  return(<div style={{position:"fixed",inset:0,zIndex:9000,background:"var(--bg)",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+    <div style={{position:"sticky",top:0,zIndex:2,background:"var(--bg2)",borderBottom:"1px solid var(--border)",padding:"10px 14px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",maxWidth:640,margin:"0 auto"}}>
+        <div><div style={{fontFamily:"var(--display)",fontSize:17}}>Mi colección</div>
+          <div style={{fontSize:11.5,color:"var(--text3)"}}>{cuenta("juegos")} juegos · {cuenta("zapatillas")} zapatillas · {cuenta("cartas")} cartas</div></div>
+        <button onClick={()=>{setErr("");setPin(true);}} style={{border:"none",borderRadius:10,padding:"8px 12px",background:"var(--bg3)",fontSize:12.5,fontWeight:700,color:"var(--text2)",cursor:"pointer"}}>🔒 Salir</button>
+      </div>
+    </div>
+    <div style={{padding:"12px 14px 40px",maxWidth:640,margin:"0 auto"}}>
+      <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8}}>
+        {[["todo","Todo"],["juegos","Juegos"],["zapatillas","Zapatillas"],["cartas","Cartas"]].map(([k,l])=>chip(sec===k,l,()=>{setSec(k);setPlat("");}))}
+      </div>
+      {plats.length>1&&<div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:8}}>
+        {chip(!plat,"Todas",()=>setPlat(""))}{plats.map(c=>chip(plat===c,c,()=>setPlat(c)))}
+      </div>}
+      <div style={{display:"flex",gap:8,marginBottom:12}}>
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar…" style={{...S.inp(),flex:1}}/>
+        {chip(orden==="nuevos","Nuevos",()=>setOrden("nuevos"))}{chip(orden==="az","A-Z",()=>setOrden("az"))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:10}}>
+        {lista.map(x=>(<button key={x.k} onClick={()=>setVer(x)} style={{background:"none",border:"none",padding:0,textAlign:"left",cursor:"pointer",color:"var(--text)",position:"relative",alignSelf:"start",display:"block",width:"100%"}}>
+          <PortadaEsc x={x}/>
+          {x.uds>1&&<span style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.7)",color:"#fff",fontSize:10.5,fontWeight:800,borderRadius:8,padding:"2px 6px"}}>×{x.uds}</span>}
+          <div style={{fontSize:11.5,fontWeight:700,marginTop:5,lineHeight:1.25,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{x.nombre}</div>
+          <div style={{fontSize:10.5,color:"var(--text3)",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{x.cat}{x.ed?` · ${x.ed}`:""}</div>
+        </button>))}
+      </div>
+      {lista.length===0&&<div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Nada por aquí</div>}
+    </div>
+    {ver&&<div onClick={()=>setVer(null)} style={{position:"fixed",inset:0,zIndex:9200,background:"rgba(10,10,15,.75)",display:"grid",placeItems:"center",padding:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{...S.card,width:"100%",maxWidth:360,padding:14}}>
+        <div style={{maxWidth:260,margin:"0 auto"}}><PortadaEsc x={ver} grande/></div>
+        <div style={{fontFamily:"var(--display)",fontSize:16,marginTop:12,textAlign:"center"}}>{ver.nombre}</div>
+        <div style={{display:"flex",flexWrap:"wrap",justifyContent:"center",gap:6,marginTop:10}}>
+          {[ver.cat,ver.ed,ver.region,ver.cond,ver.lanz?ver.lanz.slice(0,4):"",ver.uds>1?`${ver.uds} unidades`:""].filter(Boolean).map((t,i)=><span key={i} style={{background:"var(--bg3)",borderRadius:999,padding:"4px 10px",fontSize:11.5,fontWeight:600,color:"var(--text2)"}}>{t}</span>)}
+        </div>
+        <button onClick={()=>setVer(null)} style={{marginTop:14,width:"100%",border:"none",borderRadius:12,padding:12,background:"var(--bg3)",fontWeight:700,color:"var(--text)",cursor:"pointer"}}>Cerrar</button>
+      </div>
+    </div>}
+    {pin&&<PinPad titulo="PIN para salir" sub="Introduce tu PIN de 4 cifras" error={err} onCancel={()=>setPin(false)}
+      onPin={async v=>{const ok=(await hashPin(v))===(()=>{try{return localStorage.getItem("gsp_pin")}catch(e){return null}})();if(ok){setPin(false);onSalir();}else setErr("PIN incorrecto");}}/>}
+    {pin&&<button onClick={onOlvido} style={{position:"fixed",bottom:24,left:0,right:0,zIndex:9600,background:"none",border:"none",color:"#fff",fontSize:12.5,textDecoration:"underline",cursor:"pointer"}}>He olvidado el PIN (cierra la sesión)</button>}
+  </div>);
+}
+
 function App(){
   const [user,setUser]=useState(null);
   const [authLoading,setAuthLoading]=useState(true);
@@ -1369,6 +1456,11 @@ function App(){
   const [stockForm,setStockForm]=useState({});
   const [resumen,setResumen]=useState(null);
   const [search,setSearch]=useState("");
+  const lsG=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsS=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
+  const [escap,setEscapS]=useState(()=>lsG("gsp_escaparate")==="1");
+  const setEscap=v=>{setEscapS(v);lsS("gsp_escaparate",v?"1":null);};
+  const [pinPaso,setPinPaso]=useState(null); // null | {modo:"nuevo"|"repite"|"cambiar", primero}
+  const [pinErr,setPinErr]=useState("");
   const [orden,setOrdenS]=useState(()=>{try{return localStorage.getItem("gsp_orden")||"lanz"}catch(e){return "lanz"}});
   const setOrden=o=>{setOrdenS(o);try{localStorage.setItem("gsp_orden",o)}catch(e){}};
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
@@ -1884,7 +1976,8 @@ function App(){
     </div>
   );
 
-  if(!user) return <LoginScreen onLogin={handleLogin}/>;
+  if(!user) return <LoginScreen onLogin={async(...a)=>{setEscap(false);return handleLogin(...a);}}/>;
+  if(escap) return <Escaparate state={state} onSalir={()=>setEscap(false)} onOlvido={async()=>{setEscap(false);await handleLogout();}}/>;
 
   return(
     <div style={{minHeight:"100vh",background:"var(--bg)",fontSize:14,color:"var(--text)",paddingBottom:80}}>
@@ -2357,6 +2450,17 @@ function App(){
               <div style={{background:"var(--yellow)",height:6,borderRadius:99,width:`${coverProgress.total>0?Math.round(coverProgress.current/coverProgress.total*100):0}%`,transition:"width .3s"}}/>
             </div>
           </div>}
+          <button onClick={()=>{setPinErr("");if(lsG("gsp_pin")) setEscap(true); else setPinPaso({modo:"nuevo"});}} style={{width:"100%",background:"var(--accent3)",border:"1px solid var(--accent2)",borderRadius:12,padding:14,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)",marginBottom:8}}>🖼️ Modo escaparate (sin precios)</button>
+          {lsG("gsp_pin")&&<button onClick={()=>{setPinErr("");setPinPaso({modo:"cambiar"});}} style={{width:"100%",background:"none",border:"none",padding:"0 0 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--text3)"}}>Cambiar PIN del escaparate</button>}
+          {pinPaso&&<PinPad titulo={pinPaso.modo==="repite"?"Repite el PIN":pinPaso.modo==="cambiar"?"PIN actual":"Elige un PIN"} sub={pinPaso.modo==="nuevo"?"4 cifras. Lo necesitarás para salir del escaparate":pinPaso.modo==="repite"?"Para confirmarlo":"Para poner uno nuevo"} error={pinErr}
+            onCancel={()=>setPinPaso(null)}
+            onPin={async v=>{
+              if(pinPaso.modo==="cambiar"){if((await hashPin(v))===lsG("gsp_pin")){setPinErr("");setPinPaso({modo:"nuevo",cambio:true});}else setPinErr("PIN incorrecto");return;}
+              if(pinPaso.modo==="nuevo"){setPinErr("");setPinPaso({modo:"repite",primero:v,cambio:pinPaso.cambio});return;}
+              if(v!==pinPaso.primero){setPinErr("No coincide, vuelve a empezar");setPinPaso({modo:"nuevo",cambio:pinPaso.cambio});return;}
+              lsS("gsp_pin",await hashPin(v));setPinPaso(null);
+              if(pinPaso.cambio) showToast("PIN cambiado"); else setEscap(true);
+            }}/>}
           <button onClick={exportCSV} style={{width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:14,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:8}}>️ Exportar CSV</button>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
             <button onClick={exportJSON} style={{background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>Backup JSON</button>
