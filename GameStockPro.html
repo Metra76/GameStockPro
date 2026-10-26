@@ -519,15 +519,36 @@ function reducer(state,action){
       // Valores de ventas reales de eBay (vendidos.json, lo actualiza el repaso semanal)
       const {actualizado,items}=action.payload;
       const m={};for(const it of items||[]) m[it.id]=it;
+      // Si el juego aun no tenia valor de ventas reales, el cambio es una correccion (estaba mal valorado),
+      // no un movimiento del mercado: se aplica tambien hacia atras en la grafica de evolucion para que no salga como subida/bajada.
+      const corr={};
       const products=state.products.map(p=>{
         const it=m[p.id];if(!it||!(it.valor>0)) return p;
         if(["manual","stockx"].includes(p.valorFuente)) return p;
         if(p.valorFuente==="ebay-vendidos-es"&&(p.valorFecha||"")>=it.fecha&&p.valorMercado===it.valor) return p;
+        if(p.valorFuente!=="ebay-vendidos-es"){const k=seccionDe(p.categoria);corr[k]=(corr[k]||0)+(it.valor-(p.valorMercado||p.precioCompra||0))*(p.stock||0);}
         const ph=[...(p.priceHistory||[])];const last=ph[ph.length-1];
         if(!last||last.date!==it.fecha) ph.push({date:it.fecha,price:it.valor});
         return {...p,valorMercado:it.valor,valorFuente:"ebay-vendidos-es",valorFecha:it.fecha,valorVentas:it.n||0,priceHistory:ph};
       });
-      next={...state,products,vendidosAplicado:actualizado};break;
+      const hoyC=new Date().toISOString().split("T")[0];
+      const historial=(state.historial||[]).map(e=>{
+        if(e.d>=hoyC) return e;const o={...e};
+        for(const k in corr) if(o[k]) o[k]=[o[k][0],Math.round((o[k][1]+corr[k])*100)/100];
+        return o;
+      });
+      next={...state,products,historial,vendidosAplicado:actualizado};break;
+    }
+    case "AJUSTES_2610A":{
+      // Una vez: la grafica de evolucion se recalcula con la valoracion actual, sin los saltos de los ajustes de precios
+      // (no fueron cambios del mercado sino valores corregidos). Cada foto pasada mantiene lo invertido y se valora con el % actual de su seccion.
+      const tot=totalesSeccion(state);const hoyC=new Date().toISOString().split("T")[0];
+      const historial=(state.historial||[]).map(e=>{
+        if(e.d>=hoyC) return e;const o={...e};
+        for(const k in tot){const [ci,vi]=tot[k];if(o[k]&&ci>0) o[k]=[o[k][0],Math.round(o[k][0]*(vi/ci)*100)/100];}
+        return o;
+      });
+      next={...state,historial,flags:{...(state.flags||{}),ajustes2610a:true}};break;
     }
     case "AJUSTES_2310A":{
       // Valores que Juan fija a mano: Lumiere y las Game & Watch
@@ -1852,6 +1873,7 @@ function App(){
     if(!f.ajustes2010f){dispatch({type:"AJUSTES_2010F"});setTimeout(()=>subirNube(),8800);}
     if(!f.ajustes2210a){dispatch({type:"AJUSTES_2210A"});setTimeout(()=>subirNube(),9200);}
     if(!f.ajustes2310a){dispatch({type:"AJUSTES_2310A"});setTimeout(()=>subirNube(),9600);}
+    if(!f.ajustes2610a){dispatch({type:"AJUSTES_2610A"});setTimeout(()=>subirNube(),9800);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
