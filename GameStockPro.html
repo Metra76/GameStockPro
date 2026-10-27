@@ -229,7 +229,7 @@ function EvolucionScreen({state,seccion,fmt,H,priv}){
   const filas=años.map(filaAño).filter(Boolean).reverse();
   const P=v=>priv?"•••":`${fmt(v)} €`;
   const esAño=/^\d{4}$/.test(per);
-  const meses=esAño?Array.from({length:12},(_,i)=>{const mm=`${per}-${String(i+1).padStart(2,"0")}`;const vs=ventas.filter(v=>v.d.startsWith(mm)).sort((a,b)=>a.d.localeCompare(b.d));
+  const meses=esAño?Array.from({length:12},(_,i)=>{const mm=`${per}-${String(i+1).padStart(2,"0")}`;const vs=ventas.filter(v=>v.d.startsWith(mm)).sort((a,b)=>b.d.localeCompare(a.d));
     const fin=[...h].reverse().find(e=>e.d<=`${mm}-31`&&e.d>=`${mm}-01`)||null;return {mm,i,vs,n:vs.reduce((a,v)=>a+v.uds,0),ing:vs.reduce((a,v)=>a+v.ing,0),ben:vs.reduce((a,v)=>a+v.ben,0),vm:fin?fin.vm:null,est:fin?fin.est:false};}).filter(m=>m.mm<=hoy.slice(0,7)&&(m.vm!=null||m.n>0)):[];
   return(<div className="fade-in">
     <div ref={arriba} style={{fontFamily:"var(--display)",fontSize:15,margin:"2px 2px 8px",scrollMarginTop:70}}>Evolución del valor · {SELECTOR.find(x=>x.k===seccion)?.l}</div>
@@ -2916,7 +2916,7 @@ function App(){
               <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <span style={{fontFamily:"var(--display)",fontSize:13}}>{ventasMes?`Ventas de ${ventasMes}`:"Todas las ventas"} ({ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes).length:ventas.length})</span>
               </div>
-              {(ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes):ventas).map((m,i)=>{
+              {[...(ventasMes?ventas.filter(m=>m.fecha?.slice(0,7)===ventasMes):ventas)].sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")||((b.id||0)-(a.id||0))).map((m,i)=>{
                 const prod=state.products.find(p=>p.id===m.productoId);
                 const nombre=m.historico?m.nombreProducto:(prod?.nombre||"—");
                 const cat=m.historico?m.categoriaVenta:(prod?.categoria||"—");
