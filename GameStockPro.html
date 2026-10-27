@@ -539,14 +539,18 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_2710B":{
+      // Juan: del Castlevania de Switch quedan 5 (deshace el cambio a 6)
+      const products=state.products.map(p=>p.id===340&&p.stock===6?{...p,stock:5}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes2710b:true}};break;
+    }
     case "AJUSTES_2710A":{
       // Ventas del Castlevania: quitar los duplicados de Chipre y Mexico (ya estaban apuntadas) y poner tarifas + envio reales; Tenerife con envio de 16
       const fix={1792252367027:{fecha:"2026-10-02",ebayFee:37.87,nota:"eBay · Chipre (Limassol) · tarifas 21,69 + envío 16,18"},
         1792252367026:{fecha:"2026-09-26",ebayFee:53.45,nota:"eBay · México · tarifas 26,45 + envío 27"},
         1792561544490:{ebayFee:34.11,nota:"eBay · Tenerife (Candelaria) · tarifas 18,11 + envío 16"}};
       const movements=state.movements.filter(m=>m.id!==1760900000101&&m.id!==1760900000102).map(m=>fix[m.id]?{...m,...fix[m.id]}:m);
-      // La venta a Chipre era preventa (no salio del stock): stock 7 - 1 (Tenerife) = 6
-      const products=state.products.map(p=>p.id===340&&p.stock===5?{...p,stock:6}:p);
+      const products=state.products;
       const envios=[...(state.envios||[])];
       if(!envios.some(e=>e.id==="15-15313-41737")) envios.push({id:"15-15313-41737",ciudad:"Candelaria (Tenerife)",pais:"España",pais_en:"Spain",total:149,titulo:"Castlevania Belmont's Curse Midnight Edition Switch",fecha:"2026-10-21",lat:28.35,lon:-16.37,canal:"eBay"});
       next={...state,movements,products,envios,flags:{...(state.flags||{}),ajustes2710a:true}};break;
@@ -1887,6 +1891,7 @@ function App(){
     if(!f.ajustes2310a){dispatch({type:"AJUSTES_2310A"});setTimeout(()=>subirNube(),9600);}
     if(!f.ajustes2610a){dispatch({type:"AJUSTES_2610A"});setTimeout(()=>subirNube(),9800);}
     if(!f.ajustes2710a){dispatch({type:"AJUSTES_2710A"});setTimeout(()=>subirNube(),10200);}
+    if(!f.ajustes2710b){dispatch({type:"AJUSTES_2710B"});setTimeout(()=>subirNube(),10600);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
