@@ -539,6 +539,17 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_2910A":{
+      // Alta compras 29/10: Switch 2 Zelda 40 aniversario + mando Pro con soporte (exclusivo Nintendo Store) + funda
+      const ts=new Date().toISOString().split("T")[0];
+      const nuevos=[
+        {id:1761700000001,nombre:"Nintendo Switch 2 Edición The Legend of Zelda 40 Aniversario",categoria:"Switch 2",precioCompra:519.95,edicion:"40 Aniversario Zelda"},
+        {id:1761700000002,nombre:"Mando Pro Switch 2 Zelda 40 Aniversario con soporte expositor (exclusivo Nintendo Store)",categoria:"Mandos",precioCompra:109.99,edicion:"Exclusiva Nintendo Store"},
+        {id:1761700000003,nombre:"Funda y protector de pantalla Switch 2 Zelda 40 Aniversario",categoria:"Mandos",precioCompra:34.95,edicion:"40 Aniversario Zelda"}
+      ].map(x=>({...EMPTY_P,...x,stock:1,valorMercado:x.precioCompra,valorFuente:"manual",valorFecha:ts,fechaCompra:"2026-10-29",lanzamiento:"2026-10-29",ebayData:null,priceHistory:[]}));
+      const products=[...state.products,...nuevos.filter(n=>!state.products.some(p=>p.id===n.id))];
+      next={...state,products,flags:{...(state.flags||{}),ajustes2910a:true}};break;
+    }
     case "AJUSTES_2710B":{
       // Juan: del Castlevania de Switch quedan 5 (deshace el cambio a 6)
       const products=state.products.map(p=>p.id===340&&p.stock===6?{...p,stock:5}:p);
@@ -1892,6 +1903,7 @@ function App(){
     if(!f.ajustes2610a){dispatch({type:"AJUSTES_2610A"});setTimeout(()=>subirNube(),9800);}
     if(!f.ajustes2710a){dispatch({type:"AJUSTES_2710A"});setTimeout(()=>subirNube(),10200);}
     if(!f.ajustes2710b){dispatch({type:"AJUSTES_2710B"});setTimeout(()=>subirNube(),10600);}
+    if(!f.ajustes2910a){dispatch({type:"AJUSTES_2910A"});setTimeout(()=>subirNube(),11000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
