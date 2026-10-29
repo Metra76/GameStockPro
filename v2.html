@@ -539,6 +539,12 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_2910B":{
+      // Reserva Stellar Blade Complete Edition Switch 2 (sale 06/11) a 69,99
+      const r={...EMPTY_R,id:1761700000011,nombre:"Stellar Blade Complete Edition",plataforma:"Switch 2",lanzamiento:"2026-11-06",precioReserva:69.99,unidades:1,costeTotal:69.99,costePendiente:0,precioFinal:69.99,notas:"Juego completo en cartucho"};
+      const reservas=state.reservas.some(x=>x.id===r.id)?state.reservas:[...state.reservas,r];
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes2910b:true}};break;
+    }
     case "AJUSTES_2910A":{
       // Alta compras 29/10: Switch 2 Zelda 40 aniversario + mando Pro con soporte (exclusivo Nintendo Store) + funda
       const ts=new Date().toISOString().split("T")[0];
@@ -1904,6 +1910,7 @@ function App(){
     if(!f.ajustes2710a){dispatch({type:"AJUSTES_2710A"});setTimeout(()=>subirNube(),10200);}
     if(!f.ajustes2710b){dispatch({type:"AJUSTES_2710B"});setTimeout(()=>subirNube(),10600);}
     if(!f.ajustes2910a){dispatch({type:"AJUSTES_2910A"});setTimeout(()=>subirNube(),11000);}
+    if(!f.ajustes2910b){dispatch({type:"AJUSTES_2910B"});setTimeout(()=>subirNube(),11400);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
