@@ -539,6 +539,38 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_2910C":{
+      // Cuadre con la cuenta de GAME (29/10): reservas canceladas fuera, unidades/pagado/fechas reales, reservas que faltaban y Fire Emblem comprado
+      const fuera=new Set([33,34,35,36]); // Dawnwalker y Dave the Diver devueltas; Zelda y Mando Pro ya comprados
+      const pend=(u,fin,res)=>Math.round(u*(fin-res)*100)/100;
+      const upd={
+        10:{lanzamiento:"2026-12-18",precioReserva:5,precioFinal:119.99,costePendiente:pend(9,119.99,5),tienda:"GAME"},
+        11:{unidades:13,costeTotal:39,precioReserva:3,precioFinal:79.9,costePendiente:pend(13,79.9,3),tienda:"GAME"},
+        20:{lanzamiento:"2026-12-03",precioReserva:3,precioFinal:49.99,costePendiente:pend(7,49.99,3)},
+        23:{lanzamiento:"2027-03-31",precioReserva:10,precioFinal:199.99,costePendiente:pend(5,199.99,10)},
+        24:{lanzamiento:"2027-03-31",precioReserva:3,precioFinal:59.99,costePendiente:pend(5,59.99,3)},
+        25:{unidades:10,costeTotal:50,precioReserva:5,precioFinal:109.99,costePendiente:pend(10,109.99,5)},
+        28:{lanzamiento:"2027-02-10",costeTotal:80,precioReserva:10,precioFinal:199.99,costePendiente:pend(8,199.99,10)},
+        29:{nombre:"NeoGeo AES+ White Anniversary + Memory Stick (consola)",unidades:5,costeTotal:100,precioReserva:20,precioFinal:299.99,costePendiente:pend(5,299.99,20)},
+        30:{nombre:"NeoGeo AES+ juegos y Memory Card",unidades:7,costeTotal:21,precioReserva:3,precioFinal:0,costePendiente:Math.round((5*76.99+2*26.99)*100)/100,notas:"KOF 2002 ×2, Pulstar, Metal Slug, Big Tournament Golf (79,99) + Memory Card White ×2 (29,99)"},
+        1761700000011:{nombre:"Stellar Blade Complete Steelbook Edition",tienda:"GAME",notas:"Pagado (3 + 66,99), enviado 28/10"}
+      };
+      const nr=(id,nombre,plataforma,lanzamiento,u,res,fin)=>({...EMPTY_R,id,nombre,plataforma,lanzamiento,unidades:u,precioReserva:res,costeTotal:u*res,precioFinal:fin,costePendiente:pend(u,fin,res),tienda:"GAME"});
+      const nuevas=[
+        nr(1761700000021,"Legacy of Kain Defiance Remastered – Deluxe Edition","PS5","2026-11-13",8,3,49.99),
+        nr(1761700000022,"Blasphemous – Martyrs' Edition","Switch","",9,3,49.99),
+        nr(1761700000023,"BloodRayne Definitive Collection – Deluxe Edition","PS5","",6,3,59.99),
+        nr(1761700000024,"BloodRayne Definitive Collection – Deluxe Edition","Switch","",6,3,59.99),
+        nr(1761700000025,"City Hunter – Collector's Edition","Switch","",1,3,69.99),
+        nr(1761700000026,"Tetris Forever – Edición Coleccionista","Switch","2026-12-11",1,10,139.99)
+      ];
+      let reservas=state.reservas.filter(r=>!fuera.has(r.id)).map(r=>upd[r.id]?{...r,...upd[r.id]}:r);
+      reservas=[...reservas,...nuevas.filter(n=>!reservas.some(r=>r.id===n.id))];
+      const ts=new Date().toISOString().split("T")[0];
+      const fe={...EMPTY_P,id:1761700000031,nombre:"Fire Emblem Fortune's Weave – Dagdan Collection",categoria:"Switch 2",stock:1,precioCompra:109.99,valorMercado:109.99,valorFuente:"manual",valorFecha:ts,fechaCompra:"2026-10-26",edicion:"Dagdan Collection",ebayData:null,priceHistory:[]};
+      const products=state.products.some(p=>p.id===fe.id)?state.products:[...state.products,fe];
+      next={...state,reservas,products,flags:{...(state.flags||{}),ajustes2910c:true}};break;
+    }
     case "AJUSTES_2910B":{
       // Reserva Stellar Blade Complete Edition Switch 2 (sale 06/11) a 69,99
       const r={...EMPTY_R,id:1761700000011,nombre:"Stellar Blade Complete Edition",plataforma:"Switch 2",lanzamiento:"2026-11-06",precioReserva:69.99,unidades:1,costeTotal:69.99,costePendiente:0,precioFinal:69.99,notas:"Juego completo en cartucho"};
@@ -1911,6 +1943,7 @@ function App(){
     if(!f.ajustes2710b){dispatch({type:"AJUSTES_2710B"});setTimeout(()=>subirNube(),10600);}
     if(!f.ajustes2910a){dispatch({type:"AJUSTES_2910A"});setTimeout(()=>subirNube(),11000);}
     if(!f.ajustes2910b){dispatch({type:"AJUSTES_2910B"});setTimeout(()=>subirNube(),11400);}
+    if(!f.ajustes2910c){dispatch({type:"AJUSTES_2910C"});setTimeout(()=>subirNube(),11800);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
