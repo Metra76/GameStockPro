@@ -15,4 +15,5 @@ Objetivo: que el valor de cada juego sea **lo que se vende de verdad en eBay**, 
 3. Para cada uno: navegar (no `fetch`, eBay bloquea) a `https://www.ebay.es/sch/i.html?_nkw=<nombre + edición + plataforma>&LH_Sold=1&LH_Complete=1&_ipg=120`, ejecutar `tools/parse-vendidos.js`, filtrar por título según las reglas y calcular la mediana. **Ir despacio** (unos segundos entre búsquedas); si sale "Error Page"/403, parar y seguir otro día.
 4. Añadir/actualizar en `vendidos.json` las entradas `{id, valor, fecha (YYYY-MM-DD de hoy), n (ventas válidas)}` y poner `actualizado` = fecha de hoy. Mantener las entradas anteriores que no se hayan revisado.
 5. Commit + push al repo Metra76/GameStockPro (rama main). La app aplica `vendidos.json` sola al abrirse.
-6. Avisar a Juan con un resumen corto: cuántos revisados, los que más suben y bajan, y los que no tenían ventas suficientes.
+6. Avisar a Juan con un resumen corto: cuántos revisados, **los juegos que más suben y los que más bajan** respecto al valor anterior (en € y %, unos 5 de cada), y los que no tenían ventas suficientes.
+   - **No poner la lista de los más valorados**: eso ya sale en la app (petición de Juan, 03/11/2026).
