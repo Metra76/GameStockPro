@@ -539,6 +539,11 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0411B":{
+      // The Bearer & the Last Flame: comprado hace dos meses (04/09/2026)
+      const products=state.products.map(p=>/bearer/i.test(p.nombre||"")?{...p,fechaCompra:"2026-09-04"}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes0411b:true}};break;
+    }
     case "AJUSTES_0411A":{
       // The Bearer & the Last Flame Knight Edition PS5 a 50 (solo si no estaba ya)
       const ts=new Date().toISOString().split("T")[0];
@@ -1961,6 +1966,7 @@ function App(){
     if(!f.ajustes2910c){dispatch({type:"AJUSTES_2910C"});setTimeout(()=>subirNube(),11800);}
     if(!f.ajustes0311a){dispatch({type:"AJUSTES_0311A"});setTimeout(()=>subirNube(),12200);}
     if(!f.ajustes0411a){dispatch({type:"AJUSTES_0411A"});setTimeout(()=>subirNube(),12600);}
+    if(!f.ajustes0411b){dispatch({type:"AJUSTES_0411B"});setTimeout(()=>subirNube(),13000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
