@@ -539,6 +539,14 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0411A":{
+      // The Bearer & the Last Flame Knight Edition PS5 a 50 (solo si no estaba ya)
+      const ts=new Date().toISOString().split("T")[0];
+      const ya=state.products.some(p=>/bearer/i.test(p.nombre||""));
+      const n={...EMPTY_P,id:1762200000002,nombre:"The Bearer & the Last Flame – Knight Edition",categoria:"PS5",stock:1,precioCompra:50,valorMercado:50,valorFuente:"manual",valorFecha:ts,fechaCompra:"2026-11-04",edicion:"Knight Edition",ebayData:null,priceHistory:[]};
+      const products=ya?state.products:[...state.products,n];
+      next={...state,products,flags:{...(state.flags||{}),ajustes0411a:true}};break;
+    }
     case "AJUSTES_0311A":{
       // Compra Amazon 03/11: Portrait of a Torn Deluxe Edition PS5 a 27,92 (llega 04/11)
       const ts=new Date().toISOString().split("T")[0];
@@ -1952,6 +1960,7 @@ function App(){
     if(!f.ajustes2910b){dispatch({type:"AJUSTES_2910B"});setTimeout(()=>subirNube(),11400);}
     if(!f.ajustes2910c){dispatch({type:"AJUSTES_2910C"});setTimeout(()=>subirNube(),11800);}
     if(!f.ajustes0311a){dispatch({type:"AJUSTES_0311A"});setTimeout(()=>subirNube(),12200);}
+    if(!f.ajustes0411a){dispatch({type:"AJUSTES_0411A"});setTimeout(()=>subirNube(),12600);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
