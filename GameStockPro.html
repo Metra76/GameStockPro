@@ -539,6 +539,11 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0511D":{
+      // Libro Zelda Ciudad Reloj: sale el 17/12/2026
+      const reservas=state.reservas.map(r=>r.id===1762300000031?{...r,lanzamiento:"2026-12-17"}:r);
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes0511d:true}};break;
+    }
     case "AJUSTES_0511C":{
       // Reservas GAME 05/11: libro Zelda "Cartas de Ciudad Reloj – Ed. Numerada Carnaval del Tiempo" x6 a 5; Qliphah In Providence's Shadow PS5 x3 + Switch x1 a 3
       const nr=(id,nombre,plataforma,u,res,notas)=>({...EMPTY_R,id,nombre,plataforma,lanzamiento:"",unidades:u,precioReserva:res,costeTotal:u*res,costePendiente:0,precioFinal:0,tienda:"GAME",notas});
@@ -1995,6 +2000,7 @@ function App(){
     if(!f.ajustes0511a2){dispatch({type:"AJUSTES_0511A"});setTimeout(()=>subirNube(),13400);}
     if(!f.ajustes0511b){dispatch({type:"AJUSTES_0511B"});setTimeout(()=>subirNube(),13800);}
     if(!f.ajustes0511c){dispatch({type:"AJUSTES_0511C"});setTimeout(()=>subirNube(),14200);}
+    if(!f.ajustes0511d){dispatch({type:"AJUSTES_0511D"});setTimeout(()=>subirNube(),14600);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
