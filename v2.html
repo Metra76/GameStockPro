@@ -540,12 +540,12 @@ function reducer(state,action){
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
     case "AJUSTES_0511A":{
-      // Reservas Metroid Ravenous (Switch 2, sale 28/01/2027, 59,99): MediaMarkt x4 y El Corte Ingles x2. Si no estan, se crean; si estan, se completan
-      const base={nombre:"Metroid Ravenous",plataforma:"Switch 2",lanzamiento:"2027-01-28",precioFinal:59.99};
+      // Reservas Metroid Ravenous Edicion Especial (Switch 2, sale 28/01/2027, 119): MediaMarkt x4 y El Corte Ingles x2. Si no estan, se crean; si estan, se completan
+      const base={nombre:"Metroid Ravenous – Edición Especial",plataforma:"Switch 2",lanzamiento:"2027-01-28",precioFinal:119};
       const quiero=[{id:26,tienda:"MediaMarkt",unidades:4},{id:27,tienda:"El Corte Inglés",unidades:2}];
-      let reservas=state.reservas.map(r=>quiero.some(q=>q.id===r.id)||/metroid.*ravenous/i.test(r.nombre||"")?{...r,...base,costePendiente:Math.round((r.unidades||0)*(59.99-(r.precioReserva||0))*100)/100}:r);
-      quiero.forEach(q=>{ if(!reservas.some(r=>/metroid.*ravenous/i.test(r.nombre||"")&&r.tienda===q.tienda)) reservas.push({...EMPTY_R,...base,...q,id:q.id===26?1762300000026:1762300000027,costeTotal:0,costePendiente:Math.round(q.unidades*59.99*100)/100}); });
-      next={...state,reservas,flags:{...(state.flags||{}),ajustes0511a:true}};break;
+      let reservas=state.reservas.map(r=>quiero.some(q=>q.id===r.id)||/metroid.*ravenous/i.test(r.nombre||"")?{...r,...base,costePendiente:Math.round((r.unidades||0)*(119-(r.precioReserva||0))*100)/100}:r);
+      quiero.forEach(q=>{ if(!reservas.some(r=>/metroid.*ravenous/i.test(r.nombre||"")&&r.tienda===q.tienda)) reservas.push({...EMPTY_R,...base,...q,id:q.id===26?1762300000026:1762300000027,costeTotal:0,costePendiente:Math.round(q.unidades*119*100)/100}); });
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes0511a:true,ajustes0511a2:true}};break;
     }
     case "AJUSTES_0411B":{
       // The Bearer & the Last Flame: comprado hace dos meses (04/09/2026)
@@ -1975,7 +1975,7 @@ function App(){
     if(!f.ajustes0311a){dispatch({type:"AJUSTES_0311A"});setTimeout(()=>subirNube(),12200);}
     if(!f.ajustes0411a){dispatch({type:"AJUSTES_0411A"});setTimeout(()=>subirNube(),12600);}
     if(!f.ajustes0411b){dispatch({type:"AJUSTES_0411B"});setTimeout(()=>subirNube(),13000);}
-    if(!f.ajustes0511a){dispatch({type:"AJUSTES_0511A"});setTimeout(()=>subirNube(),13400);}
+    if(!f.ajustes0511a2){dispatch({type:"AJUSTES_0511A"});setTimeout(()=>subirNube(),13400);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
