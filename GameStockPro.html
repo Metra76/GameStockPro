@@ -539,6 +539,17 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0511C":{
+      // Reservas GAME 05/11: libro Zelda "Cartas de Ciudad Reloj – Ed. Numerada Carnaval del Tiempo" x6 a 5; Qliphah In Providence's Shadow PS5 x3 + Switch x1 a 3
+      const nr=(id,nombre,plataforma,u,res,notas)=>({...EMPTY_R,id,nombre,plataforma,lanzamiento:"",unidades:u,precioReserva:res,costeTotal:u*res,costePendiente:0,precioFinal:0,tienda:"GAME",notas});
+      const nuevas=[
+        nr(1762300000031,"Cartas de Ciudad Reloj – Edición Numerada Carnaval del Tiempo (libro Zelda)","Coleccionismo",6,5,"Pago automático activado"),
+        nr(1762300000032,"Qliphah In Providence's Shadow","PS5",3,3,""),
+        nr(1762300000033,"Qliphah In Providence's Shadow","Switch",1,3,"")
+      ];
+      const reservas=[...state.reservas,...nuevas.filter(n=>!state.reservas.some(r=>r.id===n.id))];
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes0511c:true}};break;
+    }
     case "AJUSTES_0511B":{
       // Metroid Ravenous Ed. Especial: MediaMarkt 6 sin senal; El Corte Ingles 1 ya pagada (119)
       const fix={"MediaMarkt":{unidades:6,precioReserva:0,costeTotal:0,costePendiente:714},"El Corte Inglés":{unidades:1,precioReserva:119,costeTotal:119,costePendiente:0}};
@@ -1983,6 +1994,7 @@ function App(){
     if(!f.ajustes0411b){dispatch({type:"AJUSTES_0411B"});setTimeout(()=>subirNube(),13000);}
     if(!f.ajustes0511a2){dispatch({type:"AJUSTES_0511A"});setTimeout(()=>subirNube(),13400);}
     if(!f.ajustes0511b){dispatch({type:"AJUSTES_0511B"});setTimeout(()=>subirNube(),13800);}
+    if(!f.ajustes0511c){dispatch({type:"AJUSTES_0511C"});setTimeout(()=>subirNube(),14200);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
