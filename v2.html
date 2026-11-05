@@ -539,6 +539,12 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0511B":{
+      // Metroid Ravenous Ed. Especial: MediaMarkt 6 sin senal; El Corte Ingles 1 ya pagada (119)
+      const fix={"MediaMarkt":{unidades:6,precioReserva:0,costeTotal:0,costePendiente:714},"El Corte Inglés":{unidades:1,precioReserva:119,costeTotal:119,costePendiente:0}};
+      const reservas=state.reservas.map(r=>/metroid.*ravenous/i.test(r.nombre||"")&&fix[r.tienda]?{...r,...fix[r.tienda]}:r);
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes0511b:true}};break;
+    }
     case "AJUSTES_0511A":{
       // Reservas Metroid Ravenous Edicion Especial (Switch 2, sale 28/01/2027, 119): MediaMarkt x4 y El Corte Ingles x2. Si no estan, se crean; si estan, se completan
       const base={nombre:"Metroid Ravenous – Edición Especial",plataforma:"Switch 2",lanzamiento:"2027-01-28",precioFinal:119};
@@ -1976,6 +1982,7 @@ function App(){
     if(!f.ajustes0411a){dispatch({type:"AJUSTES_0411A"});setTimeout(()=>subirNube(),12600);}
     if(!f.ajustes0411b){dispatch({type:"AJUSTES_0411B"});setTimeout(()=>subirNube(),13000);}
     if(!f.ajustes0511a2){dispatch({type:"AJUSTES_0511A"});setTimeout(()=>subirNube(),13400);}
+    if(!f.ajustes0511b){dispatch({type:"AJUSTES_0511B"});setTimeout(()=>subirNube(),13800);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
