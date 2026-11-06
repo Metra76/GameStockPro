@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-06.2",
+ "actualizado": "2026-11-06.3",
  "nota": "Valores de ventas reales de eBay (precio + envío), nuevos/precintados y misma edición. Lo actualiza el repaso semanal de Claude.",
  "items": [
   {
@@ -811,6 +811,66 @@
    "valor": 29,
    "fecha": "2026-11-06",
    "n": 3
+  },
+  {
+   "id": 165,
+   "valor": 146,
+   "fecha": "2026-11-06",
+   "n": 82
+  },
+  {
+   "id": 195,
+   "valor": 98,
+   "fecha": "2026-11-06",
+   "n": 15
+  },
+  {
+   "id": 187,
+   "valor": 76,
+   "fecha": "2026-11-06",
+   "n": 44
+  },
+  {
+   "id": 108,
+   "valor": 76,
+   "fecha": "2026-11-06",
+   "n": 34
+  },
+  {
+   "id": 209,
+   "valor": 51,
+   "fecha": "2026-11-06",
+   "n": 30
+  },
+  {
+   "id": 251,
+   "valor": 54,
+   "fecha": "2026-11-06",
+   "n": 7
+  },
+  {
+   "id": 125,
+   "valor": 63,
+   "fecha": "2026-11-06",
+   "n": 41
+  },
+  {
+   "id": 161,
+   "valor": 74,
+   "fecha": "2026-11-06",
+   "n": 16
+  },
+  {
+   "id": 152,
+   "valor": 83,
+   "fecha": "2026-11-06",
+   "n": 19
+  },
+  {
+   "id": 210,
+   "valor": 73,
+   "fecha": "2026-11-06",
+   "n": 14
   }
  ]
 }
