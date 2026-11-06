@@ -539,6 +539,13 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0611A":{
+      // Compra Wallapop 06/11: Zelda Ocarina of Time Switch 2 caratula foil + pegatinas, 80 puesto en casa (va al pack de la consola Zelda)
+      const ts=new Date().toISOString().split("T")[0];
+      const n={...EMPTY_P,id:1762400000001,nombre:"The Legend of Zelda: Ocarina of Time – Carátula foil + pegatinas",categoria:"Switch 2",stock:1,precioCompra:80,valorMercado:80,valorFuente:"manual",valorFecha:ts,fechaCompra:"2026-11-06",lanzamiento:"2026-11-05",edicion:"Carátula foil",notas:"Wallapop, puesto en casa. Para el pack de la Switch 2 Zelda 40 aniversario",ebayData:null,priceHistory:[]};
+      const products=state.products.some(p=>p.id===n.id)?state.products:[...state.products,n];
+      next={...state,products,flags:{...(state.flags||{}),ajustes0611a:true}};break;
+    }
     case "AJUSTES_0511D":{
       // Libro Zelda Ciudad Reloj: sale el 17/12/2026
       const reservas=state.reservas.map(r=>r.id===1762300000031?{...r,lanzamiento:"2026-12-17"}:r);
@@ -2001,6 +2008,7 @@ function App(){
     if(!f.ajustes0511b){dispatch({type:"AJUSTES_0511B"});setTimeout(()=>subirNube(),13800);}
     if(!f.ajustes0511c){dispatch({type:"AJUSTES_0511C"});setTimeout(()=>subirNube(),14200);}
     if(!f.ajustes0511d){dispatch({type:"AJUSTES_0511D"});setTimeout(()=>subirNube(),14600);}
+    if(!f.ajustes0611a){dispatch({type:"AJUSTES_0611A"});setTimeout(()=>subirNube(),15000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
