@@ -539,6 +539,14 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0611B":{
+      // Datos de GAME (06/11): Qliphah sale 26/11 a 49,99; libro Ciudad Reloj 49,99. Y los productos Zelda dejan de ser "a mano" para que vendidos.json les ponga el valor real
+      const fin={1762300000031:{precioFinal:49.99,costePendiente:Math.round(6*44.99*100)/100},1762300000032:{lanzamiento:"2026-11-26",precioFinal:49.99,costePendiente:Math.round(3*46.99*100)/100},1762300000033:{lanzamiento:"2026-11-26",precioFinal:49.99,costePendiente:46.99}};
+      const reservas=state.reservas.map(r=>fin[r.id]?{...r,...fin[r.id]}:r);
+      const ids=new Set([1761700000001,1761700000002,1761700000003,1762400000001]);
+      const products=state.products.map(p=>ids.has(p.id)&&p.valorFuente==="manual"?{...p,valorFuente:"ebay-estimado"}:p);
+      next={...state,reservas,products,flags:{...(state.flags||{}),ajustes0611b:true}};break;
+    }
     case "AJUSTES_0611A":{
       // Compra Wallapop 06/11: Zelda Ocarina of Time Switch 2 caratula foil + pegatinas, 80 puesto en casa (va al pack de la consola Zelda)
       const ts=new Date().toISOString().split("T")[0];
@@ -2009,6 +2017,7 @@ function App(){
     if(!f.ajustes0511c){dispatch({type:"AJUSTES_0511C"});setTimeout(()=>subirNube(),14200);}
     if(!f.ajustes0511d){dispatch({type:"AJUSTES_0511D"});setTimeout(()=>subirNube(),14600);}
     if(!f.ajustes0611a){dispatch({type:"AJUSTES_0611A"});setTimeout(()=>subirNube(),15000);}
+    if(!f.ajustes0611b){dispatch({type:"AJUSTES_0611B"});setTimeout(()=>subirNube(),15400);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
