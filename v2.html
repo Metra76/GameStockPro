@@ -539,6 +539,13 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0711A":{
+      // AC Shadows CE vendido en eBay el 08/05/2026 (pedido 18-14595-73194, Las Palmas): 350 + 100 envío = 450, tarifas 54,01. Fuera del stock.
+      const id=1762500000001;
+      const movements=state.movements.some(m=>m.id===id)?state.movements:[...state.movements,{id,tipo:"Venta",fecha:"2026-05-08",productoId:42,nombreProducto:"Assassin's Creed Shadows Collector's Edition",categoriaVenta:"PS5",cantidad:1,coste:210,precioVenta:450,ebayFee:54.01,historico:true,nota:"eBay · Las Palmas de Gran Canaria · pedido 18-14595-73194 · tarifas 54,01 (coste del envío sin apuntar)"}];
+      const products=state.products.map(p=>p.id===42?{...p,stock:0}:p);
+      next={...state,movements,products,flags:{...(state.flags||{}),ajustes0711a:true}};break;
+    }
     case "AJUSTES_0611C":{
       // Juan: Hyper Light Drifter de Switch es la Special Edition
       const products=state.products.map(p=>p.id===219?{...p,edicion:"Special"}:p);
@@ -2024,6 +2031,7 @@ function App(){
     if(!f.ajustes0611a){dispatch({type:"AJUSTES_0611A"});setTimeout(()=>subirNube(),15000);}
     if(!f.ajustes0611b){dispatch({type:"AJUSTES_0611B"});setTimeout(()=>subirNube(),15400);}
     if(!f.ajustes0611c){dispatch({type:"AJUSTES_0611C"});setTimeout(()=>subirNube(),15800);}
+    if(!f.ajustes0711a){dispatch({type:"AJUSTES_0711A"});setTimeout(()=>subirNube(),16200);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
