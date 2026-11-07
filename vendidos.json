@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-07.5",
+ "actualizado": "2026-11-07.6",
  "nota": "Valores de ventas reales de eBay (precio + envío), nuevos/precintados y misma edición. Lo actualiza el repaso semanal de Claude.",
  "items": [
   {
@@ -23,12 +23,6 @@
   {
    "id": 262,
    "valor": 175,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
-   "id": 297,
-   "valor": 164,
    "fecha": "2026-10-20",
    "n": 0
   },
@@ -77,12 +71,6 @@
   {
    "id": 271,
    "valor": 95,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
-   "id": 77,
-   "valor": 103,
    "fecha": "2026-10-20",
    "n": 0
   },
@@ -149,12 +137,6 @@
   {
    "id": 229,
    "valor": 48,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
-   "id": 94,
-   "valor": 149,
    "fecha": "2026-10-20",
    "n": 0
   },
@@ -235,12 +217,6 @@
    "valor": 80,
    "fecha": "2026-10-26",
    "n": 12
-  },
-  {
-   "id": 101,
-   "valor": 128,
-   "fecha": "2026-10-26",
-   "n": 18
   },
   {
    "id": 122,
@@ -1232,6 +1208,76 @@
    "fecha": "2026-11-07",
    "n": 26,
    "region": "mixta"
+  },
+  {
+   "id": 297,
+   "valor": 154,
+   "fecha": "2026-11-07",
+   "n": 69,
+   "region": "mixta"
+  },
+  {
+   "id": 94,
+   "valor": 162,
+   "fecha": "2026-11-07",
+   "n": 10,
+   "region": "mixta"
+  },
+  {
+   "id": 101,
+   "valor": 98,
+   "fecha": "2026-11-07",
+   "n": 16,
+   "region": "mixta"
+  },
+  {
+   "id": 77,
+   "valor": 104,
+   "fecha": "2026-11-07",
+   "n": 57,
+   "region": "mixta"
+  },
+  {
+   "id": 118,
+   "valor": 55,
+   "fecha": "2026-11-07",
+   "n": 18,
+   "region": "mixta"
+  },
+  {
+   "id": 136,
+   "valor": 39,
+   "fecha": "2026-11-07",
+   "n": 24,
+   "region": "mixta"
+  },
+  {
+   "id": 119,
+   "valor": 37,
+   "fecha": "2026-11-07",
+   "n": 33,
+   "region": "mixta"
+  },
+  {
+   "id": 121,
+   "valor": 45,
+   "fecha": "2026-11-07",
+   "n": 21,
+   "region": "mixta"
+  },
+  {
+   "id": 115,
+   "valor": 48,
+   "fecha": "2026-11-07",
+   "n": 15,
+   "region": "mixta"
+  },
+  {
+   "id": 133,
+   "valor": 68,
+   "fecha": "2026-11-07",
+   "n": 10,
+   "region": "PAL"
   }
  ]
 }
