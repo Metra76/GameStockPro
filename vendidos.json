@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-07.6",
+ "actualizado": "2026-11-07.7",
  "nota": "Valores de ventas reales de eBay (precio + envío), nuevos/precintados y misma edición. Lo actualiza el repaso semanal de Claude.",
  "items": [
   {
@@ -1278,6 +1278,20 @@
    "fecha": "2026-11-07",
    "n": 10,
    "region": "PAL"
+  },
+  {
+   "id": 127,
+   "valor": 47,
+   "fecha": "2026-11-07",
+   "n": 13,
+   "region": "mixta"
+  },
+  {
+   "id": 124,
+   "valor": 57,
+   "fecha": "2026-11-07",
+   "n": 9,
+   "region": "mixta"
   }
  ]
 }
