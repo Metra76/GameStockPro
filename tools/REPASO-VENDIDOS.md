@@ -18,3 +18,10 @@ Objetivo: que el valor de cada juego sea **lo que se vende de verdad en eBay**, 
 5. Commit + push al repo Metra76/GameStockPro (rama main). La app aplica `vendidos.json` sola al abrirse.
 6. Avisar a Juan con un resumen corto: cuántos revisados, **los juegos que más suben y los que más bajan** respecto al valor anterior (en € y %, unos 5 de cada), y los que no tenían ventas suficientes.
    - **No poner la lista de los más valorados**: eso ya sale en la app (petición de Juan, 03/11/2026).
+
+
+## Región (desde 07/11/2026, petición de Juan: "vamos a lo seguro")
+- Juan tiene ediciones PAL (casi todas PAL España). El script prioriza las ventas cuyo título dice PAL/EUR/ESP/España/Europe/UK/PEGI: si hay 3 o más, el valor sale solo de esas.
+- Si no llegan a 3, se usa la mezcla de regiones y se guarda `"region":"mixta"` en vendidos.json; la ficha de la app lo muestra como "región mixta".
+- Cada entrada de vendidos.json lleva `region` ("PAL" o "mixta"). Las anteriores al 07/11 no lo llevan y cuentan como mixtas: hay que repasarlas.
+- Excluir siempre versiones japonesas/asiáticas salvo que el producto sea JP.

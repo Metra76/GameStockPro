@@ -318,7 +318,7 @@ const FUENTE=p=>{
   if(p.valorFuente==="ebay-estimado") return {t:`estimado · ${n} anuncios ×0,79`,c:"var(--yellow)"};
   if(p.valorFuente==="ebay-mediana") return {t:`eBay · ${n} anuncios`,c:"var(--green)"};
   if(p.valorFuente==="ebay-pocos") return {t:`eBay · solo ${n} anuncio${n===1?"":"s"}`,c:"var(--yellow)"};
-  if(p.valorFuente==="ebay-vendidos-es") return {t:`eBay vendidos${p.valorVentas?` · ${p.valorVentas} ventas`:""}`,c:"var(--green)"};
+  if(p.valorFuente==="ebay-vendidos-es") return {t:`eBay vendidos${p.valorVentas?` · ${p.valorVentas} ventas`:""}${p.valorRegion==="PAL"?" · PAL":" · región mixta"}`,c:"var(--green)"};
   if(p.valorFuente==="ebay-usado") return {t:"precio de usado",c:"var(--yellow)"};
   if(p.valorFuente==="stockx") return {t:"StockX · media 3 meses",c:"var(--green)"};
   return {t:"puesto a mano",c:"var(--text3)"};
@@ -525,11 +525,11 @@ function reducer(state,action){
       const products=state.products.map(p=>{
         const it=m[p.id];if(!it||!(it.valor>0)) return p;
         if(["manual","stockx"].includes(p.valorFuente)) return p;
-        if(p.valorFuente==="ebay-vendidos-es"&&(p.valorFecha||"")>=it.fecha&&p.valorMercado===it.valor) return p;
+        if(p.valorFuente==="ebay-vendidos-es"&&(p.valorFecha||"")>=it.fecha&&p.valorMercado===it.valor&&(p.valorRegion||"mixta")===(it.region||"mixta")) return p;
         if(p.valorFuente!=="ebay-vendidos-es"){const k=seccionDe(p.categoria);corr[k]=(corr[k]||0)+(it.valor-(p.valorMercado||p.precioCompra||0))*(p.stock||0);}
         const ph=[...(p.priceHistory||[])];const last=ph[ph.length-1];
         if(!last||last.date!==it.fecha) ph.push({date:it.fecha,price:it.valor});
-        return {...p,valorMercado:it.valor,valorFuente:"ebay-vendidos-es",valorFecha:it.fecha,valorVentas:it.n||0,priceHistory:ph};
+        return {...p,valorMercado:it.valor,valorFuente:"ebay-vendidos-es",valorFecha:it.fecha,valorVentas:it.n||0,valorRegion:it.region||"mixta",priceHistory:ph};
       });
       const hoyC=new Date().toISOString().split("T")[0];
       const historial=(state.historial||[]).map(e=>{

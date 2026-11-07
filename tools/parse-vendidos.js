@@ -10,6 +10,7 @@
 //   dias:       ventana en días (por defecto 90)
 // Devuelve: n (ventas válidas), mediana (precio + envío), rango, cuántos atípicos se quitaron y 5 títulos de muestra
 // para comprobar que la edición es la buena. Si n < 3, no se toca el valor.
+// region: "PAL" si la mediana sale de 3+ ventas que dicen PAL/EUR/ESP; "mixta" si se usó la mezcla. Guardarlo en vendidos.json (campo region).
 ((cfg)=>{
   const {incluir, excluir=null, plataforma="", dias=90}=cfg;
   const num=x=>+String(x).replace(/\./g,"").replace(",",".");
@@ -45,10 +46,16 @@
   // Quitar atípicos (lotes, consolas, errores): fuera lo que esté por debajo de 1/2.5 o por encima de 2.5 veces la mediana
   let validas=ok;const m0=med(ok);
   if(m0&&ok.length>=4){validas=ok.filter(o=>o.p>=m0/2.5&&o.p<=m0*2.5);fuera=ok.length-validas.length;}
-  const mediana=med(validas);const ps=validas.map(o=>o.p);
+  // Región: priorizar ventas que dicen PAL/EUR/ESP. Si hay 3 o más, la mediana sale solo de esas (region:"PAL");
+  // si no, de todas (region:"mixta").
+  const PAL=/\b(pal|eur|euro|esp|españa|espana|spain|castellano|european|europa|europe|uk|pegi)\b|versi[oó]n (española|espa[nñ]ola|europea)/i;
+  const pal=validas.filter(o=>PAL.test(o.ti));
+  const usar=pal.length>=3?pal:validas;const region=pal.length>=3?"PAL":"mixta";
+  const mediana=med(usar);const ps=usar.map(o=>o.p);
   return JSON.stringify({
-    anuncios:total, n:validas.length, mediana:mediana==null?null:Math.round(mediana),
+    region, nPal:pal.length,
+    anuncios:total, n:usar.length, mediana:mediana==null?null:Math.round(mediana),
     rango:ps.length?[Math.min(...ps),Math.max(...ps)]:null, atipicosQuitados:fuera,
-    muestra:validas.slice(0,5).map(o=>o.p+" "+o.ti.slice(0,45))
+    muestra:usar.slice(0,5).map(o=>o.p+" "+o.ti.slice(0,45))
   });
 })({incluir:/NOMBRE/i, excluir:null, plataforma:"PS5", dias:90})
