@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-07.12",
+ "actualizado": "2026-11-08",
  "nota": "Valores de ventas reales de eBay (precio + envío), nuevos/precintados y misma edición. Lo actualiza el repaso semanal de Claude.",
  "items": [
   {
@@ -33,12 +33,6 @@
    "n": 0
   },
   {
-   "id": 61,
-   "valor": 111,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
    "id": 36,
    "valor": 100,
    "fecha": "2026-10-20",
@@ -47,24 +41,6 @@
   {
    "id": 86,
    "valor": 94,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
-   "id": 217,
-   "valor": 97,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
-   "id": 38,
-   "valor": 137,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
-   "id": 106,
-   "valor": 127,
    "fecha": "2026-10-20",
    "n": 0
   },
@@ -111,12 +87,6 @@
    "n": 0
   },
   {
-   "id": 200,
-   "valor": 135,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
    "id": 112,
    "valor": 131,
    "fecha": "2026-10-20",
@@ -137,12 +107,6 @@
   {
    "id": 229,
    "valor": 48,
-   "fecha": "2026-10-20",
-   "n": 0
-  },
-  {
-   "id": 150,
-   "valor": 119,
    "fecha": "2026-10-20",
    "n": 0
   },
@@ -363,12 +327,6 @@
    "n": 12
   },
   {
-   "id": 32,
-   "valor": 125,
-   "fecha": "2026-10-26",
-   "n": 5
-  },
-  {
    "id": 33,
    "valor": 40,
    "fecha": "2026-10-26",
@@ -463,12 +421,6 @@
    "valor": 51,
    "fecha": "2026-11-02",
    "n": 65
-  },
-  {
-   "id": 273,
-   "valor": 206,
-   "fecha": "2026-11-02",
-   "n": 21
   },
   {
    "id": 288,
@@ -1564,6 +1516,62 @@
    "valor": 54,
    "fecha": "2026-11-07",
    "n": 4,
+   "region": "mixta"
+  },
+  {
+   "id": 273,
+   "valor": 207,
+   "fecha": "2026-11-08",
+   "n": 14,
+   "region": "mixta"
+  },
+  {
+   "id": 38,
+   "valor": 178,
+   "fecha": "2026-11-08",
+   "n": 24,
+   "region": "mixta"
+  },
+  {
+   "id": 200,
+   "valor": 92,
+   "fecha": "2026-11-08",
+   "n": 8,
+   "region": "mixta"
+  },
+  {
+   "id": 106,
+   "valor": 120,
+   "fecha": "2026-11-08",
+   "n": 9,
+   "region": "mixta"
+  },
+  {
+   "id": 32,
+   "valor": 122,
+   "fecha": "2026-11-08",
+   "n": 6,
+   "region": "mixta"
+  },
+  {
+   "id": 150,
+   "valor": 117,
+   "fecha": "2026-11-08",
+   "n": 25,
+   "region": "mixta"
+  },
+  {
+   "id": 61,
+   "valor": 101,
+   "fecha": "2026-11-08",
+   "n": 20,
+   "region": "mixta"
+  },
+  {
+   "id": 217,
+   "valor": 115,
+   "fecha": "2026-11-08",
+   "n": 17,
    "region": "mixta"
   }
  ]
