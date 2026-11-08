@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-08.3",
+ "actualizado": "2026-11-08.4",
  "nota": "Valores de ventas reales de eBay (precio + envío), nuevos/precintados y misma edición. Lo actualiza el repaso semanal de Claude.",
  "items": [
   {
@@ -87,12 +87,6 @@
    "n": 13
   },
   {
-   "id": 18,
-   "valor": 54,
-   "fecha": "2026-10-26",
-   "n": 53
-  },
-  {
    "id": 35,
    "valor": 44,
    "fecha": "2026-10-26",
@@ -157,12 +151,6 @@
    "valor": 82,
    "fecha": "2026-10-26",
    "n": 4
-  },
-  {
-   "id": 177,
-   "valor": 64,
-   "fecha": "2026-10-26",
-   "n": 6
   },
   {
    "id": 242,
@@ -237,12 +225,6 @@
    "n": 18
   },
   {
-   "id": 26,
-   "valor": 59,
-   "fecha": "2026-10-26",
-   "n": 18
-  },
-  {
    "id": 28,
    "valor": 47,
    "fecha": "2026-10-26",
@@ -279,12 +261,6 @@
    "n": 4
   },
   {
-   "id": 48,
-   "valor": 58,
-   "fecha": "2026-10-26",
-   "n": 18
-  },
-  {
    "id": 52,
    "valor": 43,
    "fecha": "2026-11-02",
@@ -307,12 +283,6 @@
    "valor": 48,
    "fecha": "2026-11-02",
    "n": 3
-  },
-  {
-   "id": 137,
-   "valor": 64,
-   "fecha": "2026-11-02",
-   "n": 37
   },
   {
    "id": 174,
@@ -355,12 +325,6 @@
    "valor": 39,
    "fecha": "2026-11-02",
    "n": 36
-  },
-  {
-   "id": 347,
-   "valor": 55,
-   "fecha": "2026-11-02",
-   "n": 26
   },
   {
    "id": 12,
@@ -411,12 +375,6 @@
    "n": 43
   },
   {
-   "id": 47,
-   "valor": 53,
-   "fecha": "2026-11-02",
-   "n": 3
-  },
-  {
    "id": 49,
    "valor": 50,
    "fecha": "2026-11-02",
@@ -451,12 +409,6 @@
    "valor": 36,
    "fecha": "2026-11-02",
    "n": 16
-  },
-  {
-   "id": 62,
-   "valor": 63,
-   "fecha": "2026-11-02",
-   "n": 53
   },
   {
    "id": 63,
@@ -1588,6 +1540,62 @@
    "valor": 70,
    "fecha": "2026-11-08",
    "n": 18,
+   "region": "mixta"
+  },
+  {
+   "id": 137,
+   "valor": 65,
+   "fecha": "2026-11-08",
+   "n": 33,
+   "region": "mixta"
+  },
+  {
+   "id": 177,
+   "valor": 55,
+   "fecha": "2026-11-08",
+   "n": 3,
+   "region": "PAL"
+  },
+  {
+   "id": 62,
+   "valor": 62,
+   "fecha": "2026-11-08",
+   "n": 11,
+   "region": "PAL"
+  },
+  {
+   "id": 26,
+   "valor": 44,
+   "fecha": "2026-11-08",
+   "n": 3,
+   "region": "PAL"
+  },
+  {
+   "id": 347,
+   "valor": 54,
+   "fecha": "2026-11-08",
+   "n": 31,
+   "region": "mixta"
+  },
+  {
+   "id": 18,
+   "valor": 54,
+   "fecha": "2026-11-08",
+   "n": 63,
+   "region": "mixta"
+  },
+  {
+   "id": 48,
+   "valor": 57,
+   "fecha": "2026-11-08",
+   "n": 24,
+   "region": "mixta"
+  },
+  {
+   "id": 47,
+   "valor": 45,
+   "fecha": "2026-11-08",
+   "n": 4,
    "region": "mixta"
   }
  ]
