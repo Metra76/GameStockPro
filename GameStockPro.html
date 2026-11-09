@@ -2263,35 +2263,75 @@ function App(){
           </div>}
 
           {/* Héroe: valor de la colección */}
-          <button onClick={()=>go("oportunidades")} style={{...S.card,background:"var(--ink)",border:"1px solid var(--ink)",width:"100%",textAlign:"left",padding:"20px 18px 18px",marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden",color:"#fff"}}>
+          <div onClick={()=>go("oportunidades")} style={{...S.card,background:"var(--ink)",border:"1px solid var(--ink)",padding:"20px 18px 16px",marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden",color:"#fff"}}>
             <div style={{position:"absolute",right:-50,top:-50,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,var(--accent2) 0%,transparent 70%)",opacity:.38,pointerEvents:"none"}}/>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"rgba(255,255,255,.62)"}}>Valor de la colección</div>
             <div style={{fontFamily:"var(--display)",fontSize:40,lineHeight:1.02,marginTop:7,letterSpacing:priv?3:-1.2}}>{H(`${fmt(kpi.vm)} €`)}</div>
             {!priv&&<div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"rgba(255,255,255,.12)",color:kpi.vm>=kpi.inv?"#4ADE9A":"#FF8A96",fontWeight:700,fontSize:12.5,padding:"5px 10px",borderRadius:999}}>
               {kpi.vm>=kpi.inv?"▲":"▼"} {`${kpi.vm>=kpi.inv?"+":""}${fmt(kpi.vm-kpi.inv)} €`} · {kpi.inv>0?((kpi.vm-kpi.inv)/kpi.inv*100).toFixed(1):"0"} % sobre coste
             </div>}
-          </button>
-
-          {/* Chips de cifras */}
-          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,marginBottom:10,scrollbarWidth:"none"}}>
-            {[
-              {l:"Invertido",v:H(`${fmt(kpi.inv)} €`),c:"var(--text)",nav:"stock"},
-              {l:"Beneficio",v:H(`${kpi.ben>=0?"+":""}${fmt(kpi.ben)} €`),c:kpi.ben>=0?"var(--green)":"var(--red)",nav:"ventas"},
-              {l:"Ingresos",v:H(`${fmt(kpi.ing)} €`),c:"var(--text)",nav:"ventas"},
-              {l:"ROI ventas",v:H(`${fmt(kpi.roi)}%`),c:kpi.roi>=0?"var(--green)":"var(--red)",nav:"ventas"},
-              {l:"Multiplicador",v:H(`×${kpi.inv>0?(kpi.vm/kpi.inv).toFixed(2):"∞"}`),c:"var(--yellow)",nav:"oportunidades"},
-            ].map((k,i)=>(
-              <button key={i} onClick={()=>{if(k.nav==="ventas") setVentasMes(null);go(k.nav);}} style={{...S.card,flex:"none",minWidth:112,padding:"10px 13px",cursor:"pointer",textAlign:"left"}}>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"var(--text3)"}}>{k.l}</div>
-                <div style={{fontFamily:"var(--display)",fontSize:16,letterSpacing:-.4,marginTop:3,color:k.c}}>{k.v}</div>
-              </button>
-            ))}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginTop:16,paddingTop:14,borderTop:"1px solid rgba(255,255,255,.14)",position:"relative"}}>
+              {[
+                {l:"Invertido",v:H(`${fmt(kpi.inv)} €`),c:"#fff",nav:"stock"},
+                {l:"Beneficio",v:H(`${kpi.ben>=0?"+":""}${fmt(kpi.ben)} €`),c:kpi.ben>=0?"#4ADE9A":"#FF8A96",sub:`ROI ${fmt(kpi.roi)} %`,nav:"ventas"},
+                {l:"Ingresos",v:H(`${fmt(kpi.ing)} €`),c:"#fff",nav:"ventas"},
+              ].map(k=>(
+                <div key={k.l} onClick={e=>{e.stopPropagation();if(k.nav==="stock") setTab("stock"); else {setVentasMes(null);go(k.nav);}}} style={{minWidth:0}}>
+                  <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>{k.l}</div>
+                  <div style={{fontSize:14.5,fontWeight:700,marginTop:3,color:k.c,whiteSpace:"nowrap",letterSpacing:-.2}}>{k.v}</div>
+                  {k.sub&&!priv&&<div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>{k.sub}</div>}
+                </div>))}
+            </div>
           </div>
+
+          {/* Evolucion del valor de la seccion: estimado hacia atras + fotos diarias reales */}
+          {(()=>{
+            const {h,corte}=serieEvolucion(state,seccion);
+            const W=320,Hh=130,pad=6;
+            const ult=h[h.length-1], pri=h[0];
+            let svg=null;
+            if(h.length>=2){
+              const t=d=>new Date(d+"T00:00:00Z").getTime(), t0=t(pri.d), t1=t(ult.d);
+              const xs=d=>pad+(t1>t0?(t(d)-t0)/(t1-t0):0)*(W-2*pad);
+              const max=Math.max(...h.map(e=>Math.max(e.vm,e.inv,e.ben||0))),min=Math.min(0,...h.map(e=>Math.min(e.vm,e.inv,e.ben||0)));
+              const ys=v=>Hh-pad-(max===min?0.5:(v-min)/(max-min))*(Hh-2*pad);
+              const linea=(arr,k)=>arr.map((e,i)=>`${i?"L":"M"}${xs(e.d).toFixed(1)},${ys(e[k]).toFixed(1)}`).join(" ");
+              const hEst=h.filter(e=>e.est), hReal=h.filter(e=>!e.est);
+              const vmEst=hReal.length&&hEst.length?[...hEst,hReal[0]]:hEst;
+              const xc=hReal.length?xs(hReal[0].d):null;
+              const años=[];for(let y=+pri.d.slice(0,4)+1;y<=+ult.d.slice(0,4);y++)años.push(y);
+              svg=(<svg viewBox={`0 0 ${W} ${Hh+14}`} style={{width:"100%",display:"block"}}>
+                {años.map(y=>{const x=xs(`${y}-01-01`);return <g key={y}><line x1={x} x2={x} y1={pad} y2={Hh} stroke="var(--border)" strokeWidth=".6"/><text x={x} y={Hh+11} fontSize="8.5" textAnchor="middle" fill="var(--text3)">{y}</text></g>;})}
+                <path d={linea(h,"vm")+` L${xs(ult.d)},${Hh} L${xs(pri.d)},${Hh} Z`} fill="var(--accent3)" opacity=".5"/>
+                {vmEst.length>1&&<path d={linea(vmEst,"vm")} fill="none" stroke="var(--accent2)" strokeWidth="2" strokeDasharray="5 3" opacity=".75" strokeLinejoin="round"/>}
+                {hReal.length>1&&<path d={linea(hReal,"vm")} fill="none" stroke="var(--accent2)" strokeWidth="2.4" strokeLinejoin="round"/>}
+                <path d={linea(h,"inv")} fill="none" stroke="var(--text3)" strokeWidth="1.4" strokeDasharray="4 4"/>
+                <path d={linea(h,"ben")} fill="none" stroke="var(--green)" strokeWidth="1.6" strokeLinejoin="round"/>
+                {xc!=null&&<circle cx={xc} cy={ys(hReal[0].vm)} r="2.6" fill="var(--accent2)"/>}
+              </svg>);
+            }
+            const dif=ult&&pri?ult.vm-pri.vm:0;
+            return(
+            <div onClick={()=>go("evolucion")} style={{...S.card,padding:"14px 16px",marginBottom:10,cursor:"pointer"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Evolución del valor</div>
+                {h.length>=2&&!priv&&<div style={{fontSize:12,fontWeight:700,color:dif>=0?"var(--green)":"var(--red)"}}>{dif>=0?"+":""}{fmt(dif)} € desde {["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][+pri.d.slice(5,7)-1]} {pri.d.slice(0,4)}</div>}
+              </div>
+              {svg?<div style={{marginTop:8}}>{svg}</div>
+                :<div style={{fontSize:12.5,color:"var(--text3)",marginTop:8,lineHeight:1.45}}>Aún no hay datos suficientes.</div>}
+              {svg&&<><div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px",marginTop:8,fontSize:12,color:"var(--text2)"}}>
+                <span><span style={{display:"inline-block",width:12,height:3,background:"var(--accent2)",verticalAlign:"middle",marginRight:5,borderRadius:2}}/>Valor</span>
+                <span><span style={{display:"inline-block",width:12,borderTop:"2px dashed var(--text3)",verticalAlign:"middle",marginRight:5}}/>Invertido</span>
+                <span><span style={{display:"inline-block",width:12,height:3,background:"var(--green)",verticalAlign:"middle",marginRight:5,borderRadius:2}}/>Beneficio de ventas</span>
+              </div>
+              <div style={{fontSize:11.5,color:"var(--text3)",marginTop:6,lineHeight:1.4}}>{corte!=="9999"?`La línea discontinua es una estimación anterior al ${corte.split("-").reverse().join("/")}. `:""}<b style={{color:"var(--text)"}}>Toca para ver por años ›</b></div></>}
+            </div>);
+          })()}
 
           {/* Rentabilidad sobre tu dinero */}
           <button onClick={()=>{setCapForm({inicio:kpi.inicio,fecha:today,importe:""});setModal("capital");}} style={{...S.card,width:"100%",textAlign:"left",padding:"14px 16px",marginBottom:10,cursor:"pointer",color:"var(--text)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-              <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Sobre tu dinero</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Sobre tu dinero</div>
               <div style={{fontSize:11,color:"var(--text3)"}}>{kpi.anos.toFixed(1).replace(".",",")} años</div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:9}}>
@@ -2301,7 +2341,7 @@ function App(){
                 kpi.propio>0?{l:"Al año",v:H(`${kpi.aProp>=0?"+":""}${kpi.aProp.toFixed(0)} %`),c:kpi.aProp>=0?"var(--green)":"var(--red)"}
                   :{l:"Todo es ganancia",v:H(`${fmt(kpi.vm)} €`),c:"var(--green)"}].map((k,i)=>(
                 <div key={i}>
-                  <div style={{fontSize:10,color:"var(--text3)",fontWeight:600}}>{k.l}</div>
+                  <div style={{fontSize:11.5,color:"var(--text3)",fontWeight:600}}>{k.l}</div>
                   <div style={{fontFamily:"var(--display)",fontSize:16,letterSpacing:-.4,marginTop:2,color:k.c}}>{k.v}</div>
                 </div>))}
             </div>
@@ -2342,95 +2382,49 @@ function App(){
             </div>);
           })()}
 
-          {/* Evolucion del valor de la seccion: estimado hacia atras + fotos diarias reales */}
-          {(()=>{
-            const {h,corte}=serieEvolucion(state,seccion);
-            const W=320,Hh=130,pad=6;
-            const ult=h[h.length-1], pri=h[0];
-            let svg=null;
-            if(h.length>=2){
-              const t=d=>new Date(d+"T00:00:00Z").getTime(), t0=t(pri.d), t1=t(ult.d);
-              const xs=d=>pad+(t1>t0?(t(d)-t0)/(t1-t0):0)*(W-2*pad);
-              const max=Math.max(...h.map(e=>Math.max(e.vm,e.inv,e.ben||0))),min=Math.min(0,...h.map(e=>Math.min(e.vm,e.inv,e.ben||0)));
-              const ys=v=>Hh-pad-(max===min?0.5:(v-min)/(max-min))*(Hh-2*pad);
-              const linea=(arr,k)=>arr.map((e,i)=>`${i?"L":"M"}${xs(e.d).toFixed(1)},${ys(e[k]).toFixed(1)}`).join(" ");
-              const hEst=h.filter(e=>e.est), hReal=h.filter(e=>!e.est);
-              const vmEst=hReal.length&&hEst.length?[...hEst,hReal[0]]:hEst;
-              const xc=hReal.length?xs(hReal[0].d):null;
-              const años=[];for(let y=+pri.d.slice(0,4)+1;y<=+ult.d.slice(0,4);y++)años.push(y);
-              svg=(<svg viewBox={`0 0 ${W} ${Hh+14}`} style={{width:"100%",display:"block"}}>
-                {años.map(y=>{const x=xs(`${y}-01-01`);return <g key={y}><line x1={x} x2={x} y1={pad} y2={Hh} stroke="var(--border)" strokeWidth=".6"/><text x={x} y={Hh+11} fontSize="8.5" textAnchor="middle" fill="var(--text3)">{y}</text></g>;})}
-                <path d={linea(h,"vm")+` L${xs(ult.d)},${Hh} L${xs(pri.d)},${Hh} Z`} fill="var(--accent3)" opacity=".5"/>
-                {vmEst.length>1&&<path d={linea(vmEst,"vm")} fill="none" stroke="var(--accent2)" strokeWidth="2" strokeDasharray="5 3" opacity=".75" strokeLinejoin="round"/>}
-                {hReal.length>1&&<path d={linea(hReal,"vm")} fill="none" stroke="var(--accent2)" strokeWidth="2.4" strokeLinejoin="round"/>}
-                <path d={linea(h,"inv")} fill="none" stroke="var(--text3)" strokeWidth="1.4" strokeDasharray="4 4"/>
-                <path d={linea(h,"ben")} fill="none" stroke="var(--green)" strokeWidth="1.6" strokeLinejoin="round"/>
-                {xc!=null&&<circle cx={xc} cy={ys(hReal[0].vm)} r="2.6" fill="var(--accent2)"/>}
-              </svg>);
-            }
-            const dif=ult&&pri?ult.vm-pri.vm:0;
-            return(
-            <div onClick={()=>go("evolucion")} style={{...S.card,padding:"14px 16px",marginBottom:10,cursor:"pointer"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-                <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Evolución del valor</div>
-                {h.length>=2&&!priv&&<div style={{fontSize:12,fontWeight:700,color:dif>=0?"var(--green)":"var(--red)"}}>{dif>=0?"+":""}{fmt(dif)} € desde {["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][+pri.d.slice(5,7)-1]} {pri.d.slice(0,4)}</div>}
-              </div>
-              {svg?<div style={{marginTop:8}}>{svg}</div>
-                :<div style={{fontSize:12.5,color:"var(--text3)",marginTop:8,lineHeight:1.45}}>Aún no hay datos suficientes.</div>}
-              {svg&&<><div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px",marginTop:6,fontSize:11,color:"var(--text3)"}}>
-                <span><span style={{display:"inline-block",width:12,height:3,background:"var(--accent2)",verticalAlign:"middle",marginRight:5,borderRadius:2}}/>Valor</span>
-                <span><span style={{display:"inline-block",width:12,borderTop:"2px dashed var(--text3)",verticalAlign:"middle",marginRight:5}}/>Invertido</span>
-                <span><span style={{display:"inline-block",width:12,height:3,background:"var(--green)",verticalAlign:"middle",marginRight:5,borderRadius:2}}/>Beneficio de ventas</span>
-              </div>
-              <div style={{fontSize:10.5,color:"var(--text3)",marginTop:5,lineHeight:1.4}}>Antes del {corte!=="9999"?corte.split("-").reverse().join("/"):"hoy"} el valor (línea discontinua) es estimado: compra en la fecha de lanzamiento y subida gradual hasta el valor actual. Las ventas son reales. <b style={{color:"var(--accent2)"}}>Toca para ver por años ›</b></div></>}
-            </div>);
-          })()}
-
-          {(seccion==="juegos"||seccion==="todo")&&(state.envios||[]).length>0&&<button onClick={()=>go("mapa")} style={{...S.card,width:"100%",textAlign:"left",padding:"14px 16px",marginBottom:10,cursor:"pointer",color:"var(--text)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Mapa de envíos</div>
-            <div style={{fontSize:13.5,fontWeight:700,marginTop:3}}>{(state.envios||[]).length} envíos a {new Set((state.envios||[]).map(e=>e.pais)).size} países</div></div>
-            <span style={{fontSize:20}}>🌍</span>
-          </button>}
           {/* Buen momento para vender */}
-          {paraVender.length>0&&<button onClick={()=>go("vender")} style={{...S.card,width:"100%",textAlign:"left",padding:"14px 16px",marginBottom:10,cursor:"pointer",color:"var(--text)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-              <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Buen momento para vender</div>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--accent2)"}}>{paraVender.length} →</span>
+          {paraVender.length>0&&<div style={{...S.card,padding:"14px 0 12px",marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"0 16px"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Buen momento para vender</div>
+              <button onClick={()=>go("vender")} style={{background:"none",border:"none",padding:0,cursor:"pointer",fontSize:12.5,fontWeight:700,color:"var(--text)"}}>Ver los {paraVender.length} ›</button>
             </div>
-            {paraVender.slice(0,3).map(({p,m})=>(
-              <div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:10,marginTop:8,fontSize:12.5}}>
-                <span style={{flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:600}}>{p.nombre}</span>
-                <span style={{flex:"none",color:"var(--green)",fontWeight:700}}>{m.motivo}</span>
-              </div>))}
-          </button>}
+            <div style={{display:"flex",gap:10,overflowX:"auto",padding:"11px 16px 2px",scrollbarWidth:"none"}}>
+              {paraVender.slice(0,5).map(({p,m})=>(
+                <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{flex:"none",width:98,background:"none",border:"none",padding:0,textAlign:"left",cursor:"pointer",color:"var(--text)"}}>
+                  <div style={{width:98,height:130,borderRadius:9,overflow:"hidden",background:"var(--bg3)",boxShadow:"var(--card-shadow)"}}>
+                    {p.cover&&<img loading="lazy" src={p.cover} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>}
+                  </div>
+                  <div style={{...CLAMP2,fontSize:12,fontWeight:600,lineHeight:1.25,marginTop:6}}>{p.nombre}</div>
+                  <div style={{fontSize:11,fontWeight:700,color:"var(--green)",marginTop:2}}>{m.motivo}</div>
+                </button>))}
+            </div>
+          </div>}
 
           {/* Próximos lanzamientos (solo juegos) */}
-          {(seccion==="juegos"||seccion==="todo")&&reservasActivas.length>0&&<>
-            <div style={{display:"flex",alignItems:"center",gap:8,margin:"20px 0 10px"}}>
-              <span style={{fontFamily:"var(--display)",fontSize:13,flex:1}}>Próximos lanzamientos</span>
-              <button onClick={()=>setTab("reservas")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:11.5,cursor:"pointer",fontWeight:700}}>Ver todas →</button>
+          {(seccion==="juegos"||seccion==="todo")&&reservasActivas.length>0&&<div style={{...S.card,overflow:"hidden",marginBottom:10}}>
+            <div style={{padding:"13px 16px 11px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Próximos lanzamientos</div>
+              <button onClick={()=>setTab("reservas")} style={{background:"none",border:"none",padding:0,cursor:"pointer",fontSize:12.5,fontWeight:700,color:"var(--text)"}}>Ver las {reservasActivas.length} ›</button>
             </div>
-            {reservasActivas.slice(0,3).map(r=>{
+            {reservasActivas.slice(0,4).map(r=>{
               const d=diasHasta(r.lanzamiento);
-              const hot=d>=0&&d<=21;
+              const hot=r.lanzamiento&&d>=0&&d<=7;
               return(
-                <button key={r.id} onClick={()=>{setTab("reservas");go("reservaDetalle",r);}}
-                  style={{...S.card,width:"100%",textAlign:"left",display:"flex",gap:11,alignItems:"center",padding:12,marginBottom:8,cursor:"pointer",color:"var(--text)"}}>
-                  <div style={{width:50,height:50,borderRadius:13,flex:"none",display:"grid",placeContent:"center",textAlign:"center",lineHeight:1,
-                    background:hot?"var(--accent2)":"var(--bg3)",color:hot?"#FFFFFF":"var(--text)"}}>
-                    <div style={{fontFamily:"var(--display)",fontSize:17}}>{d>=0?d:"—"}</div>
-                    <div style={{fontSize:8.5,letterSpacing:.6,textTransform:"uppercase",marginTop:3,opacity:.75}}>{d===0?"hoy":"días"}</div>
+                <button key={r.id} onClick={()=>{setTab("reservas");go("reservaDetalle",r);}} style={{...S.row,padding:"11px 16px",color:"var(--text)"}}>
+                  <div style={{width:46,height:46,borderRadius:12,flex:"none",display:"grid",placeContent:"center",textAlign:"center",lineHeight:1,
+                    background:hot?"var(--red2)":"var(--bg3)",color:hot?"var(--red)":"var(--text)"}}>
+                    <div style={{fontFamily:"var(--display)",fontSize:16}}>{r.lanzamiento&&d>=0?d:"—"}</div>
+                    <div style={{fontSize:9,letterSpacing:.5,textTransform:"uppercase",marginTop:3,opacity:.75}}>{d===0?"hoy":"días"}</div>
                   </div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:600,fontSize:13.5,lineHeight:1.25,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
-                    <div style={{fontSize:11.5,color:"var(--text2)",marginTop:3}}>{r.lanzamiento||"sin fecha"} · {r.unidades||0} uds
-                      <span style={{display:"inline-block",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:"var(--bg3)",color:"var(--text2)",marginLeft:6}}>{r.plataforma}</span>
-                    </div>
+                    <div style={{...CLAMP2,fontWeight:600,fontSize:13.5,lineHeight:1.25}}>{r.nombre}</div>
+                    <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>{r.plataforma} · {r.unidades||0} uds · {r.lanzamiento?r.lanzamiento.split("-").reverse().join("/"):"sin fecha"}</div>
                   </div>
+                  <span style={{color:"var(--border2)",fontSize:18}}>›</span>
                 </button>
               );
             })}
-          </>}
+          </div>}
 
           {/* Gráfica beneficios por mes — rediseño */}
           {(()=>{
@@ -2449,22 +2443,23 @@ function App(){
             const maxV=Math.max(...vals.map(Math.abs),1);
             const total=vals.reduce((a,b)=>a+b,0);
             const best=vals.indexOf(Math.max(...vals));
-            const barH=100,barW=Math.max(18,Math.min(32,Math.floor(280/keys.length)-4));
+            const barH=100,barW=Math.max(27,Math.min(34,Math.floor(280/keys.length)-4));
+            const corto=v=>(v<0?"-":"+")+(Math.abs(v)>=1000?(Math.abs(v)/1000).toFixed(1).replace(".",",")+"k":Math.round(Math.abs(v)));
             const MESES=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
             return(
               <div style={{...S.card,padding:"16px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
                   <div>
-                    <div style={{fontFamily:"var(--display)",fontSize:13,color:"var(--text)"}}>Beneficio por mes</div>
-                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>Últimos {keys.length} meses</div>
+                    <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Beneficio por mes</div>
+                    <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>Toca un mes para ver sus ventas</div>
                   </div>
                   <div style={{textAlign:"right"}}>
                     <div style={{fontSize:14,fontWeight:800,color:total>=0?"var(--green)":"var(--red)"}}>{H(`${total>=0?"+":""}${fmt(total)}€`)}</div>
-                    <div style={{fontSize:10,color:"var(--text3)"}}>total acumulado</div>
+                    <div style={{fontSize:11,color:"var(--text3)"}}>en total</div>
                   </div>
                 </div>
                 <div style={{overflowX:"auto",paddingBottom:4}}>
-                  <div style={{display:"flex",alignItems:"flex-end",gap:3,minWidth:keys.length*(barW+3),height:barH+28}}>
+                  <div style={{display:"flex",alignItems:"flex-end",gap:3,minWidth:keys.length*(barW+3),height:barH+50}}>
                     {keys.map((mes,i)=>{
                       const v=vals[i];
                       const isPos=v>=0;
@@ -2473,59 +2468,14 @@ function App(){
                       const label=MESES[parseInt(mes.slice(5))-1]+" "+mes.slice(2,4);
                       return(
                         <button key={mes} onClick={()=>{setVentasMes(mes);go("ventas");}} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:barW,background:"none",border:"none",cursor:"pointer",padding:0,opacity:ventasMes&&ventasMes!==mes?0.4:1,transition:"opacity .2s"}}>
-                          {isBest&&<div style={{fontSize:8,color:"var(--accent2)",fontWeight:800,marginBottom:2}}>▲</div>}
-                          {!isBest&&<div style={{height:14}}/>}
-                          <div style={{
-                            width:"100%",height:h,
-                            background:isPos?(isBest?"var(--green)":"#86efac"):"#fca5a5",
-                            borderRadius:"4px 4px 2px 2px",
-                            transition:"height .3s",
-                            border:isBest?"2px solid #15803d":"1px solid "+(isPos?"#bbf7d0":"#fecaca"),
-                          }}/>
-                          {!priv&&<div style={{fontSize:8,color:isPos?"var(--green)":"var(--red)",fontWeight:700,marginTop:2,whiteSpace:"nowrap"}}>{v>=0?"+":""}{fmt(v)}€</div>}
-                          <div style={{fontSize:9,color:ventasMes===mes?"var(--accent2)":"var(--text3)",fontWeight:ventasMes===mes?800:400,marginTop:1}}>{label}</div>
+                          {!priv?<div style={{fontSize:10,fontWeight:700,color:isPos?"var(--green)":"var(--red)",marginBottom:3,whiteSpace:"nowrap"}}>{corto(v)}</div>:<div style={{height:15}}/>}
+                          <div style={{width:"100%",height:h,background:isPos?(isBest?"var(--green)":"#8FDDB9"):"#F5A3AD",borderRadius:"5px 5px 2px 2px",transition:"height .3s"}}/>
+                          <div style={{fontSize:10,color:ventasMes===mes?"var(--text)":"var(--text3)",fontWeight:ventasMes===mes?800:500,marginTop:4,lineHeight:1.15,textAlign:"center"}}>{label.slice(0,3)}<br/><span style={{fontSize:9,opacity:.8}}>{label.slice(4)}</span></div>
                         </button>
                       );
                     })}
                   </div>
                 </div>
-              </div>
-            );
-          })()}
-
-          {/* Grupos inventario */}
-          {(()=>{
-            const hasAny=GRUPOS.some(g=>catStats.some(c=>g.cats.includes(c.cat)&&c.uds>0));
-            if(!hasAny) return null;
-            return(
-              <div style={{...S.card,marginBottom:10,overflow:"hidden"}}>
-                <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontFamily:"var(--display)",fontSize:13}}>Inventario</span>
-                  <button onClick={()=>setTab("stock")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,cursor:"pointer",fontWeight:600}}>Ver stock →</button>
-                </div>
-                {GRUPOS.map(grupo=>{
-                  const items=catStats.filter(c=>grupo.cats.includes(c.cat)&&c.uds>0);
-                  if(!items.length) return null;
-                  const gVM=items.reduce((a,c)=>a+c.vm,0);
-                  const gUds=items.reduce((a,c)=>a+c.uds,0);
-                  const gRefs=items.reduce((a,c)=>a+c.refs,0);
-                  return(
-                    <button key={grupo.key} onClick={()=>{setTab("stock");go("grupo",grupo);}} style={{...S.row}}
-                      onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
-                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <div style={{width:5,height:38,borderRadius:3,flex:"none",background:({"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"})[grupo.cats[0]]||"var(--accent2)"}}/>
-                      <div style={{flex:1}}>
-                        <div style={{fontWeight:700,fontSize:13}}>{grupo.label}</div>
-                        <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{gRefs} refs · {gUds} uds</div>
-                      </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:13,fontWeight:700,color:grupo.color}}>{H(`${fmt(gVM)} €`)}</div>
-                        <div style={{fontSize:10,color:"var(--text3)"}}>val. mdo.</div>
-                      </div>
-                      <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
-                    </button>
-                  );
-                })}
               </div>
             );
           })()}
@@ -2541,39 +2491,17 @@ function App(){
                 onMouseEnter={e=>e.currentTarget.style.borderColor=x.c}
                 onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>
                 <div style={{marginBottom:7,color:x.c}}><Ico d={x.icon} size={20}/></div>
-                <div style={{fontWeight:700,fontSize:11,color:"var(--text)"}}>{x.l}</div>
-                <div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>{x.sub}</div>
+                <div style={{fontWeight:700,fontSize:12.5,color:"var(--text)"}}>{x.l}</div>
+                <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{x.sub}</div>
               </button>
             ))}
           </div>
 
-          {/* Próximas reservas */}
-          <div style={{...S.card,overflow:"hidden"}}>
-            <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontFamily:"var(--display)",fontSize:13}}>Próximas reservas</span>
-              <button onClick={()=>setTab("reservas")} style={{background:"none",border:"none",color:"var(--accent2)",fontSize:12,cursor:"pointer",fontWeight:600}}>Ver todas →</button>
-            </div>
-            {reservasActivas.slice(0,4).map(r=>{
-              const d=diasHasta(r.lanzamiento);
-              const urg=d<=7?"var(--red)":d<=30?"var(--yellow)":"var(--green)";
-              const urgBg=d<=7?"var(--red2)":d<=30?"var(--bg3)":"var(--bg3)";
-              const cfg=CAT_CONFIG[r.plataforma]||{};
-              return(
-                <button key={r.id} onClick={()=>{setTab("reservas");go("reservaDetalle",r);}} style={{...S.row}}
-                  onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
-                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <div style={{width:8,height:8,borderRadius:"50%",background:urg,flexShrink:0}}/>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
-                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{r.plataforma} · {r.lanzamiento}</div>
-                  </div>
-                  <span style={{color:urg,fontWeight:800,fontSize:12,flexShrink:0}}>{d>0?`${d}d`:d===0?"HOY":"Pasó"}</span>
-                  <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
-                </button>
-              );
-            })}
-            {reservasActivas.length===0&&<div style={{padding:30,textAlign:"center",color:"var(--text3)"}}>Sin reservas activas</div>}
-          </div>
+          {(seccion==="juegos"||seccion==="todo")&&(state.envios||[]).length>0&&<button onClick={()=>go("mapa")} style={{...S.card,width:"100%",textAlign:"left",padding:"14px 16px",marginBottom:10,cursor:"pointer",color:"var(--text)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Mapa de envíos</div>
+            <div style={{fontSize:13.5,fontWeight:700,marginTop:3}}>{(state.envios||[]).length} envíos a {new Set((state.envios||[]).map(e=>e.pais)).size} países</div></div>
+            <span style={{color:"var(--border2)",fontSize:18}}>›</span>
+          </button>}
         </div>}
 
         {/* ══════════════════════════ STOCK ═════════════════════════════ */}
