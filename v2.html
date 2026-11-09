@@ -911,6 +911,8 @@ function reducer(state,action){
 }
 
 /* ═══════════════════════ STYLES ═══════════════════════════════════════ */
+// Las portadas de IGDB se guardaron en tamaño pequeño (90px): para verlas grandes se pide la version grande
+const GRANDE=u=>(u||"").replace("/t_cover_small/","/t_cover_big/").replace("/t_thumb/","/t_cover_big/");
 const PLAT_C={"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"};
 const CLAMP2={overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"};
 const S={
@@ -1558,7 +1560,7 @@ function PinPad({titulo,sub,onPin,onCancel,error}){
   </div>);
 }
 function PortadaEsc({x,grande}){const [mal,setMal]=useState(false);return x.cover&&!mal
-    ?<img src={x.cover} alt="" loading="lazy" onError={()=>setMal(true)} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:grande?14:9,display:"block",background:"var(--bg3)"}}/>
+    ?<img src={GRANDE(x.cover)} alt="" loading="lazy" onError={()=>setMal(true)} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:grande?14:9,display:"block",background:"var(--bg3)"}}/>
     :<div style={{width:"100%",aspectRatio:"3/4",borderRadius:grande?14:9,background:(CAT_CONFIG[x.cat]||{}).light||"var(--bg3)",display:"grid",placeItems:"center",padding:8,textAlign:"center",fontSize:grande?16:11,fontWeight:700,color:(CAT_CONFIG[x.cat]||{}).color||"var(--text2)"}}>{x.nombre}</div>;}
 function Escaparate({state,onSalir,onOlvido}){
   const [sec,setSec]=useState("todo");
@@ -2400,7 +2402,7 @@ function App(){
               {paraVender.slice(0,5).map(({p,m})=>(
                 <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{flex:"none",width:98,background:"none",border:"none",padding:0,textAlign:"left",cursor:"pointer",color:"var(--text)"}}>
                   <div style={{width:98,height:130,borderRadius:9,overflow:"hidden",background:"var(--bg3)",boxShadow:"var(--card-shadow)"}}>
-                    {p.cover&&<img loading="lazy" src={p.cover} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>}
+                    {p.cover&&<img loading="lazy" src={GRANDE(p.cover)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>}
                   </div>
                   <div style={{...CLAMP2,fontSize:12,fontWeight:600,lineHeight:1.25,marginTop:6}}>{p.nombre}</div>
                   <div style={{fontSize:11,fontWeight:700,color:"var(--green)",marginTop:2}}>{m.motivo}</div>
@@ -2582,7 +2584,7 @@ function App(){
               return(
                 <button key={p.id} onClick={()=>{stockY.current=window.scrollY;go("producto",p);}} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:13,padding:0,overflow:"hidden",cursor:"pointer",textAlign:"left",boxShadow:"var(--card-shadow)",display:"flex",flexDirection:"column",color:"var(--text)"}}>
                   <div style={{position:"relative",aspectRatio:"3/4",background:"var(--bg3)",width:"100%"}}>
-                    {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                    {p.cover?<img loading="lazy" src={GRANDE(p.cover)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
                       :<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:8,fontSize:11,fontWeight:600,color:"var(--text3)",lineHeight:1.25}}>Sin portada</div>}
                     {p.stock>1&&<span style={{position:"absolute",top:6,right:6,background:"rgba(20,24,38,.85)",color:"#fff",fontSize:11,fontWeight:700,borderRadius:999,padding:"2px 7px"}}>×{p.stock}</span>}
                     <span style={{position:"absolute",left:0,right:0,bottom:0,height:3,background:PLAT_C[p.categoria]||"var(--accent2)"}}/>
@@ -2798,7 +2800,7 @@ function App(){
               <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
                 <div style={{position:"relative",background:"linear-gradient(180deg,var(--bg3) 0%,var(--bg2) 100%)",padding:"20px 16px 4px",display:"flex",justifyContent:"center"}}>
                   {p.cover
-                    ?<img src={p.cover} alt="" title="Cambiar foto" onClick={()=>elegirFoto(url=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:url}});showToast("Foto actualizada");})} style={{width:156,maxHeight:220,objectFit:"cover",borderRadius:10,boxShadow:"0 10px 26px rgba(20,24,38,.24)",cursor:"pointer",display:"block"}}/>
+                    ?<img src={GRANDE(p.cover)} alt="" title="Cambiar foto" onClick={()=>elegirFoto(url=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:url}});showToast("Foto actualizada");})} style={{width:156,maxHeight:220,objectFit:"cover",borderRadius:10,boxShadow:"0 10px 26px rgba(20,24,38,.24)",cursor:"pointer",display:"block"}}/>
                     :<div style={{width:156,height:200,border:"1.5px dashed var(--border2)",borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,background:"var(--bg2)"}}>
                       <div style={{fontSize:12,color:"var(--text3)",fontWeight:600}}>Sin portada</div>
                       {seccionDe(p.categoria)==="juegos"&&<button onClick={()=>fetchCover(p)} style={{background:"var(--bg3)",border:"none",borderRadius:9,padding:"8px 12px",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--text)",display:"flex",alignItems:"center",gap:6}}><Ico d={I.lupa} size={14}/>Buscarla</button>}
