@@ -20,6 +20,7 @@
   --text:#141826;
   --text2:#5A6480;
   --text3:#8C95AE;
+  --ink:#141826;
   --accent:#E8651A;
   --accent2:#FF7A2F;
   --accent3:#FFEDE1;
@@ -902,6 +903,8 @@ function reducer(state,action){
 }
 
 /* ═══════════════════════ STYLES ═══════════════════════════════════════ */
+const PLAT_C={"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"};
+const CLAMP2={overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"};
 const S={
   card:{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,boxShadow:"var(--card-shadow)"},
   inp:(x={})=>({background:"var(--bg3)",border:"1.5px solid var(--border2)",color:"var(--text)",padding:"10px 13px",borderRadius:10,fontSize:13,outline:"none",width:"100%",boxSizing:"border-box",...x}),
@@ -918,6 +921,10 @@ const I={
   refrescar:"M20 11a8 8 0 1 0-.6 4 M20 5v6h-6",
   lupa:"M17.5 11a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z M20 20l-3.6-3.6",
   mas:"M12 5v14 M5 12h14",
+  ojoOff:"M3 3l18 18 M10.6 6.2A10.6 10.6 0 0 1 12 6c6.4 0 10 6 10 6a17 17 0 0 1-3.2 3.9 M6.5 7.6A16.6 16.6 0 0 0 2 12s3.6 6.5 10 6.5a9.6 9.6 0 0 0 4-.9 M9.9 10a2.6 2.6 0 0 0 3.9 3.5",
+  menu:"M4 7h16 M4 12h16 M4 17h16",
+  cuadricula:"M4 4h7v7H4Z M13 4h7v7h-7Z M4 13h7v7H4Z M13 13h7v7h-7Z",
+  lista:"M8 6h12 M8 12h12 M8 18h12 M4 6h.01 M4 12h.01 M4 18h.01",
   rayo:"M13 2 4.5 13.5H11l-1 8.5L19.5 10H13Z",
   euro:"M16.5 6.5A6 6 0 1 0 16.5 17.5 M4 10h8 M4 14h8",
   grafica:"M4 19h16 M7 16V9 M12 16V5 M17 16v-5",
@@ -1649,6 +1656,10 @@ function App(){
   const [pinErr,setPinErr]=useState("");
   const [orden,setOrdenS]=useState(()=>{try{return localStorage.getItem("gsp_orden")||"lanz"}catch(e){return "lanz"}});
   const setOrden=o=>{setOrdenS(o);try{localStorage.setItem("gsp_orden",o)}catch(e){}};
+  const [vista,setVistaS]=useState(()=>lsG("gsp_vista")||"cuadricula");
+  const setVista=v=>{setVistaS(v);lsS("gsp_vista",v);};
+  const [catF,setCatF]=useState("todas");
+  const stockY=useRef(0);
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
   const [loadingEbay,setLoadingEbay]=useState(null); // product id being fetched
   const [radarNews,setRadarNews]=useState([]);
@@ -1687,6 +1698,9 @@ function App(){
   const enSec=cat=>seccion==="todo"||seccionDe(cat)===seccion;
   const ventas=ventasTodas.filter(m=>enSec(catVenta(m)));
   const prodsS=state.products.filter(p=>enSec(p.categoria));
+  const stockCats=Object.keys(CAT_CONFIG).filter(c=>prodsS.some(p=>p.categoria===c&&p.stock>0));
+  const catSel=stockCats.includes(catF)?catF:"todas";
+  const stockLista=useMemo(()=>nav.screen!=="stock"?[]:ordenar(prodsS.filter(p=>p.stock>0&&(catSel==="todas"||p.categoria===catSel)),orden),[nav,state.products,seccion,catSel,orden]);
   const reservasOrd=useMemo(()=>[...state.reservas]
     .sort((a,b)=>(a.lanzamiento||"9999").localeCompare(b.lanzamiento||"9999")),[state.reservas]);
   const reservasActivas=useMemo(()=>reservasOrd.filter(r=>!r.enStock&&(!r.lanzamiento||diasHasta(r.lanzamiento)>=-7)),[reservasOrd]);
@@ -2184,11 +2198,12 @@ function App(){
       {toast&&<div className="fade-in" style={{position:"fixed",top:16,left:"50%",transform:"translateX(-50%)",background:toast.c,color:"#fff",padding:"10px 22px",borderRadius:30,fontWeight:700,zIndex:9999,boxShadow:"0 4px 30px rgba(0,0,0,.6)",backdropFilter:"blur(10px)",fontSize:13,whiteSpace:"nowrap"}}>{toast.msg}</div>}
 
       {/* HEADER */}
-      <div style={{background:"var(--bg2)",borderBottom:"1px solid var(--border)",height:54,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",position:"sticky",top:0,zIndex:50,boxShadow:"0 4px 20px rgba(0,0,0,.3)"}}>
+      <div style={{background:"var(--bg2)",borderBottom:"1px solid var(--border)",height:54,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",position:"sticky",top:0,zIndex:50,boxShadow:"0 1px 8px rgba(20,24,38,.06)"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {screen!=="home"&&screen!=="stock"&&screen!=="radar"&&screen!=="reservas"&&
             <button onClick={()=>{
-              if(screen==="producto"||screen==="categoria"||screen==="grupo"){setTab("stock");go("stock");}
+              if(screen==="producto"){const y=stockY.current;setTab("stock");go("stock");setTimeout(()=>{try{window.scrollTo(0,y);}catch(e){}},80);}
+              else if(screen==="categoria"||screen==="grupo"){setTab("stock");go("stock");}
               else if(screen==="reservaDetalle"){setTab("reservas");go("reservas");}
               else if(screen==="oportunidades"||screen==="vender"||screen==="ventas"||screen==="ventaDetalle"){setTab("home");go("home");}
               else {setTab("home");go("home");}
@@ -2202,14 +2217,9 @@ function App(){
           }
         </div>
         <div style={{display:"flex",gap:6}}>
-          <button onClick={()=>setPriv(p=>!p)} style={{background:priv?"var(--yellow2)":"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:priv?"var(--yellow)":"var(--text2)",fontWeight:600}}><Ico d={priv?I.lupa:I.ojo} size={14}/></button>
-          <button onClick={handleLogout} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,color:"var(--text2)",fontWeight:600}} title={user?.email}><Ico d={I.salir} size={14}/></button>
-          {(screen==="home"||screen==="stock")&&<>
-            <button onClick={()=>{setMovForm({productoId:state.products[0]?.id||"",tipo:"Venta",cantidad:1,nota:"",precioVenta:""});setModal("mov");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,color:"var(--text)",fontWeight:600}}><Ico d={I.refrescar} size={14}/></button>
-            <button onClick={()=>setModal("search")} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:13,fontWeight:600}}><Ico d={I.lupa} size={14}/></button>
-            <button onClick={()=>{setFormP({...EMPTY_P,...(seccion==="zapatillas"?{categoria:"Zapatillas"}:seccion==="cartas"?{categoria:"Cartas"}:{})});setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,color:"#fff",fontWeight:700}}><Ico d={I.mas} size={15} c="#fff"/></button>
-          </>}
-          {screen==="stock"&&<button onClick={()=>updateAllPrices(false)} disabled={!!updateProgress} style={{background:updateProgress?"#e9d5ff":"var(--accent3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700,display:"flex",alignItems:"center",gap:5}}><Ico d={I.rayo} size={14}/>{updateProgress?"…":"Precios"}</button>}
+          <button onClick={()=>setPriv(p=>!p)} title={priv?"Mostrar importes":"Ocultar importes"} style={{background:"var(--bg3)",border:"none",borderRadius:10,width:38,height:36,cursor:"pointer",color:priv?"var(--text3)":"var(--text)",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico d={priv?I.ojoOff:I.ojo} size={17}/></button>
+          {(screen==="home"||screen==="stock")&&<button title="Añadir" onClick={()=>{setFormP({...EMPTY_P,...(seccion==="zapatillas"?{categoria:"Zapatillas"}:seccion==="cartas"?{categoria:"Cartas"}:{})});setEditId(null);setModal("add");}} style={{background:"var(--accent2)",border:"none",borderRadius:10,width:44,height:36,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico d={I.mas} size={18} c="#fff" w={2.4}/></button>}
+          <button title="Menú" onClick={()=>setModal("menu")} style={{background:"var(--bg3)",border:"none",borderRadius:10,width:38,height:36,cursor:"pointer",color:"var(--text)",display:"flex",alignItems:"center",justifyContent:"center"}}><Ico d={I.menu} size={18}/></button>
         </div>
       </div>
 
@@ -2229,7 +2239,7 @@ function App(){
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:4,background:"var(--bg3)",borderRadius:12,padding:4,marginBottom:12}}>
             {SELECTOR.map(x=>(
               <button key={x.k} onClick={()=>setSeccion(x.k)} style={{border:"none",borderRadius:9,padding:"8px 0",cursor:"pointer",fontSize:12.5,fontWeight:700,
-                background:seccion===x.k?"var(--bg2)":"transparent",color:seccion===x.k?"var(--accent2)":"var(--text2)",boxShadow:seccion===x.k?"var(--card-shadow)":"none"}}>{x.l}</button>
+                background:seccion===x.k?"var(--bg2)":"transparent",color:seccion===x.k?"var(--text)":"var(--text2)",boxShadow:seccion===x.k?"var(--card-shadow)":"none"}}>{x.l}</button>
             ))}
           </div>}
 
@@ -2253,11 +2263,11 @@ function App(){
           </div>}
 
           {/* Héroe: valor de la colección */}
-          <button onClick={()=>go("oportunidades")} style={{...S.card,width:"100%",textAlign:"left",padding:"18px 18px 16px",marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden",color:"var(--text)"}}>
-            <div style={{position:"absolute",right:-50,top:-50,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,var(--accent2) 0%,transparent 70%)",opacity:.16,pointerEvents:"none"}}/>
-            <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Valor de la colección</div>
+          <button onClick={()=>go("oportunidades")} style={{...S.card,background:"var(--ink)",border:"1px solid var(--ink)",width:"100%",textAlign:"left",padding:"20px 18px 18px",marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden",color:"#fff"}}>
+            <div style={{position:"absolute",right:-50,top:-50,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,var(--accent2) 0%,transparent 70%)",opacity:.38,pointerEvents:"none"}}/>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"rgba(255,255,255,.62)"}}>Valor de la colección</div>
             <div style={{fontFamily:"var(--display)",fontSize:40,lineHeight:1.02,marginTop:7,letterSpacing:priv?3:-1.2}}>{H(`${fmt(kpi.vm)} €`)}</div>
-            {!priv&&<div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"var(--accent3)",color:"var(--accent2)",fontWeight:700,fontSize:12.5,padding:"5px 10px",borderRadius:999}}>
+            {!priv&&<div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,background:"rgba(255,255,255,.12)",color:kpi.vm>=kpi.inv?"#4ADE9A":"#FF8A96",fontWeight:700,fontSize:12.5,padding:"5px 10px",borderRadius:999}}>
               {kpi.vm>=kpi.inv?"▲":"▼"} {`${kpi.vm>=kpi.inv?"+":""}${fmt(kpi.vm-kpi.inv)} €`} · {kpi.inv>0?((kpi.vm-kpi.inv)/kpi.inv*100).toFixed(1):"0"} % sobre coste
             </div>}
           </button>
@@ -2611,34 +2621,68 @@ function App(){
             <span style={{color:"var(--accent2)",fontWeight:700}}>→</span>
           </button>}
 
-          <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
-            <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
-              <span style={{fontFamily:"var(--display)",fontSize:13}}>Stock por categoría</span>
+          {!q.trim()&&<>
+          {stockCats.length>1&&<div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:6,marginBottom:4,scrollbarWidth:"none"}}>
+            {["todas",...stockCats].map(c=><button key={c} onClick={()=>setCatF(c)} style={{flex:"none",border:catSel===c?"1px solid var(--ink)":"1px solid var(--border)",borderRadius:999,padding:"7px 13px",fontSize:12.5,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:6,
+              background:catSel===c?"var(--ink)":"var(--bg2)",color:catSel===c?"#fff":"var(--text2)"}}>
+              {c!=="todas"&&<span style={{width:7,height:7,borderRadius:99,background:PLAT_C[c]||"var(--accent2)"}}/>}{c==="todas"?"Todo":c}</button>)}
+          </div>}
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <select value={orden} onChange={e=>setOrden(e.target.value)} style={{flex:1,minWidth:0,border:"1px solid var(--border)",borderRadius:10,padding:"8px 10px",fontSize:12.5,fontWeight:600,color:"var(--text)",outline:"none"}}>
+              {ORDENES.map(([k,l])=><option key={k} value={k}>{l}</option>)}
+            </select>
+            <div style={{display:"flex",background:"var(--bg3)",borderRadius:10,padding:3,flex:"none"}}>
+              {[["cuadricula",I.cuadricula],["lista",I.lista]].map(([k,ic])=><button key={k} title={k==="lista"?"Ver en lista":"Ver en cuadrícula"} onClick={()=>setVista(k)} style={{border:"none",borderRadius:8,width:36,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",background:vista===k?"var(--bg2)":"transparent",color:vista===k?"var(--text)":"var(--text3)",boxShadow:vista===k?"var(--card-shadow)":"none"}}><Ico d={ic} size={16}/></button>)}
             </div>
-            {GRUPOS.map(grupo=>{
-              const items=catStats.filter(c=>grupo.cats.includes(c.cat)&&c.uds>0);
-              if(!items.length) return null;
-              const gVM=items.reduce((a,c)=>a+c.vm,0);
-              const gUds=items.reduce((a,c)=>a+c.uds,0);
-              const gRefs=items.reduce((a,c)=>a+c.refs,0);
-              return(
-                <button key={grupo.key} onClick={()=>go("grupo",grupo)} style={{...S.row}}
-                  onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
-                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <div style={{width:5,height:36,borderRadius:3,background:grupo.color,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{grupo.emoji}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontWeight:700,fontSize:13}}>{grupo.label}</div>
-                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{gRefs} refs · {gUds} uds</div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:13,fontWeight:700,color:grupo.color}}>{H(`${fmt(gVM)} €`)}</div>
-                    <div style={{fontSize:10,color:"var(--text3)"}}>val. mdo.</div>
-                  </div>
-                  <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
-                </button>
-              );
-            })}
           </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",margin:"0 2px 8px",fontSize:12,color:"var(--text3)"}}>
+            <span>{stockLista.length} referencias · {stockLista.reduce((a,p)=>a+(p.stock||0),0)} uds</span>
+            <span style={{fontWeight:700,color:"var(--text)"}}>{H(`${fmt(stockLista.reduce((a,p)=>a+(p.valorMercado||p.precioCompra||0)*(p.stock||0),0))} €`)}</span>
+          </div>
+          {stockLista.length===0&&<div style={{...S.card,padding:30,textAlign:"center",color:"var(--text3)",marginBottom:10}}>No hay nada en stock aquí</div>}
+          {vista==="cuadricula"&&stockLista.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(104px,1fr))",gap:9,marginBottom:14}}>
+            {stockLista.map(p=>{
+              const pv=p.valorMercado||p.precioCompra||0, ratio=p.precioCompra>0?pv/p.precioCompra:0;
+              return(
+                <button key={p.id} onClick={()=>{stockY.current=window.scrollY;go("producto",p);}} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:13,padding:0,overflow:"hidden",cursor:"pointer",textAlign:"left",boxShadow:"var(--card-shadow)",display:"flex",flexDirection:"column",color:"var(--text)"}}>
+                  <div style={{position:"relative",aspectRatio:"3/4",background:"var(--bg3)",width:"100%"}}>
+                    {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                      :<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:8,fontSize:11,fontWeight:600,color:"var(--text3)",lineHeight:1.25}}>Sin portada</div>}
+                    {p.stock>1&&<span style={{position:"absolute",top:6,right:6,background:"rgba(20,24,38,.85)",color:"#fff",fontSize:11,fontWeight:700,borderRadius:999,padding:"2px 7px"}}>×{p.stock}</span>}
+                    <span style={{position:"absolute",left:0,right:0,bottom:0,height:3,background:PLAT_C[p.categoria]||"var(--accent2)"}}/>
+                  </div>
+                  <div style={{padding:"8px 9px 9px",display:"flex",flexDirection:"column",gap:5,flex:1}}>
+                    <div style={{...CLAMP2,fontSize:12,fontWeight:600,lineHeight:1.25,minHeight:30}}>{p.nombre}</div>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4,marginTop:"auto"}}>
+                      <span style={{fontSize:13,fontWeight:800}}>{H(`${fmt(pv)} €`)}</span>
+                      {ratio>=1.5&&!priv&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--green)",background:"var(--green2)",borderRadius:6,padding:"1px 5px"}}>×{ratio.toFixed(1)}</span>}
+                    </div>
+                  </div>
+                </button>);
+            })}
+          </div>}
+          {vista==="lista"&&stockLista.length>0&&<div style={{...S.card,overflow:"hidden",marginBottom:14}}>
+            {stockLista.map(p=>{
+              const pv=p.valorMercado||p.precioCompra||0, ratio=p.precioCompra>0?pv/p.precioCompra:0;
+              return(
+                <button key={p.id} onClick={()=>{stockY.current=window.scrollY;go("producto",p);}} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
+                  {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:44,height:58,objectFit:"cover",borderRadius:6,flexShrink:0}}/>
+                    :<div style={{width:44,height:58,background:"var(--bg3)",borderRadius:6,flexShrink:0}}/>}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{...CLAMP2,fontWeight:600,fontSize:13.5,lineHeight:1.25}}>{p.nombre}</div>
+                    <div style={{fontSize:12,color:"var(--text3)",marginTop:3,display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{width:7,height:7,borderRadius:99,background:PLAT_C[p.categoria]||"var(--accent2)",flex:"none"}}/>
+                      <span>{p.categoria} · {p.stock} ud{p.stock!==1?"s":""}{p.lanzamiento?` · ${p.lanzamiento.slice(0,4)}`:""}</span>
+                    </div>
+                  </div>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    <div style={{fontWeight:800,fontSize:14}}>{H(`${fmt(pv)} €`)}</div>
+                    {ratio>=1.5&&!priv&&<span style={{display:"inline-block",marginTop:3,fontSize:10.5,fontWeight:700,color:"var(--green)",background:"var(--green2)",borderRadius:6,padding:"1px 5px"}}>×{ratio.toFixed(1)}</span>}
+                  </div>
+                </button>);
+            })}
+          </div>}
+          </>}
           {coverProgress&&<div style={{padding:"12px 16px",background:"var(--yellow2)",borderRadius:12,marginBottom:10}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
               <span style={{fontSize:12,fontWeight:700,color:"var(--yellow)"}}>Buscando portadas…</span>
@@ -2648,26 +2692,6 @@ function App(){
               <div style={{background:"var(--yellow)",height:6,borderRadius:99,width:`${coverProgress.total>0?Math.round(coverProgress.current/coverProgress.total*100):0}%`,transition:"width .3s"}}/>
             </div>
           </div>}
-          <button onClick={()=>{setPinErr("");if(lsG("gsp_pin")) setEscap(true); else setPinPaso({modo:"nuevo"});}} style={{width:"100%",background:"var(--accent3)",border:"1px solid var(--accent2)",borderRadius:12,padding:14,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)",marginBottom:8}}>🖼️ Modo escaparate (sin precios)</button>
-          {lsG("gsp_pin")&&<button onClick={()=>{setPinErr("");setPinPaso({modo:"cambiar"});}} style={{width:"100%",background:"none",border:"none",padding:"0 0 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--text3)"}}>Cambiar PIN del escaparate</button>}
-          {pinPaso&&<PinPad titulo={pinPaso.modo==="repite"?"Repite el PIN":pinPaso.modo==="cambiar"?"PIN actual":"Elige un PIN"} sub={pinPaso.modo==="nuevo"?"4 cifras. Lo necesitarás para salir del escaparate":pinPaso.modo==="repite"?"Para confirmarlo":"Para poner uno nuevo"} error={pinErr}
-            onCancel={()=>setPinPaso(null)}
-            onPin={async v=>{
-              if(pinPaso.modo==="cambiar"){if((await hashPin(v))===lsG("gsp_pin")){setPinErr("");setPinPaso({modo:"nuevo",cambio:true});}else setPinErr("PIN incorrecto");return;}
-              if(pinPaso.modo==="nuevo"){setPinErr("");setPinPaso({modo:"repite",primero:v,cambio:pinPaso.cambio});return;}
-              if(v!==pinPaso.primero){setPinErr("No coincide, vuelve a empezar");setPinPaso({modo:"nuevo",cambio:pinPaso.cambio});return;}
-              lsS("gsp_pin",await hashPin(v));setPinPaso(null);
-              if(pinPaso.cambio) showToast("PIN cambiado"); else setEscap(true);
-            }}/>}
-          <button onClick={exportCSV} style={{width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:14,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:8}}>️ Exportar CSV</button>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-            <button onClick={exportJSON} style={{background:"var(--accent3)",border:"1px solid #c4b5fd",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--accent2)"}}>Backup JSON</button>
-            <button onClick={importJSON} style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)"}}>Restaurar</button>
-          </div>
-          <button onClick={async()=>{setCopias(await COPIAS.lista());setModal("copias");}} style={{width:"100%",background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:10}}>Copias automáticas</button>
-          <button onClick={updateAllCovers} disabled={!!coverProgress} style={{width:"100%",background:coverProgress?"var(--yellow2)":"var(--bg3)",border:"1px solid #fcd34d",borderRadius:12,padding:12,cursor:"pointer",fontSize:13,fontWeight:700,color:"var(--yellow)",marginBottom:10}}>
-            Buscar portadas automáticamente ({state.products.filter(p=>!p.cover&&p.stock>0&&seccionDe(p.categoria)==="juegos").length} sin portada)
-          </button>
           {/* ROI por categoría */}
           <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
             <div style={{padding:"12px 14px",borderBottom:"1px solid var(--border)"}}>
@@ -2684,7 +2708,7 @@ function App(){
               return(
                 <div key={c.cat} style={{padding:"10px 14px",borderBottom:"1px solid var(--border)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                    <span style={{fontSize:12,fontWeight:600}}>{cfg.emoji} {c.cat}</span>
+                    <span style={{fontSize:12.5,fontWeight:600}}>{c.cat}</span>
                     <span style={{fontSize:12,fontWeight:800,color:roi>=0?"var(--green)":"var(--red)"}}>{roi>=0?"+":""}{fmt(roi)}%</span>
                   </div>
                   <div style={{background:"var(--bg3)",borderRadius:99,height:4}}>
@@ -2835,75 +2859,53 @@ function App(){
           return(
             <div>
               {/* Header producto */}
-              <div style={{...S.card,padding:"16px",marginBottom:10}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                  <div style={{flex:1,minWidth:0,paddingRight:8}}>
-                    <div style={{fontWeight:800,fontSize:15,lineHeight:1.3,marginBottom:4}}>{p.nombre}</div>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      <span style={S.badge(cfg.color,cfg.light,cfg.border)}>{cfg.emoji} {p.categoria}</span>
-                      <span style={S.badge("var(--text)","var(--bg3)","var(--border)")}>{p.condicion||"Precintado"}</span>
-                      {p.stock===0&&<span style={S.badge("var(--red)","var(--red2)","#fca5a5")}>Sin stock</span>}
-                    </div>
-                  </div>
-                  <div style={{display:"flex",gap:6,flexShrink:0,alignItems:"flex-start"}}>
-                    {p.cover&&<div style={{position:"relative",cursor:"pointer"}} onClick={()=>elegirFoto(url=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:url}});showToast("Foto actualizada");})}>
-                    <img src={p.cover} alt="" style={{width:44,height:76,objectFit:"cover",borderRadius:8}}/>
-                    <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",transition:"background .2s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,.4)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(0,0,0,0)"}>
-                      <span style={{fontSize:14,opacity:0}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0}></span>
-                    </div>
-                  </div>}
-                  {!p.cover&&<div style={{display:"flex",flexDirection:"column",gap:3}}>
-                    {seccionDe(p.categoria)==="juegos"&&<button onClick={()=>fetchCover(p)} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
-                      <Ico d={I.lupa} size={13}/><span>IGDB</span>
-                    </button>}
-                    <button onClick={()=>elegirFoto(url=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:url}});showToast("Foto puesta");})} style={{width:44,height:38,background:"var(--bg3)",border:"1px dashed var(--border2)",borderRadius:8,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1,fontSize:8,color:"var(--text3)",fontWeight:600}}>
-                      <Ico d={I.imagen} size={13}/><span>Foto</span>
-                    </button>
-                  </div>}
-                    <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                      <button onClick={()=>{setFormP({...p});setEditId(p.id);setModal("edit");}} style={{background:"var(--bg3)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600}}><Ico d={I.lapiz} size={14}/></button>
-                      <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_PRODUCT",payload:p.id});go("categoria",p.categoria);}} style={{background:"var(--red2)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:12,fontWeight:600,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
-                    </div>
+              <div style={{...S.card,overflow:"hidden",marginBottom:10}}>
+                <div style={{position:"relative",background:"linear-gradient(180deg,var(--bg3) 0%,var(--bg2) 100%)",padding:"20px 16px 4px",display:"flex",justifyContent:"center"}}>
+                  {p.cover
+                    ?<img src={p.cover} alt="" title="Cambiar foto" onClick={()=>elegirFoto(url=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:url}});showToast("Foto actualizada");})} style={{width:156,maxHeight:220,objectFit:"cover",borderRadius:10,boxShadow:"0 10px 26px rgba(20,24,38,.24)",cursor:"pointer",display:"block"}}/>
+                    :<div style={{width:156,height:200,border:"1.5px dashed var(--border2)",borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,background:"var(--bg2)"}}>
+                      <div style={{fontSize:12,color:"var(--text3)",fontWeight:600}}>Sin portada</div>
+                      {seccionDe(p.categoria)==="juegos"&&<button onClick={()=>fetchCover(p)} style={{background:"var(--bg3)",border:"none",borderRadius:9,padding:"8px 12px",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--text)",display:"flex",alignItems:"center",gap:6}}><Ico d={I.lupa} size={14}/>Buscarla</button>}
+                      <button onClick={()=>elegirFoto(url=>{dispatch({type:"UPDATE_PRODUCT",payload:{...p,cover:url}});showToast("Foto puesta");})} style={{background:"var(--bg3)",border:"none",borderRadius:9,padding:"8px 12px",cursor:"pointer",fontSize:12,fontWeight:700,color:"var(--text)",display:"flex",alignItems:"center",gap:6}}><Ico d={I.imagen} size={14}/>Subir foto</button>
+                    </div>}
+                  <div style={{position:"absolute",top:12,right:12,display:"flex",flexDirection:"column",gap:7}}>
+                    <button title="Editar" onClick={()=>{setFormP({...p});setEditId(p.id);setModal("edit");}} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,width:38,height:36,cursor:"pointer",color:"var(--text)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"var(--card-shadow)"}}><Ico d={I.lapiz} size={15}/></button>
+                    <button title="Eliminar" onClick={()=>{if(window.confirm("¿Eliminar?")){dispatch({type:"DELETE_PRODUCT",payload:p.id});go("stock");}}} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,width:38,height:36,cursor:"pointer",color:"var(--red)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"var(--card-shadow)"}}><Ico d={I.papelera} size={15}/></button>
                   </div>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>SKU</div>
-                    <div style={{fontSize:13,fontWeight:700}}>{p.sku||"—"}</div>
+                <div style={{padding:"12px 16px 16px"}}>
+                  <div style={{fontWeight:800,fontSize:18,lineHeight:1.25,textAlign:"center",letterSpacing:-.2}}>{p.nombre}</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center",marginTop:8}}>
+                    <span style={{...S.badge("var(--text)","var(--bg3)","var(--border)"),display:"inline-flex",alignItems:"center",gap:5}}><span style={{width:7,height:7,borderRadius:99,background:PLAT_C[p.categoria]||"var(--accent2)"}}/>{p.categoria}</span>
+                    <span style={S.badge("var(--text)","var(--bg3)","var(--border)")}>{p.condicion||"Precintado"}</span>
+                    <span style={S.badge("var(--text)","var(--bg3)","var(--border)")}>{p.stock} ud{p.stock!==1?"s":""}</span>
+                    {p.stock===0&&<span style={S.badge("var(--red)","var(--red2)","#fca5a5")}>Sin stock</span>}
                   </div>
-                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Stock</div>
-                    <div style={{fontSize:13,fontWeight:700}}>{p.stock} ud{p.stock!==1?"s":""}</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1.35fr 1fr 1fr",gap:10,marginTop:14,background:"var(--ink)",borderRadius:14,padding:"14px 15px",color:"#fff",alignItems:"end"}}>
+                    <div>
+                      <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Valor</div>
+                      <div style={{fontFamily:"var(--display)",fontSize:23,letterSpacing:-.6,marginTop:3,whiteSpace:"nowrap"}}>{H(`${fmt(p.valorMercado)} €`)}</div>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Coste</div>
+                      <div style={{fontSize:15,fontWeight:700,marginTop:3,whiteSpace:"nowrap"}}>{H(`${fmt(p.precioCompra)} €`)}</div>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Ganancia</div>
+                      <div style={{fontSize:15,fontWeight:700,marginTop:3,whiteSpace:"nowrap",color:pPlusval===null?"#fff":pPlusval>=0?"#4ADE9A":"#FF8A96"}}>{pPlusval===null?"—":H(`${pPlusval>=0?"+":""}${fmt(p.valorMercado-p.precioCompra)} €`)}</div>
+                    </div>
                   </div>
-                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Coste</div>
-                    <div style={{fontSize:13,fontWeight:700}}>{H(`${fmt(p.precioCompra)} €`)}</div>
+                  <div style={{display:"flex",justifyContent:"space-between",gap:8,marginTop:8,fontSize:12,lineHeight:1.35}}>
+                    <span style={{color:FUENTE(p).c,fontWeight:600}}>{FUENTE(p).t}{p.valorFecha?<span style={{color:"var(--text3)",fontWeight:500}}> · {p.valorFecha.split("-").reverse().join("/")}</span>:null}</span>
+                    {pPlusval!==null&&!priv&&<span style={{flex:"none",fontWeight:700,color:pPlusval>=0?"var(--green)":"var(--red)"}}>{pPlusval>=0?"+":""}{fmt(pPlusval)} %</span>}
                   </div>
-                  <div style={{background:cfg.light,borderRadius:10,padding:"10px 12px",border:`1px solid ${cfg.border}`}}>
-                    <div style={{fontSize:9,color:cfg.color,textTransform:"uppercase",letterSpacing:.3,marginBottom:3,fontWeight:700}}>Valor mdo.</div>
-                    <div style={{fontSize:14,fontWeight:800,color:cfg.color}}>{H(`${fmt(p.valorMercado)} €`)}</div>
-                    <div style={{fontSize:8.5,color:FUENTE(p).c,marginTop:2,fontWeight:600}}>{FUENTE(p).t}</div>
-                    {p.valorFecha&&<div style={{fontSize:8,color:"var(--text3)"}}>{p.valorFecha.split("-").reverse().join("/")}</div>}
-                  </div>
-                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Región</div>
-                    <div style={{fontSize:13,fontWeight:700}}>{p.region||"PAL ESP"}</div>
-                  </div>
-                  <div style={{background:"var(--bg3)",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Edición</div>
-                    <div style={{fontSize:13,fontWeight:700}}>{p.edicion||"Estándar"}</div>
+                  <div style={{marginTop:12,borderTop:"1px solid var(--border)"}}>
+                    {[["Edición",p.edicion||"Estándar"],["Región",p.region||"PAL ESP"],["SKU",p.sku||"—"]].map(([l,v])=>(
+                      <div key={l} style={{display:"flex",justifyContent:"space-between",gap:12,padding:"9px 0",borderBottom:"1px solid var(--border)",fontSize:13}}>
+                        <span style={{color:"var(--text3)"}}>{l}</span><span style={{fontWeight:600,textAlign:"right"}}>{v}</span>
+                      </div>))}
                   </div>
                 </div>
-                {pPlusval!==null&&!priv&&(
-                  <div style={{marginTop:8,padding:"8px 12px",background:pPlusval>0?"var(--bg3)":"#fef2f2",borderRadius:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span style={{fontSize:12,fontWeight:600,color:pPlusval>0?"var(--green)":"var(--red)"}}>
-                      Plus-valía: {pPlusval>0?"+":""}{fmt(pPlusval)}%
-                    </span>
-                    <span style={{fontSize:12,fontWeight:700,color:pPlusval>0?"var(--green)":"var(--red)"}}>
-                      {pPlusval>0?"+":""}{H(`${fmt(p.valorMercado-p.precioCompra)} €`)}
-                    </span>
-                  </div>
-                )}
               </div>
 
               {/* Si lo vendes hoy */}
@@ -3442,6 +3444,40 @@ function App(){
         <Btns onCancel={()=>setModal(null)} onSave={saveP}/>
       </Sheet>}
 
+      {pinPaso&&<PinPad titulo={pinPaso.modo==="repite"?"Repite el PIN":pinPaso.modo==="cambiar"?"PIN actual":"Elige un PIN"} sub={pinPaso.modo==="nuevo"?"4 cifras. Lo necesitarás para salir del escaparate":pinPaso.modo==="repite"?"Para confirmarlo":"Para poner uno nuevo"} error={pinErr}
+        onCancel={()=>setPinPaso(null)}
+        onPin={async v=>{
+          if(pinPaso.modo==="cambiar"){if((await hashPin(v))===lsG("gsp_pin")){setPinErr("");setPinPaso({modo:"nuevo",cambio:true});}else setPinErr("PIN incorrecto");return;}
+          if(pinPaso.modo==="nuevo"){setPinErr("");setPinPaso({modo:"repite",primero:v,cambio:pinPaso.cambio});return;}
+          if(v!==pinPaso.primero){setPinErr("No coincide, vuelve a empezar");setPinPaso({modo:"nuevo",cambio:pinPaso.cambio});return;}
+          lsS("gsp_pin",await hashPin(v));setPinPaso(null);
+          if(pinPaso.cambio) showToast("PIN cambiado"); else setEscap(true);
+        }}/>}
+      {modal==="menu"&&<Sheet onClose={()=>setModal(null)} title="Menú">
+        {[
+          {t:"Acciones"},
+          {l:"Registrar venta o movimiento",i:I.euro,f:()=>{setMovForm({productoId:state.products[0]?.id||"",tipo:"Venta",cantidad:1,nota:"",precioVenta:""});setModal("mov");}},
+          {l:"Añadir un juego buscándolo",i:I.lupa,f:()=>setModal("search")},
+          {l:updateProgress?"Actualizando precios…":"Actualizar precios",i:I.rayo,f:()=>{setModal(null);if(!updateProgress) updateAllPrices(false);}},
+          {l:`Buscar portadas que faltan (${state.products.filter(p=>!p.cover&&p.stock>0&&seccionDe(p.categoria)==="juegos").length})`,i:I.imagen,f:()=>{setModal(null);if(!coverProgress) updateAllCovers();}},
+          {t:"Escaparate"},
+          {l:"Modo escaparate (sin precios)",i:I.ojo,f:()=>{setModal(null);setPinErr("");if(lsG("gsp_pin")) setEscap(true); else setPinPaso({modo:"nuevo"});}},
+          ...(lsG("gsp_pin")?[{l:"Cambiar PIN del escaparate",i:I.ajustes,f:()=>{setModal(null);setPinErr("");setPinPaso({modo:"cambiar"});}}]:[]),
+          {t:"Copias y datos"},
+          {l:"Copias automáticas",i:I.guardar,f:async()=>{setCopias(await COPIAS.lista());setModal("copias");}},
+          {l:"Descargar copia (JSON)",i:I.descarga,f:()=>{setModal(null);exportJSON();}},
+          {l:"Restaurar una copia",i:I.carpeta,f:()=>{setModal(null);importJSON();}},
+          {l:"Exportar a CSV",i:I.descarga,f:()=>{setModal(null);exportCSV();}},
+          {t:"Cuenta"},
+          {l:"Cerrar sesión",s:user?.email,i:I.salir,c:"var(--red)",f:()=>{setModal(null);handleLogout();}},
+        ].map((x,i)=>x.t
+          ?<div key={i} style={{fontSize:11,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",color:"var(--text3)",margin:i?"16px 2px 6px":"0 2px 6px"}}>{x.t}</div>
+          :<button key={i} onClick={x.f} style={{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid var(--border)",padding:"13px 2px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left",color:x.c||"var(--text)"}}>
+            <Ico d={x.i} size={18}/>
+            <span style={{flex:1,minWidth:0}}><span style={{display:"block",fontSize:14,fontWeight:600}}>{x.l}</span>{x.s&&<span style={{display:"block",fontSize:12,color:"var(--text3)",marginTop:1,overflow:"hidden",textOverflow:"ellipsis"}}>{x.s}</span>}</span>
+            <span style={{color:"var(--border2)",fontSize:18}}>›</span>
+          </button>)}
+      </Sheet>}
       {modal==="mov"&&<Sheet onClose={()=>setModal(null)} title="Registrar movimiento">
         <Field label="Producto"><select value={movForm.productoId} onChange={e=>setMovForm({...movForm,productoId:e.target.value})} style={S.inp()}>{state.products.map(p=><option key={p.id} value={p.id}>{p.nombre} ({p.categoria}) · {p.stock} uds</option>)}</select></Field>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:13}}>
