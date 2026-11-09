@@ -539,6 +539,11 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0911A":{
+      // Juan: compra 1 Ocarina of Time Day One (foil + poster) en GAME a 69,99 el 09/11/2026. Coste medio con la de Wallapop (80)
+      const products=state.products.map(p=>p.id===1762400000001?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+69.99)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 GAME Day One 69,99 (09/11/2026)"}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes0911a:true}};break;
+    }
     case "AJUSTES_0711B":{
       // Juan: el AC Shadows CE le costó 199,95 (no 210)
       const movements=state.movements.map(m=>m.id===1762500000001?{...m,coste:199.95}:m);
@@ -2032,6 +2037,7 @@ function App(){
     if(!f.ajustes0611c){dispatch({type:"AJUSTES_0611C"});setTimeout(()=>subirNube(),15800);}
     if(!f.ajustes0711a){dispatch({type:"AJUSTES_0711A"});setTimeout(()=>subirNube(),16200);}
     if(!f.ajustes0711b){dispatch({type:"AJUSTES_0711B"});setTimeout(()=>subirNube(),16600);}
+    if(!f.ajustes0911a){dispatch({type:"AJUSTES_0911A"});setTimeout(()=>subirNube(),17000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
