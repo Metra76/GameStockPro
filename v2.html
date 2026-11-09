@@ -2451,7 +2451,7 @@ function App(){
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
                   <div>
                     <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Beneficio por mes</div>
-                    <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>Últimos {keys.length} meses con ventas · toca un mes para verlo</div>
+                    <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>Toca un mes para ver sus ventas</div>
                   </div>
                   <div style={{textAlign:"right"}}>
                     <div style={{fontSize:14,fontWeight:800,color:total>=0?"var(--green)":"var(--red)"}}>{H(`${total>=0?"+":""}${fmt(total)}€`)}</div>
@@ -2459,7 +2459,7 @@ function App(){
                   </div>
                 </div>
                 <div style={{overflowX:"auto",paddingBottom:4}}>
-                  <div style={{display:"flex",alignItems:"flex-end",gap:3,minWidth:keys.length*(barW+3),height:barH+38}}>
+                  <div style={{display:"flex",alignItems:"flex-end",gap:3,minWidth:keys.length*(barW+3),height:barH+50}}>
                     {keys.map((mes,i)=>{
                       const v=vals[i];
                       const isPos=v>=0;
@@ -2470,7 +2470,7 @@ function App(){
                         <button key={mes} onClick={()=>{setVentasMes(mes);go("ventas");}} style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:barW,background:"none",border:"none",cursor:"pointer",padding:0,opacity:ventasMes&&ventasMes!==mes?0.4:1,transition:"opacity .2s"}}>
                           {!priv?<div style={{fontSize:10,fontWeight:700,color:isPos?"var(--green)":"var(--red)",marginBottom:3,whiteSpace:"nowrap"}}>{corto(v)}</div>:<div style={{height:15}}/>}
                           <div style={{width:"100%",height:h,background:isPos?(isBest?"var(--green)":"#8FDDB9"):"#F5A3AD",borderRadius:"5px 5px 2px 2px",transition:"height .3s"}}/>
-                          <div style={{fontSize:10,color:ventasMes===mes?"var(--text)":"var(--text3)",fontWeight:ventasMes===mes?800:500,marginTop:4,whiteSpace:"nowrap"}}>{label}</div>
+                          <div style={{fontSize:10,color:ventasMes===mes?"var(--text)":"var(--text3)",fontWeight:ventasMes===mes?800:500,marginTop:4,lineHeight:1.15,textAlign:"center"}}>{label.slice(0,3)}<br/><span style={{fontSize:9,opacity:.8}}>{label.slice(4)}</span></div>
                         </button>
                       );
                     })}
