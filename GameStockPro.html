@@ -548,6 +548,23 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_0911B":{
+      // 09/11/2026 (Juan: "hazlas"): precios de compra que faltaban, ediciones mal puestas, portadas equivocadas o que faltaban,
+      // y las Game & Watch se quedan todas (no salen como repetidas)
+      const coste={35:23.24,110:37.72,244:22.80,345:14.99,346:22.90};
+      const edi={2:"Anniversary",132:"Anniversary",40:"Limited",244:"Limited",114:"Limited",220:"Limited",140:"Collector's",147:"Collector's",166:"Collector's",248:"Collector's",1794009941498:"Steelbook",51:"Special",27:"Special",72:"Special",76:"Special"};
+      const IG="https://images.igdb.com/igdb/image/upload/t_cover_big/";
+      const port={3:IG+"coaaju.jpg",96:IG+"co2mzd.jpg",231:IG+"co71qg.jpg",1762400000001:IG+"cocv5r.jpg",1794009941498:IG+"co9s0t.jpg",67:IG+"co5jfb.jpg",274:IG+"coavaf.jpg",7:"",50:""};
+      const products=state.products.map(p=>{
+        let q=p;
+        if(coste[p.id]!=null&&!(p.precioCompra>0)) q={...q,precioCompra:coste[p.id]};
+        if(edi[p.id]&&/^(est[áa]ndar|standard|normal)?$/i.test(p.edicion||"")) q={...q,edicion:edi[p.id]};
+        if(port[p.id]!=null) q={...q,cover:port[p.id]};
+        if(p.id===184||p.id===205) q={...q,guardar:p.stock};
+        return q;
+      });
+      next={...state,products,flags:{...(state.flags||{}),ajustes0911b:true}};break;
+    }
     case "AJUSTES_0911A":{
       // Juan: compra 1 Ocarina of Time Day One (foil + poster) en GAME a 69,99 el 09/11/2026. Coste medio con la de Wallapop (80)
       const products=state.products.map(p=>p.id===1762400000001?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+69.99)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 GAME Day One 69,99 (09/11/2026)"}:p);
@@ -913,6 +930,10 @@ function reducer(state,action){
 /* ═══════════════════════ STYLES ═══════════════════════════════════════ */
 // Las portadas de IGDB se guardaron en tamaño pequeño (90px): para verlas grandes se pide la version grande
 const GRANDE=u=>(u||"").replace("/t_cover_small/","/t_cover_big/").replace("/t_thumb/","/t_cover_big/");
+// Unidades que Juan se queda de cada producto (1 si no se dice otra cosa) y las que sobran para vender
+const guardaDe=p=>Math.min(p.stock||0,p.guardar==null||p.guardar===""?1:Math.max(+p.guardar||0,0));
+const sobraDe=p=>Math.max((p.stock||0)-guardaDe(p),0);
+const MESES_L=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const PLAT_C={"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"};
 const CLAMP2={overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"};
 const S={
@@ -1669,6 +1690,9 @@ function App(){
   const [vista,setVistaS]=useState(()=>lsG("gsp_vista")||"cuadricula");
   const setVista=v=>{setVistaS(v);lsS("gsp_vista",v);};
   const [catF,setCatF]=useState("todas");
+  const [anuncios,setAnuncios]=useState({items:[]});
+  useEffect(()=>{fetch("anuncios.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{if(v&&Array.isArray(v.items)) setAnuncios(v);}).catch(()=>{});},[]);
+  const anuncioDe=id=>(anuncios.items||[]).find(a=>a.id===id);
   const stockY=useRef(0);
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
   const [loadingEbay,setLoadingEbay]=useState(null); // product id being fetched
@@ -1760,8 +1784,13 @@ function App(){
       ing,ben:ing-cv,nVentas:vCat.length};
   }),[state,ventas,seccion]);
 
-  const paraVender=useMemo(()=>prodsS.map(p=>({p,m:momentoVenta(p)})).filter(x=>x.m)
-    .sort((a,b)=>(b.p.valorMercado-b.p.precioCompra)*b.p.stock-(a.p.valorMercado-a.p.precioCompra)*a.p.stock),[state.products,seccion]);
+  const paraVender=useMemo(()=>prodsS.filter(p=>sobraDe(p)>0).map(p=>({p,n:sobraDe(p),tot:sobraDe(p)*(p.valorMercado||p.precioCompra||0)}))
+    .sort((a,b)=>b.tot-a.tot),[state.products,seccion]);
+  const cfgVenta={comision:12,envio:0,...(state.ventaCfg||{})};
+  const netoVenta=v=>v*(1-cfgVenta.comision/100)-cfgVenta.envio;
+  const venderBruto=paraVender.reduce((a,x)=>a+x.tot,0);
+  const venderNeto=paraVender.reduce((a,x)=>a+x.n*netoVenta(x.p.valorMercado||x.p.precioCompra||0),0);
+  const venderUds=paraVender.reduce((a,x)=>a+x.n,0);
   const oportunidades=useMemo(()=>
     prodsS.filter(p=>p.valorMercado>0&&p.valorMercado>p.precioCompra*1.5&&p.stock>0)
       .sort((a,b)=>(b.valorMercado-b.precioCompra)-(a.valorMercado-a.precioCompra)),
@@ -2062,24 +2091,12 @@ function App(){
     if(!f.ajustes0711a){dispatch({type:"AJUSTES_0711A"});setTimeout(()=>subirNube(),16200);}
     if(!f.ajustes0711b){dispatch({type:"AJUSTES_0711B"});setTimeout(()=>subirNube(),16600);}
     if(!f.ajustes0911a){dispatch({type:"AJUSTES_0911A"});setTimeout(()=>subirNube(),17000);}
+    if(!f.ajustes0911b){dispatch({type:"AJUSTES_0911B"});setTimeout(()=>subirNube(),17400);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
     }).catch(()=>{});
   },[user,authLoading,state.products.length]);
-
-  // Al entrar en la ficha de un juego se actualiza su precio, como mucho una vez al dia y sin bajarlo nunca
-  const fichaAuto=useRef(null);
-  useEffect(()=>{
-    if(nav.screen!=="producto"||!nav.data) return;
-    const p=state.products.find(x=>x.id===nav.data.id);
-    if(!p||fichaAuto.current===p.id) return;
-    fichaAuto.current=p.id;
-    if(p.valorFuente==="ebay-vendidos-es") return;
-    const hoy=new Date().toISOString().split("T")[0];
-    if(p.ebayData?.fetchedAt?.startsWith(hoy)) return;
-    fetchEbayPrice(p,true);
-  },[nav]);
 
   const handleLogin=(u)=>{
     setUser(u);
@@ -2110,6 +2127,7 @@ function App(){
   const saveP=()=>{
     if(!formP.nombre.trim()) return;
     const p={...formP,stock:+formP.stock,precioCompra:+formP.precioCompra,valorMercado:+formP.valorMercado};
+    if(p.guardar===""||p.guardar==null) delete p.guardar; else p.guardar=Math.max(+p.guardar||0,0);
     if(modal==="edit"){dispatch({type:"UPDATE_PRODUCT",payload:{...p,id:editId}});showToast("✓ Actualizado");}
     else{dispatch({type:"ADD_PRODUCT",payload:p});showToast("✓ Añadido");}
     setModal(null);
@@ -2294,6 +2312,37 @@ function App(){
             </div>
           </div>
 
+          {/* Te quedas / para vender / camino a coste cero */}
+          {(()=>{
+            const queda=kpi.vm-venderBruto, prop=kpi.propio, pct=prop>0?Math.max(0,Math.min(1,venderNeto/prop)):1;
+            return(
+            <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                <button onClick={()=>setTab("stock")} style={{background:"none",border:"none",padding:0,textAlign:"left",cursor:"pointer",color:"var(--text)"}}>
+                  <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Te quedas</div>
+                  <div style={{fontFamily:"var(--display)",fontSize:19,letterSpacing:-.5,marginTop:4}}>{H(`${fmt(queda)} €`)}</div>
+                  <div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>la colección</div>
+                </button>
+                <button onClick={()=>go("vender")} style={{background:"none",border:"none",borderLeft:"1px solid var(--border)",padding:"0 0 0 12px",textAlign:"left",cursor:"pointer",color:"var(--text)"}}>
+                  <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Para vender</div>
+                  <div style={{fontFamily:"var(--display)",fontSize:19,letterSpacing:-.5,marginTop:4,color:"var(--accent)"}}>{H(`${fmt(venderBruto)} €`)}</div>
+                  <div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>{venderUds} uds repetidas ›</div>
+                </button>
+              </div>
+              <div style={{marginTop:13,paddingTop:12,borderTop:"1px solid var(--border)"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
+                  <span style={{fontSize:13,fontWeight:700}}>Colección a coste cero</span>
+                  {!priv&&<span style={{fontSize:12,fontWeight:700,color:prop>0?"var(--text2)":"var(--green)"}}>{prop>0?`${Math.round(pct*100)} % cubierto`:"conseguido"}</span>}
+                </div>
+                <div style={{background:"var(--bg3)",borderRadius:99,height:8,marginTop:8,overflow:"hidden"}}><div style={{width:priv?"0%":`${pct*100}%`,height:"100%",background:"var(--green)",borderRadius:99}}/></div>
+                <div style={{fontSize:12,color:"var(--text3)",marginTop:7,lineHeight:1.45}}>
+                  {prop>0?<>Llevas puestos {H(`${fmt(prop)} €`)} de tu bolsillo. Vendiendo los repetidos te quedarían unos {H(`${fmt(venderNeto)} €`)} limpios{venderNeto>=prop?": con eso la colección queda pagada.":<>; faltarían {H(`${fmt(prop-venderNeto)} €`)}.</>}</>
+                    :<>Ya has recuperado todo lo que pusiste. Lo que vendas a partir de ahora es ganancia.</>}
+                </div>
+              </div>
+            </div>);
+          })()}
+
           {/* Evolucion del valor de la seccion: estimado hacia atras + fotos diarias reales */}
           {(()=>{
             const {h,corte}=serieEvolucion(state,seccion);
@@ -2392,21 +2441,24 @@ function App(){
             </div>);
           })()}
 
-          {/* Buen momento para vender */}
+          {/* Para vender: los repetidos */}
           {paraVender.length>0&&<div style={{...S.card,padding:"14px 0 12px",marginBottom:10}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"0 16px"}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Buen momento para vender</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Repetidos para vender</div>
               <button onClick={()=>go("vender")} style={{background:"none",border:"none",padding:0,cursor:"pointer",fontSize:12.5,fontWeight:700,color:"var(--text)"}}>Ver los {paraVender.length} ›</button>
             </div>
             <div style={{display:"flex",gap:10,overflowX:"auto",padding:"11px 16px 2px",scrollbarWidth:"none"}}>
-              {paraVender.slice(0,5).map(({p,m})=>(
+              {paraVender.slice(0,6).map(({p,n})=>{
+                const an=anuncioDe(p.id);
+                return(
                 <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{flex:"none",width:98,background:"none",border:"none",padding:0,textAlign:"left",cursor:"pointer",color:"var(--text)"}}>
-                  <div style={{width:98,height:130,borderRadius:9,overflow:"hidden",background:"var(--bg3)",boxShadow:"var(--card-shadow)"}}>
+                  <div style={{position:"relative",width:98,height:130,borderRadius:9,overflow:"hidden",background:"var(--bg3)",boxShadow:"var(--card-shadow)"}}>
                     {p.cover&&<img loading="lazy" src={GRANDE(p.cover)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>}
+                    <span style={{position:"absolute",top:6,right:6,background:"rgba(20,24,38,.85)",color:"#fff",fontSize:11,fontWeight:700,borderRadius:999,padding:"2px 7px"}}>×{n}</span>
                   </div>
                   <div style={{...CLAMP2,fontSize:12,fontWeight:600,lineHeight:1.25,marginTop:6}}>{p.nombre}</div>
-                  <div style={{fontSize:11,fontWeight:700,color:"var(--green)",marginTop:2}}>{m.motivo}</div>
-                </button>))}
+                  <div style={{fontSize:11,fontWeight:700,color:an?"var(--green)":"var(--text3)",marginTop:2}}>{an?"Anunciado":"Sin anunciar"}</div>
+                </button>);})}
             </div>
           </div>}
 
@@ -2817,6 +2869,7 @@ function App(){
                     <span style={{...S.badge("var(--text)","var(--bg3)","var(--border)"),display:"inline-flex",alignItems:"center",gap:5}}><span style={{width:7,height:7,borderRadius:99,background:PLAT_C[p.categoria]||"var(--accent2)"}}/>{p.categoria}</span>
                     <span style={S.badge("var(--text)","var(--bg3)","var(--border)")}>{p.condicion||"Precintado"}</span>
                     <span style={S.badge("var(--text)","var(--bg3)","var(--border)")}>{p.stock} ud{p.stock!==1?"s":""}</span>
+                    {sobraDe(p)>0&&<span style={S.badge("var(--accent)","var(--accent3)","var(--accent3)")}>{sobraDe(p)} para vender</span>}
                     {p.stock===0&&<span style={S.badge("var(--red)","var(--red2)","#fca5a5")}>Sin stock</span>}
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"1.35fr 1fr 1fr",gap:10,marginTop:14,background:"var(--ink)",borderRadius:14,padding:"14px 15px",color:"#fff",alignItems:"end"}}>
@@ -2845,6 +2898,27 @@ function App(){
                   </div>
                 </div>
               </div>
+
+              {/* Anuncio en eBay */}
+              {(()=>{
+                const an=anuncioDe(p.id), v=p.valorMercado||0;
+                if(!an&&!(sobraDe(p)>0)) return null;
+                const dif=an&&v>0?(an.precio-v)/v:0;
+                return(
+                <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+                    <div style={{minWidth:0}}>
+                      <div style={{fontWeight:700,fontSize:13}}>{an?"Anunciado en eBay":"Sin anunciar en eBay"}</div>
+                      {an?<div style={{fontSize:12.5,color:"var(--text2)",marginTop:3}}>A {H(`${fmt(an.precio)} €`)} más envío{an.oferta?" · acepta ofertas":""}</div>
+                        :<div style={{fontSize:12.5,color:"var(--text3)",marginTop:3}}>Tienes {sobraDe(p)} para vender y ningún anuncio activo</div>}
+                    </div>
+                    {an&&<a href={`https://www.ebay.es/itm/${an.itemId}`} target="_blank" rel="noopener" style={{flex:"none",textDecoration:"none",background:"var(--bg3)",borderRadius:9,padding:"8px 12px",fontSize:12.5,fontWeight:700,color:"var(--text)"}}>Ver anuncio</a>}
+                  </div>
+                  {an&&v>0&&!priv&&(dif<-0.1||dif>0.25)&&<div style={{marginTop:9,fontSize:12.5,fontWeight:600,lineHeight:1.4,padding:"7px 10px",borderRadius:9,background:dif<0?"var(--red2)":"var(--bg3)",color:dif<0?"var(--red)":"var(--text2)"}}>
+                    {dif<0?`Lo anuncias por debajo de lo que se está vendiendo (${fmt(v)} € con envío).`:`Lo anuncias por encima de lo que se está vendiendo (${fmt(v)} € con envío).`}
+                  </div>}
+                </div>);
+              })()}
 
               {/* Si lo vendes hoy */}
               {(()=>{
@@ -2889,7 +2963,7 @@ function App(){
               {/* eBay precio */}
               <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                  <span style={{fontWeight:700,fontSize:13}}>Precio eBay</span>
+                  <span style={{fontWeight:700,fontSize:13}}>Anuncios activos ahora<span style={{display:"block",fontSize:12,fontWeight:500,color:"var(--text3)",marginTop:2}}>Precios que piden otros vendedores, no ventas</span></span>
                   <button onClick={()=>fetchEbayPrice(p,false)} disabled={isLoading}
                     style={{background:"var(--accent3)",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:12,color:"var(--accent2)",fontWeight:700}}>
                     {isLoading?<span className="spin" style={{display:"inline-block"}}><Ico d={I.refrescar}/></span>:"Actualizar"}
@@ -2906,12 +2980,12 @@ function App(){
                       ))}
                     </div>
                     <div style={{fontSize:11,color:"var(--text3)",textAlign:"right"}}>
-                      {p.ebayData.count>0?`${p.ebayData.count} ventas · `:""}
-                      Actualizado hace {ebayAge<1?"<1h":`${ebayAge}h`}
+                      {p.ebayData.count>0?`${p.ebayData.count} anuncios · `:""}
+                      Mirado {ebayAge<24?"hoy":ebayAge<48?"ayer":`hace ${Math.floor(ebayAge/24)} días`}
                     </div>
                     {p.ebayData.listings&&p.ebayData.listings.length>0&&(
                       <div style={{marginTop:8,borderTop:"1px solid var(--border)",paddingTop:8}}>
-                        <div style={{fontSize:11,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.3,marginBottom:6}}>Últimos anuncios</div>
+                        <div style={{fontSize:11,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.3,marginBottom:6}}>Anuncios</div>
                         {p.ebayData.listings.map((l,i)=>(
                           <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
                             style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 0",borderBottom:i<p.ebayData.listings.length-1?"1px solid #f9fafb":"none",textDecoration:"none",color:"inherit"}}>
@@ -2924,7 +2998,7 @@ function App(){
                   </div>
                 ):(
                   <div style={{padding:"16px 0",textAlign:"center",color:"var(--text3)",fontSize:12}}>
-                    Sin datos de eBay — pulsa Actualizar para obtener precio real
+                    Pulsa Actualizar para ver a cuánto lo anuncian ahora
                   </div>
                 )}
               </div>
@@ -3075,22 +3149,32 @@ function App(){
 
         {screen==="vender"&&(
           <div>
-            <div style={{fontFamily:"var(--display)",fontSize:15,margin:"2px 2px 4px"}}>Buen momento para vender</div>
-            <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Productos que valen 3 veces o más lo que te costaron, o que están en el precio más alto que ha registrado la app.</div>
+            <div style={{fontFamily:"var(--display)",fontSize:15,margin:"2px 2px 4px"}}>Repetidos para vender</div>
+            <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Lo que tienes de más: de cada juego te quedas una unidad (o las que pongas en su ficha) y el resto sale aquí.</div>
+            <div style={{...S.card,background:"var(--ink)",border:"1px solid var(--ink)",color:"#fff",padding:"14px 16px",marginBottom:10,display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+              {[["Unidades",`${venderUds}`],["A precio de vendidos",H(`${fmt(venderBruto)} €`)],["Limpio para ti",H(`${fmt(venderNeto)} €`)]].map(([l,v],i)=>(
+                <div key={l}><div style={{fontSize:11,fontWeight:700,letterSpacing:.5,textTransform:"uppercase",color:"rgba(255,255,255,.6)",lineHeight:1.25}}>{l}</div>
+                <div style={{fontSize:15,fontWeight:700,marginTop:4,color:i===2?"#4ADE9A":"#fff",whiteSpace:"nowrap"}}>{v}</div></div>))}
+            </div>
+            <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>"Limpio" descuenta la comisión del {cfgVenta.comision} %{cfgVenta.envio>0?` y ${fmt(cfgVenta.envio)} € de envío`:""}. {(anuncios.items||[]).length>0&&anuncios.actualizado?`Anuncios de eBay leídos el ${anuncios.actualizado.slice(0,10).split("-").reverse().join("/")}.`:""}</div>
             <div style={{...S.card,overflow:"hidden"}}>
-              {paraVender.map(({p,m})=>(
+              {paraVender.map(({p,n,tot})=>{
+                const an=anuncioDe(p.id), v=p.valorMercado||p.precioCompra||0;
+                const dif=an&&v>0?(an.precio-v)/v:0;
+                return(
                 <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
                   {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:40,height:53,objectFit:"cover",borderRadius:6,flexShrink:0}}/>:<div style={{width:40,height:53,background:"var(--bg3)",borderRadius:6,flexShrink:0}}/>}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{...CLAMP2,fontWeight:600,fontSize:13.5,lineHeight:1.25}}>{p.nombre}</div>
-                    <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>{p.categoria} · {p.stock} uds · {m.motivo}</div>
+                    <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>{n} para vender · te quedas {guardaDe(p)}</div>
+                    <div style={{fontSize:12,fontWeight:600,marginTop:2,color:!an?"var(--text3)":dif<-0.1?"var(--red)":"var(--green)"}}>{!an?"Sin anunciar en eBay":<>Anunciado a {H(`${fmt(an.precio)} €`)}{dif<-0.1?" · por debajo de los vendidos":dif>0.25?" · por encima de los vendidos":""}</>}</div>
                   </div>
                   <div style={{textAlign:"right",flex:"none"}}>
-                    <div style={{fontFamily:"var(--display)",fontSize:13}}>{H(`${fmt(p.valorMercado)} €`)}</div>
-                    <div style={{fontSize:11,color:"var(--green)",fontWeight:700}}>{H(`+${fmt((p.valorMercado-p.precioCompra)*p.stock)} €`)}</div>
+                    <div style={{fontWeight:800,fontSize:14}}>{H(`${fmt(tot)} €`)}</div>
+                    <div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>{H(`${fmt(v)} €`)} c/u</div>
                   </div>
-                </button>))}
-              {paraVender.length===0&&<div style={{padding:30,textAlign:"center",color:"var(--text3)",fontSize:13}}>Nada ahora mismo</div>}
+                </button>);})}
+              {paraVender.length===0&&<div style={{padding:30,textAlign:"center",color:"var(--text3)",fontSize:13}}>No tienes nada repetido ahora mismo</div>}
             </div>
           </div>
         )}
@@ -3142,6 +3226,32 @@ function App(){
                   ))}
                 </div>
               </div>
+              {(()=>{
+                const g={};
+                reservasActivas.forEach(r=>{const pend=r.costePendiente||0;if(!(pend>0)) return;const k=r.lanzamiento?r.lanzamiento.slice(0,7):"zzzz";(g[k]=g[k]||{p:0,n:0,u:0});g[k].p+=pend;g[k].n++;g[k].u+=(r.unidades||0);});
+                const ks=Object.keys(g).sort();
+                if(!ks.length) return null;
+                const mx=Math.max(...ks.map(k=>g[k].p));
+                const hace12=new Date(Date.now()-365*864e5).toISOString().split("T")[0];
+                const ing12=ventasTodas.filter(m=>(m.fecha||"")>=hace12).reduce((a,m)=>a+(m.precioVenta||0)*m.cantidad,0);
+                const esteMes=today.slice(0,7);
+                return(
+                <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
+                  <div style={{fontFamily:"var(--display)",fontSize:13}}>Pagos pendientes por mes</div>
+                  <div style={{fontSize:12,color:"var(--text3)",marginTop:3,marginBottom:6,lineHeight:1.45}}>Lo que tendrás que pagar al recoger cada reserva. Por ventas te entran de media {H(`${fmt(ing12/12)} €`)} al mes (últimos 12 meses).</div>
+                  {ks.map(k=>{
+                    const x=g[k], sf=k==="zzzz";
+                    return(
+                    <div key={k} style={{padding:"9px 0",borderTop:"1px solid var(--border)"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8}}>
+                        <span style={{fontSize:13.5,fontWeight:700,color:k===esteMes?"var(--red)":"var(--text)"}}>{sf?"Sin fecha":`${MESES_L[+k.slice(5,7)-1][0].toUpperCase()+MESES_L[+k.slice(5,7)-1].slice(1)} ${k.slice(0,4)}`}{k===esteMes?" · este mes":""}</span>
+                        <span style={{fontSize:13.5,fontWeight:800}}>{H(`${fmt(x.p)} €`)}</span>
+                      </div>
+                      <div style={{background:"var(--bg3)",borderRadius:99,height:6,marginTop:6,overflow:"hidden"}}><div style={{width:priv?"0%":`${x.p/mx*100}%`,height:"100%",background:k===esteMes?"var(--red)":sf?"var(--text3)":"var(--ink)",borderRadius:99}}/></div>
+                      <div style={{fontSize:12,color:"var(--text3)",marginTop:4}}>{x.n} reserva{x.n!==1?"s":""} · {x.u} uds</div>
+                    </div>);})}
+                </div>);
+              })()}
               <div style={{display:"flex",justifyContent:"flex-end",marginBottom:8}}>
                 <button onClick={()=>{setFormR(EMPTY_R);setEditId(null);setModal("reserva");}} style={{background:"var(--accent2)",border:"none",borderRadius:8,padding:"8px 16px",cursor:"pointer",color:"#fff",fontWeight:700,fontSize:13}}>+ Nueva reserva</button>
               </div>
@@ -3375,6 +3485,7 @@ function App(){
           <Field label="Región"><select value={formP.region||"PAL ESP"} onChange={e=>setFormP({...formP,region:e.target.value})} style={S.inp()}>{REGIONES.map(r=><option key={r}>{r}</option>)}</select></Field>
           <Field label="Edición"><select value={formP.edicion||"Estándar"} onChange={e=>setFormP({...formP,edicion:e.target.value})} style={S.inp()}>{EDICIONES_UI.map(e2=><option key={e2}>{e2}</option>)}</select></Field>
         </div>
+        <Field label="Unidades que te quedas (el resto son para vender)"><input type="number" min="0" placeholder="1" value={formP.guardar==null?"":formP.guardar} onChange={e=>setFormP({...formP,guardar:e.target.value})} style={S.inp()}/></Field>
         <Field label="Fecha de compra"><input type="date" value={formP.fechaCompra||""} onChange={e=>setFormP({...formP,fechaCompra:e.target.value})} style={S.inp()}/></Field>
         <Btns onCancel={()=>setModal(null)} onSave={saveP}/>
       </Sheet>}
