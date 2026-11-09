@@ -930,6 +930,11 @@ function reducer(state,action){
 /* ═══════════════════════ STYLES ═══════════════════════════════════════ */
 // Las portadas de IGDB se guardaron en tamaño pequeño (90px): para verlas grandes se pide la version grande
 const GRANDE=u=>(u||"").replace("/t_cover_small/","/t_cover_big/").replace("/t_thumb/","/t_cover_big/");
+// Color principal de la app: se elige en el menu y se guarda en este dispositivo
+const TEMAS={azul:{n:"Azul",a:"#2449C4",a2:"#2F5FE8",a3:"#E4EBFF"},naranja:{n:"Naranja",a:"#E8651A",a2:"#FF7A2F",a3:"#FFEDE1"},morado:{n:"Morado",a:"#5B34C9",a2:"#7048E8",a3:"#EDE7FF"},turquesa:{n:"Turquesa",a:"#0B7A6B",a2:"#0E9384",a3:"#DDF5F1"}};
+const ponTema=k=>{const t=TEMAS[k]||TEMAS.azul;const r=document.documentElement.style;r.setProperty("--accent",t.a);r.setProperty("--accent2",t.a2);r.setProperty("--accent3",t.a3);};
+const temaGuardado=()=>{try{return localStorage.getItem("gsp_color")||"azul"}catch(e){return "azul"}};
+ponTema(temaGuardado());
 // Unidades que Juan se queda de cada producto (1 si no se dice otra cosa) y las que sobran para vender
 const guardaDe=p=>Math.min(p.stock||0,p.guardar==null||p.guardar===""?1:Math.max(+p.guardar||0,0));
 const sobraDe=p=>Math.max((p.stock||0)-guardaDe(p),0);
@@ -1467,7 +1472,7 @@ function MapaEnvios({envios,fmt,H}){
   const caja=useRef(null), mapa=useRef(null);
   const [err,setErr]=useState(false);
   const [sel,setSel]=useState(null);
-  const [capa,setCapa]=useState("relieve");
+  const [capa,setCapa]=useState("mapa");
   const porPais=useMemo(()=>{const m={};envios.forEach(e=>{const k=e.pais;(m[k]=m[k]||{pais:k,n:0,tot:0});m[k].n++;m[k].tot+=e.total||0;});return Object.values(m).sort((a,b)=>b.n-a.n||b.tot-a.tot);},[envios]);
   const porCiudad=useMemo(()=>{const m={};envios.forEach(e=>{const k=e.ciudad+"|"+e.pais;(m[k]=m[k]||{k,ciudad:e.ciudad,pais:e.pais,lat:e.lat,lon:e.lon,items:[]}).items.push(e);});return Object.values(m);},[envios]);
   useEffect(()=>{
@@ -1482,14 +1487,14 @@ function MapaEnvios({envios,fmt,H}){
         }
         if(!vivo||!caja.current||mapa.current) return;
         const L=window.L;
-        const m=L.map(caja.current,{zoomControl:true,attributionControl:true,worldCopyJump:true,minZoom:1,maxZoom:18}).setView([30,10],1);
-        const at="Tiles &copy; Esri";
-        const relieve=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:8,maxZoom:18,attribution:at});
+        const m=L.map(caja.current,{zoomControl:true,attributionControl:true,worldCopyJump:true,minZoom:1,maxZoom:18}).setView([46,8],3);
+        const cs=getComputedStyle(document.documentElement), AC=cs.getPropertyValue("--accent2").trim()||"#2F5FE8", AC1=cs.getPropertyValue("--accent").trim()||"#2449C4";
+        const claro=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:18,attribution:"&copy; OpenStreetMap &copy; CARTO"});
         const sat=L.layerGroup([
-          L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,attribution:at}),
+          L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,attribution:"Tiles &copy; Esri"}),
           L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:18})]);
-        relieve.addTo(m);
-        // Paises a los que has enviado, coloreados encima del relieve
+        claro.addTo(m);
+        // Paises a los que has enviado, con un tono suave del color de la app
         (async()=>{try{
           if(!window.topojson) await new Promise((ok,ko)=>{const sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js";sc.onload=ok;sc.onerror=ko;document.head.appendChild(sc);});
           const w=await (await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json")).json();
@@ -1497,19 +1502,36 @@ function MapaEnvios({envios,fmt,H}){
           const set=new Set(envios.map(e=>ALIAS[e.pais_en]||e.pais_en));
           const feats=window.topojson.feature(w,w.objects.countries).features.filter(f=>set.has(f.properties.name));
           if(!vivo||!mapa.current) return;
-          L.geoJSON({type:"FeatureCollection",features:feats},{interactive:false,style:{color:"#ea580c",weight:1.2,fillColor:"#f97316",fillOpacity:.28}}).addTo(m).bringToBack();
+          L.geoJSON({type:"FeatureCollection",features:feats},{interactive:false,style:{color:AC,weight:1,opacity:.5,fillColor:AC,fillOpacity:.13}}).addTo(m).bringToBack();
         }catch(e){}})();
-        const ajustar=()=>{const z=m.getZoom();if(z>=6){if(m.hasLayer(relieve)){m.removeLayer(relieve);sat.addTo(m);setCapa("satelite");}}else{if(m.hasLayer(sat)){m.removeLayer(sat);relieve.addTo(m);setCapa("relieve");}}};
+        const CASA=[41.45,2.25];
+        // Arco curvo desde Badalona hasta el destino
+        const arco=(ll)=>{const [a1,o1]=CASA,[a2,o2]=ll;const dx=o2-o1,dy=a2-a1,d=Math.hypot(dx,dy);if(d<0.3) return null;
+          const k=Math.min(0.22,0.08+d/600), cx=(o1+o2)/2-dy*k, cy=(a1+a2)/2+Math.abs(dx)*k;
+          const pts=[];for(let t=0;t<=1.0001;t+=0.04){const u=1-t;pts.push([u*u*a1+2*u*t*cy+t*t*a2,u*u*o1+2*u*t*cx+t*t*o2]);}
+          return L.polyline(pts,{color:AC,weight:1.3,opacity:.45,interactive:false});};
+        const burbuja=(ll,n,tam,titulo,alTocar)=>{
+          const mk=L.marker(ll,{icon:L.divIcon({className:"",iconSize:[tam,tam],iconAnchor:[tam/2,tam/2],
+            html:`<div style="width:${tam}px;height:${tam}px;border-radius:50%;background:${AC};border:2px solid #fff;box-shadow:0 2px 8px rgba(20,24,38,.3);color:#fff;font:800 ${tam>=26?12:10.5}px Archivo,system-ui,sans-serif;display:flex;align-items:center;justify-content:center">${n>1?n:""}</div>`})});
+          mk.bindTooltip(titulo);mk.on("click",alTocar);return mk;};
+        // De lejos se agrupa por pais; al acercarse, por ciudad
+        const gPais=L.layerGroup(), gCiudad=L.layerGroup();
+        const paises={};porCiudad.forEach(c=>{const x=(paises[c.pais]=paises[c.pais]||{pais:c.pais,n:0,la:0,lo:0,cs:[]});x.n+=c.items.length;x.la+=c.lat*c.items.length;x.lo+=c.lon*c.items.length;x.cs.push(c);});
+        const maxP=Math.max(1,...Object.values(paises).map(x=>x.n)), maxN=Math.max(1,...porCiudad.map(c=>c.items.length));
+        Object.values(paises).forEach(x=>{const ll=[x.la/x.n,x.lo/x.n];const a=arco(ll);if(a) a.addTo(gPais);
+          burbuja(ll,x.n,20+18*Math.sqrt(x.n/maxP),`${x.pais} · ${x.n} ${x.n===1?"envío":"envíos"}`,()=>{setSel(null);setPaisSel(x.pais);
+            const b=L.latLngBounds(x.cs.map(c=>[c.lat,c.lon]));if(x.cs.length>1) m.flyToBounds(b,{padding:[40,40],maxZoom:8,duration:1.1}); else m.flyTo(ll,6,{duration:1.1});}).addTo(gPais);});
+        porCiudad.forEach(c=>{const a=arco([c.lat,c.lon]);if(a) a.addTo(gCiudad);
+          burbuja([c.lat,c.lon],c.items.length,18+12*Math.sqrt(c.items.length/maxN),`${c.ciudad} · ${c.items.length}`,()=>{setSel(c);m.flyTo([c.lat,c.lon],Math.max(m.getZoom(),9),{duration:1.2});}).addTo(gCiudad);});
+        L.circleMarker(CASA,{radius:6,color:"#fff",weight:2,fillColor:"#141826",fillOpacity:1}).addTo(m).bindTooltip("Badalona");
+        const ajustar=()=>{const z=m.getZoom();
+          if(z>=9){if(m.hasLayer(claro)){m.removeLayer(claro);sat.addTo(m);setCapa("satelite");}}else{if(m.hasLayer(sat)){m.removeLayer(sat);claro.addTo(m);setCapa("mapa");}}
+          if(z>=5){if(m.hasLayer(gPais)) m.removeLayer(gPais);if(!m.hasLayer(gCiudad)) gCiudad.addTo(m);}
+          else{if(m.hasLayer(gCiudad)) m.removeLayer(gCiudad);if(!m.hasLayer(gPais)) gPais.addTo(m);}};
         m.on("zoomend",ajustar);
-        const maxN=Math.max(1,...porCiudad.map(c=>c.items.length));
-        L.circleMarker([41.45,2.25],{radius:6,color:"#fff",weight:2,fillColor:"#111",fillOpacity:1}).addTo(m).bindTooltip("Badalona");
-        porCiudad.forEach(c=>{
-          const mk=L.circleMarker([c.lat,c.lon],{radius:5+6*Math.sqrt(c.items.length/maxN),color:"#fff",weight:1.5,fillColor:"#f97316",fillOpacity:.9}).addTo(m);
-          mk.bindTooltip(`${c.ciudad} · ${c.items.length}`);
-          mk.on("click",()=>{setSel(c);m.flyTo([c.lat,c.lon],Math.max(m.getZoom(),9),{duration:1.2});});
-        });
-        const b=L.latLngBounds(porCiudad.map(c=>[c.lat,c.lon]));if(b.isValid()) m.fitBounds(b,{padding:[18,18]});
-        mapa.current=m;setTimeout(()=>m.invalidateSize(),200);
+        m.fitBounds([[35.5,-10.5],[57.5,24]],{padding:[6,6]});
+        ajustar();
+                mapa.current=m;setTimeout(()=>m.invalidateSize(),200);
       }catch(e){if(vivo)setErr(true);}
     };
     cargar();
@@ -1526,20 +1548,20 @@ function MapaEnvios({envios,fmt,H}){
   const lejos=[...porCiudad].sort((a,b)=>{const d=c=>Math.hypot(c.lat-41.45,(c.lon-2.25)*Math.cos(41.45*Math.PI/180));return d(b)-d(a);})[0];
   return(<div className="fade-in">
     <div style={{fontFamily:"var(--display)",fontSize:15,margin:"2px 2px 4px"}}>Mapa de envíos</div>
-    <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Ventas de eBay enviadas desde Badalona. Acércate con los dedos: al entrar en una zona pasa a vista satélite. Toca un punto para ver qué se vendió allí.</div>
+    <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Tus envíos desde Badalona. Toca un círculo para acercarte y ver qué se vendió allí.</div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
       {[["Envíos",envios.length],["Países",porPais.length],["Ciudades",porCiudad.length]].map(([l,v])=>(
         <div key={l} style={{...S.card,padding:"10px 12px"}}><div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>{l}</div><div style={{fontFamily:"var(--display)",fontSize:20,marginTop:2}}>{v}</div></div>))}
     </div>
     <div style={{...S.card,padding:8,marginBottom:10}}>
       <div style={{display:"flex",gap:4,justifyContent:"space-between",alignItems:"center",margin:"2px 2px 8px"}}>
-        <span style={{fontSize:11.5,color:"var(--text3)"}}>{capa==="satelite"?"Vista satélite":"Vista relieve"}</span>
+        <span style={{fontSize:12,color:"var(--text3)"}}>{capa==="satelite"?"Vista satélite":"El número es la cantidad de envíos"}</span>
         <div style={{display:"flex",gap:4}}>
-          {[["Mundo",[30,10],1],["Europa",[45,8],4],["España",[38.5,-4],5]].map(([l,ll,z])=><button key={l} onClick={()=>ir(ll,z)} style={{border:"none",borderRadius:8,padding:"5px 10px",fontSize:11.5,fontWeight:700,cursor:"pointer",background:"var(--bg3)",color:"var(--text2)"}}>{l}</button>)}
+          {[["Mundo",[25,5],1],["Europa",[47,7],3],["España",[39.8,-3.5],5]].map(([l,ll,z])=><button key={l} onClick={()=>ir(ll,z)} style={{border:"none",borderRadius:8,padding:"6px 11px",fontSize:12,fontWeight:700,cursor:"pointer",background:"var(--bg3)",color:"var(--text)"}}>{l}</button>)}
         </div>
       </div>
       {err?<div style={{padding:30,textAlign:"center",color:"var(--text3)",fontSize:13}}>No se ha podido cargar el mapa. Revisa la conexión.</div>
-        :<div ref={caja} style={{width:"100%",height:360,borderRadius:10,overflow:"hidden",background:"#a9cfe3"}}/>}
+        :<div ref={caja} style={{width:"100%",height:360,borderRadius:10,overflow:"hidden",background:"#e9edf2"}}/>}
       {sel&&<div style={{padding:"10px 6px 4px"}}>
         <div style={{fontWeight:800,fontSize:13.5}}>{sel.ciudad} · {sel.pais}</div>
         {sel.items.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",gap:8,fontSize:12,marginTop:5}}>
@@ -1548,13 +1570,27 @@ function MapaEnvios({envios,fmt,H}){
         </div>)}
       </div>}
     </div>
-    {lejos&&<div style={{...S.card,padding:"10px 14px",marginBottom:10,fontSize:12.5,color:"var(--text2)"}}>Envío más lejano: <b style={{color:"var(--text)"}}>{lejos.ciudad} ({lejos.pais})</b>. Cobrado en total, con envío: <b style={{color:"var(--text)"}}>{H(`${fmt(total)} €`)}</b>.</div>}
+    {(()=>{
+      const esp=(porPais.find(x=>x.pais==="España")||{n:0}).n, fuera=envios.length-esp, pe=envios.length?esp/envios.length*100:0;
+      return(
+      <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:700}}>
+          <span>España · {esp} ({Math.round(pe)} %)</span><span>Resto del mundo · {fuera} ({100-Math.round(pe)} %)</span>
+        </div>
+        <div style={{display:"flex",height:9,borderRadius:99,overflow:"hidden",marginTop:8,background:"var(--bg3)"}}>
+          <div style={{width:`${pe}%`,background:"var(--ink)"}}/><div style={{flex:1,background:"var(--accent2)"}}/>
+        </div>
+        {lejos&&<div style={{fontSize:12.5,color:"var(--text2)",marginTop:10,lineHeight:1.45}}>El más lejano: <b style={{color:"var(--text)"}}>{lejos.ciudad} ({lejos.pais})</b>. Cobrado en total, con envío: <b style={{color:"var(--text)"}}>{H(`${fmt(total)} €`)}</b>.</div>}
+      </div>);
+    })()}
     <div style={{...S.card,overflow:"hidden"}}>
       {porPais.map(x=>(
-        <button key={x.pais} onClick={()=>irPais(x.pais)} style={{...S.row,background:paisSel===x.pais?"var(--accent3)":"transparent",color:"var(--text)"}}>
-          <div style={{flex:1,fontWeight:600,fontSize:13}}>{x.pais}</div>
-          <div style={{fontSize:12,color:"var(--text3)",width:70,textAlign:"right"}}>{x.n} {x.n===1?"envío":"envíos"}</div>
-          <div style={{fontFamily:"var(--display)",fontSize:13,width:90,textAlign:"right"}}>{H(`${fmt(x.tot)} €`)}</div>
+        <button key={x.pais} onClick={()=>irPais(x.pais)} style={{...S.row,display:"block",padding:"11px 16px",background:paisSel===x.pais?"var(--accent3)":"transparent",color:"var(--text)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:10}}>
+            <span style={{fontWeight:600,fontSize:13.5}}>{x.pais}</span>
+            <span style={{fontSize:13,flex:"none"}}><span style={{color:"var(--text3)"}}>{x.n} {x.n===1?"envío":"envíos"} · </span><b>{H(`${fmt(x.tot)} €`)}</b></span>
+          </div>
+          <div style={{background:"var(--bg3)",borderRadius:99,height:5,marginTop:7,overflow:"hidden"}}><div style={{width:`${x.n/porPais[0].n*100}%`,height:"100%",background:"var(--accent2)",borderRadius:99}}/></div>
         </button>))}
     </div>
   </div>);
@@ -1690,6 +1726,8 @@ function App(){
   const [vista,setVistaS]=useState(()=>lsG("gsp_vista")||"cuadricula");
   const setVista=v=>{setVistaS(v);lsS("gsp_vista",v);};
   const [catF,setCatF]=useState("todas");
+  const [tema,setTemaS]=useState(temaGuardado);
+  const setTema=k=>{setTemaS(k);ponTema(k);try{localStorage.setItem("gsp_color",k)}catch(e){}};
   const [anuncios,setAnuncios]=useState({items:[]});
   useEffect(()=>{fetch("anuncios.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{if(v&&Array.isArray(v.items)) setAnuncios(v);}).catch(()=>{});},[]);
   const anuncioDe=id=>(anuncios.items||[]).find(a=>a.id===id);
@@ -3537,6 +3575,11 @@ function App(){
             <span style={{flex:1,minWidth:0}}><span style={{display:"block",fontSize:14,fontWeight:600}}>{x.l}</span>{x.s&&<span style={{display:"block",fontSize:12,color:"var(--text3)",marginTop:1,overflow:"hidden",textOverflow:"ellipsis"}}>{x.s}</span>}</span>
             <span style={{color:"var(--border2)",fontSize:18}}>›</span>
           </button>)}
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",color:"var(--text3)",margin:"16px 2px 8px"}}>Color de la app</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8}}>
+          {Object.entries(TEMAS).map(([k,t])=><button key={k} onClick={()=>setTema(k)} style={{border:tema===k?`2px solid ${t.a2}`:"2px solid var(--border)",background:"var(--bg2)",borderRadius:12,padding:"10px 4px 8px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,color:"var(--text)"}}>
+            <span style={{width:26,height:26,borderRadius:99,background:t.a2}}/><span style={{fontSize:12,fontWeight:tema===k?800:600}}>{t.n}</span></button>)}
+        </div>
       </Sheet>}
       {modal==="mov"&&<Sheet onClose={()=>setModal(null)} title="Registrar movimiento">
         <Field label="Producto"><select value={movForm.productoId} onChange={e=>setMovForm({...movForm,productoId:e.target.value})} style={S.inp()}>{state.products.map(p=><option key={p.id} value={p.id}>{p.nombre} ({p.categoria}) · {p.stock} uds</option>)}</select></Field>
