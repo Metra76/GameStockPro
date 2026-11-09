@@ -41,6 +41,14 @@
   --glow:0 0 22px rgba(255,122,47,.18);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+.gsp-wrap{max-width:640px}
+.gsp-grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
+@media(min-width:1000px){
+  .gsp-wrap.ancho{max-width:1180px}
+  .gsp-home{column-count:2;column-gap:14px}
+  .gsp-home>*{break-inside:avoid}
+  .gsp-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px!important}
+}
 body{font-family:'Archivo',system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;background:var(--bg);color:var(--text);font-size:14px;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5}
@@ -243,7 +251,7 @@ function EvolucionScreen({state,seccion,fmt,H,priv}){
           <div><div style={{fontSize:11,color:"var(--text3)"}}>{fd(e.d)}{e.est?" · estimado":""}</div>
             <div style={{fontFamily:"var(--display)",fontSize:22,marginTop:2}}>{P(e.vm)}</div>
             <div style={{fontSize:11.5,color:"var(--text3)",marginTop:2}}>Invertido {P(e.inv)} · <span style={{color:"var(--green)"}}>Beneficio ventas {P(e.ben||0)}</span></div></div>
-          {!cur&&!priv&&<div style={{fontSize:12,fontWeight:700,color:dif>=0?"var(--green)":"var(--red)",textAlign:"right"}}>{dif>=0?"+":""}{fmt(dif)} €<div style={{fontSize:10.5,color:"var(--text3)",fontWeight:500}}>en el periodo</div></div>}
+          {!cur&&!priv&&<div style={{fontSize:12,fontWeight:700,color:dif>=0?"var(--green)":"var(--red)",textAlign:"right"}}>{dif>=0?"+":""}{fmt(dif)} €<div style={{fontSize:11,color:"var(--text3)",fontWeight:500}}>en el periodo</div></div>}
         </div>);})()}
       {chart||<div style={{padding:30,textAlign:"center",color:"var(--text3)",fontSize:13}}>Sin datos en este periodo</div>}
       <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px",marginTop:6,fontSize:11,color:"var(--text3)"}}>
@@ -251,7 +259,7 @@ function EvolucionScreen({state,seccion,fmt,H,priv}){
         <span><span style={{display:"inline-block",width:12,borderTop:"2px dashed var(--text3)",verticalAlign:"middle",marginRight:5}}/>Invertido</span>
         <span><span style={{display:"inline-block",width:12,height:3,background:"var(--green)",verticalAlign:"middle",marginRight:5,borderRadius:2}}/>Beneficio de ventas</span>
       </div>
-      <div style={{fontSize:10.5,color:"var(--text3)",marginTop:5}}>Desliza el dedo para ver cada mes; tócalo para abrir ese mes.</div>
+      <div style={{fontSize:11,color:"var(--text3)",marginTop:5}}>Desliza el dedo para ver cada mes; tócalo para abrir ese mes.</div>
     </div>
     {esAño&&<>
       <div style={{fontFamily:"var(--display)",fontSize:13,margin:"14px 2px 8px"}}>{per} mes a mes</div>
@@ -262,7 +270,7 @@ function EvolucionScreen({state,seccion,fmt,H,priv}){
             <div style={{flex:1,fontSize:12,color:"var(--text3)"}}>{m.n?`${m.n} ${m.n===1?"venta":"ventas"} · ${priv?"•••":fmt(m.ing)+" €"}`:"Sin ventas"}</div>
             <div style={{textAlign:"right"}}>
               {m.n>0&&<div style={{fontSize:12.5,fontWeight:700,color:m.ben>=0?"var(--green)":"var(--red)"}}>{priv?"•••":`${m.ben>=0?"+":""}${fmt(m.ben)} €`}</div>}
-              {m.vm!=null&&<div style={{fontSize:10.5,color:"var(--text3)"}}>valor {priv?"•••":fmt(m.vm)+" €"}{m.est?"*":""}</div>}
+              {m.vm!=null&&<div style={{fontSize:11,color:"var(--text3)"}}>valor {priv?"•••":fmt(m.vm)+" €"}{m.est?"*":""}</div>}
             </div>
             <span style={{color:"var(--border2)",fontSize:16,marginLeft:4,transform:ab?"rotate(90deg)":"none"}}>›</span>
           </button>
@@ -964,7 +972,7 @@ function Sheet({children,onClose,title}){
 function Field({label,children}){
   return(
     <div style={{marginBottom:13}}>
-      <label style={{display:"block",fontSize:10,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>{label}</label>
+      <label style={{display:"block",fontSize:11,fontWeight:700,color:"var(--text2)",textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>{label}</label>
       {children}
     </div>
   );
@@ -1248,7 +1256,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
           ].map((k,i)=>(
             <div key={i} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:16,boxShadow:"0 1px 4px rgba(0,0,0,.06)",padding:"14px 15px"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                <span style={{fontSize:10,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.5}}>{k.l}</span>
+                <span style={{fontSize:11,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.5}}>{k.l}</span>
                 <span>{k.icon}</span>
               </div>
               <div style={{fontSize:18,fontWeight:800,color:k.c}}>{H(k.v)}</div>
@@ -1310,11 +1318,11 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
             </div>
             <div style={{textAlign:"right",flexShrink:0,marginRight:8}}>
               <div style={{fontWeight:700,fontSize:12}}>{H(`${fmt(p.precioMercado||p.precioCompra||0)} €`)}</div>
-              <button onClick={()=>fetchPkPrice(p)} style={{fontSize:9,background:"var(--accent3)",border:"none",borderRadius:4,padding:"2px 6px",cursor:"pointer",color:"var(--accent2)",fontWeight:700,marginTop:3}}>↻ CM</button>
+              <button onClick={()=>fetchPkPrice(p)} style={{fontSize:11,background:"var(--accent3)",border:"none",borderRadius:4,padding:"2px 6px",cursor:"pointer",color:"var(--accent2)",fontWeight:700,marginTop:3}}>↻ CM</button>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:4}}>
-              <button onClick={()=>{setPkVentaForm({...pkVentaForm,itemId:p.id,nombre:p.nombre,coste:p.precioCompra||0,unidades:p.unidades||1});setPkVentaModal(true);}} style={{background:"var(--green2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--green)"}}></button>
-              <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_POKEMON",payload:p.id});}} style={{background:"var(--red2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:10,fontWeight:700,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
+              <button onClick={()=>{setPkVentaForm({...pkVentaForm,itemId:p.id,nombre:p.nombre,coste:p.precioCompra||0,unidades:p.unidades||1});setPkVentaModal(true);}} style={{background:"var(--green2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:11,fontWeight:700,color:"var(--green)"}}></button>
+              <button onClick={()=>{if(window.confirm("¿Eliminar?")) dispatch({type:"DELETE_POKEMON",payload:p.id});}} style={{background:"var(--red2)",border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:11,fontWeight:700,color:"var(--red)"}}><Ico d={I.papelera} size={14}/></button>
             </div>
           </div>
         ))}
@@ -1405,7 +1413,7 @@ function PokemonScreen({state,dispatch,showToast,fmt,H,priv,pkScreen,setPkScreen
               </div>
               {c.prices?.avg&&<div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontWeight:700,fontSize:12,color:"var(--green)"}}>{fmt(c.prices.avg)} €</div>
-                <div style={{fontSize:10,color:"var(--text3)"}}>{c.isEbay?"eBay mediana":"Cardmarket"}</div>
+                <div style={{fontSize:11,color:"var(--text3)"}}>{c.isEbay?"eBay mediana":"Cardmarket"}</div>
               </div>}
               <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
             </button>
@@ -1498,7 +1506,7 @@ function MapaEnvios({envios,fmt,H}){
     <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Ventas de eBay enviadas desde Badalona. Acércate con los dedos: al entrar en una zona pasa a vista satélite. Toca un punto para ver qué se vendió allí.</div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
       {[["Envíos",envios.length],["Países",porPais.length],["Ciudades",porCiudad.length]].map(([l,v])=>(
-        <div key={l} style={{...S.card,padding:"10px 12px"}}><div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>{l}</div><div style={{fontFamily:"var(--display)",fontSize:20,marginTop:2}}>{v}</div></div>))}
+        <div key={l} style={{...S.card,padding:"10px 12px"}}><div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>{l}</div><div style={{fontFamily:"var(--display)",fontSize:20,marginTop:2}}>{v}</div></div>))}
     </div>
     <div style={{...S.card,padding:8,marginBottom:10}}>
       <div style={{display:"flex",gap:4,justifyContent:"space-between",alignItems:"center",margin:"2px 2px 8px"}}>
@@ -1577,7 +1585,7 @@ function Escaparate({state,onSalir,onOlvido}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",maxWidth:640,margin:"0 auto"}}>
         <div><div style={{fontFamily:"var(--display)",fontSize:17}}>Mi colección</div>
           <div style={{fontSize:11.5,color:"var(--text3)"}}>{cuenta("juegos")} juegos · {cuenta("zapatillas")} zapatillas · {cuenta("cartas")} cartas</div></div>
-        <button onClick={()=>{setErr("");setPin(true);}} style={{border:"none",borderRadius:10,padding:"8px 12px",background:"var(--bg3)",fontSize:12.5,fontWeight:700,color:"var(--text2)",cursor:"pointer"}}>🔒 Salir</button>
+        <button onClick={()=>{setErr("");setPin(true);}} style={{border:"none",borderRadius:10,padding:"8px 12px",background:"var(--bg3)",fontSize:12.5,fontWeight:700,color:"var(--text2)",cursor:"pointer"}}>Salir</button>
       </div>
     </div>
     <div style={{padding:"12px 14px 40px",maxWidth:640,margin:"0 auto"}}>
@@ -1603,9 +1611,9 @@ function Escaparate({state,onSalir,onOlvido}){
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:10}}>
           {g.items.map(x=>(<button key={x.k} onClick={()=>setVer(x)} style={{background:"none",border:"none",padding:0,textAlign:"left",cursor:"pointer",color:"var(--text)",position:"relative",alignSelf:"start",display:"block",width:"100%"}}>
             <PortadaEsc x={x}/>
-            {x.uds>1&&<span style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.7)",color:"#fff",fontSize:10.5,fontWeight:800,borderRadius:8,padding:"2px 6px"}}>×{x.uds}</span>}
+            {x.uds>1&&<span style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.7)",color:"#fff",fontSize:11,fontWeight:800,borderRadius:8,padding:"2px 6px"}}>×{x.uds}</span>}
             <div style={{fontSize:11.5,fontWeight:700,marginTop:5,lineHeight:1.25,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{x.nombre}</div>
-            <div style={{fontSize:10.5,color:"var(--text3)",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{x.cat}{x.ed?` · ${x.ed}`:""}</div>
+            <div style={{fontSize:11,color:"var(--text3)",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{x.cat}{x.ed?` · ${x.ed}`:""}</div>
           </button>))}
         </div>
           </div>));
@@ -2211,8 +2219,8 @@ function App(){
           }
           {(screen==="home"||screen==="stock"||screen==="radar"||screen==="reservas")&&
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:30,height:30,background:"var(--accent2)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}></div>
-              <span style={{fontWeight:800,fontSize:15,letterSpacing:"-0.3px"}}>StockPro</span>
+              <div style={{width:32,height:32,background:"var(--accent2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center"}}><Ico d={I.caja} size={19} c="#fff" w={2}/></div>
+              <span style={{fontWeight:800,fontSize:16,letterSpacing:"-0.4px"}}>GameStock<span style={{color:"var(--accent2)"}}>Pro</span></span>
             </div>
           }
         </div>
@@ -2223,7 +2231,7 @@ function App(){
         </div>
       </div>
 
-      <div style={{padding:"14px 14px 8px",maxWidth:640,margin:"0 auto"}}>
+      <div className={"gsp-wrap"+(screen==="home"||screen==="stock"?" ancho":"")} style={{padding:"14px 14px 8px",margin:"0 auto"}}>
 
         {/* ── Aviso: esta copia esta desfasada y ya no guarda ── */}
         {syncBloqueo&&<div style={{...S.card,background:"var(--red2)",border:"1px solid #fca5a5",padding:"12px 14px",marginBottom:12}}>
@@ -2247,10 +2255,10 @@ function App(){
         {updateProgress&&<UpdateProgress current={updateProgress.current} total={updateProgress.total}/>}
 
         {/* ══════════════════════════ HOME ══════════════════════════════ */}
-        {screen==="home"&&<div className="fade-in">
+        {screen==="home"&&<div className="fade-in gsp-home">
           {/* Reservas que ya han salido */}
           {(seccion==="juegos"||seccion==="todo")&&salidas.length>0&&<div style={{...S.card,padding:"14px 16px",marginBottom:10,border:"1px solid var(--accent2)"}}>
-            <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--accent2)"}}>Ya han salido</div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--accent2)"}}>Ya han salido</div>
             {salidas.map(r=>(
               <div key={r.id} style={{marginTop:10}}>
                 <div style={{fontWeight:600,fontSize:13.5,lineHeight:1.3}}>{r.nombre}</div>
@@ -2277,7 +2285,7 @@ function App(){
                 {l:"Ingresos",v:H(`${fmt(kpi.ing)} €`),c:"#fff",nav:"ventas"},
               ].map(k=>(
                 <div key={k.l} onClick={e=>{e.stopPropagation();if(k.nav==="stock") setTab("stock"); else {setVentasMes(null);go(k.nav);}}} style={{minWidth:0}}>
-                  <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>{k.l}</div>
+                  <div style={{fontSize:11,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>{k.l}</div>
                   <div style={{fontSize:14.5,fontWeight:700,marginTop:3,color:k.c,whiteSpace:"nowrap",letterSpacing:-.2}}>{k.v}</div>
                   {k.sub&&!priv&&<div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>{k.sub}</div>}
                 </div>))}
@@ -2363,7 +2371,7 @@ function App(){
             const col={juegos:"var(--accent2)",zapatillas:"#db2777",cartas:"#0891b2"};
             return(
             <div style={{...S.card,padding:"14px 16px",marginBottom:10}}>
-              <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Reparto por sección</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Reparto por sección</div>
               {!priv&&<div style={{display:"flex",height:10,borderRadius:6,overflow:"hidden",margin:"10px 0 4px"}}>
                 {filas.map(f=><div key={f.k} style={{width:`${f.vm/vmT*100}%`,background:col[f.k]}}/>)}
               </div>}
@@ -2498,7 +2506,7 @@ function App(){
           </div>
 
           {(seccion==="juegos"||seccion==="todo")&&(state.envios||[]).length>0&&<button onClick={()=>go("mapa")} style={{...S.card,width:"100%",textAlign:"left",padding:"14px 16px",marginBottom:10,cursor:"pointer",color:"var(--text)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontSize:10.5,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Mapa de envíos</div>
+            <div><div style={{fontSize:11,fontWeight:700,letterSpacing:.9,textTransform:"uppercase",color:"var(--text3)"}}>Mapa de envíos</div>
             <div style={{fontSize:13.5,fontWeight:700,marginTop:3}}>{(state.envios||[]).length} envíos a {new Set((state.envios||[]).map(e=>e.pais)).size} países</div></div>
             <span style={{color:"var(--border2)",fontSize:18}}>›</span>
           </button>}
@@ -2529,8 +2537,8 @@ function App(){
                       <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
                       <div style={{fontSize:11,color:"var(--text3)",marginTop:1,display:"flex",alignItems:"center",gap:5}}>
                         <span>{p.categoria} · {p.stock} uds</span>
-                        {!p.valorFuente&&<span style={{fontSize:9,fontWeight:700,color:"var(--text3)",background:"var(--bg3)",borderRadius:4,padding:"1px 4px"}}>a mano</span>}
-                        {p.valorFuente==="ebay-pocos"&&<span style={{fontSize:9,fontWeight:700,color:"var(--yellow)",background:"var(--yellow2)",borderRadius:4,padding:"1px 4px"}}>pocos</span>}
+                        {!p.valorFuente&&<span style={{fontSize:11,fontWeight:700,color:"var(--text3)",background:"var(--bg3)",borderRadius:4,padding:"1px 4px"}}>a mano</span>}
+                        {p.valorFuente==="ebay-pocos"&&<span style={{fontSize:11,fontWeight:700,color:"var(--yellow)",background:"var(--yellow2)",borderRadius:4,padding:"1px 4px"}}>pocos</span>}
                       </div>
                     </div>
                     <div style={{fontFamily:"var(--display)",fontSize:13,flex:"none"}}>{H(`${fmt((p.valorMercado||0)*(p.stock||0))} €`)}</div>
@@ -2568,7 +2576,7 @@ function App(){
             <span style={{fontWeight:700,color:"var(--text)"}}>{H(`${fmt(stockLista.reduce((a,p)=>a+(p.valorMercado||p.precioCompra||0)*(p.stock||0),0))} €`)}</span>
           </div>
           {stockLista.length===0&&<div style={{...S.card,padding:30,textAlign:"center",color:"var(--text3)",marginBottom:10}}>No hay nada en stock aquí</div>}
-          {vista==="cuadricula"&&stockLista.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(104px,1fr))",gap:9,marginBottom:14}}>
+          {vista==="cuadricula"&&stockLista.length>0&&<div className="gsp-grid" style={{display:"grid",gap:9,marginBottom:14}}>
             {stockLista.map(p=>{
               const pv=p.valorMercado||p.precioCompra||0, ratio=p.precioCompra>0?pv/p.precioCompra:0;
               return(
@@ -2583,7 +2591,7 @@ function App(){
                     <div style={{...CLAMP2,fontSize:12,fontWeight:600,lineHeight:1.25,minHeight:30}}>{p.nombre}</div>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4,marginTop:"auto"}}>
                       <span style={{fontSize:13,fontWeight:800}}>{H(`${fmt(pv)} €`)}</span>
-                      {ratio>=1.5&&!priv&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--green)",background:"var(--green2)",borderRadius:6,padding:"1px 5px"}}>×{ratio.toFixed(1)}</span>}
+                      {ratio>=1.5&&!priv&&<span style={{fontSize:11,fontWeight:700,color:"var(--green)",background:"var(--green2)",borderRadius:6,padding:"1px 5px"}}>×{ratio.toFixed(1)}</span>}
                     </div>
                   </div>
                 </button>);
@@ -2605,7 +2613,7 @@ function App(){
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
                     <div style={{fontWeight:800,fontSize:14}}>{H(`${fmt(pv)} €`)}</div>
-                    {ratio>=1.5&&!priv&&<span style={{display:"inline-block",marginTop:3,fontSize:10.5,fontWeight:700,color:"var(--green)",background:"var(--green2)",borderRadius:6,padding:"1px 5px"}}>×{ratio.toFixed(1)}</span>}
+                    {ratio>=1.5&&!priv&&<span style={{display:"inline-block",marginTop:3,fontSize:11,fontWeight:700,color:"var(--green)",background:"var(--green2)",borderRadius:6,padding:"1px 5px"}}>×{ratio.toFixed(1)}</span>}
                   </div>
                 </button>);
             })}
@@ -2642,7 +2650,7 @@ function App(){
                   <div style={{background:"var(--bg3)",borderRadius:99,height:4}}>
                     <div style={{background:roi>=0?cfg.color||"var(--green)":"var(--red)",height:4,borderRadius:99,width:`${pct}%`,transition:"width .3s"}}/>
                   </div>
-                  <div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{H(`${fmt(c.inv)} € invertido · ${fmt(c.vm)} € valor`)}</div>
+                  <div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{H(`${fmt(c.inv)} € invertido · ${fmt(c.vm)} € valor`)}</div>
                 </div>
               );
             })}
@@ -2667,13 +2675,13 @@ function App(){
                 </div>
                 {!priv&&<div style={{textAlign:"right"}}>
                   <div style={{fontWeight:800,color:grupo.color,fontSize:15}}>{fmt(gVM)} €</div>
-                  <div style={{fontSize:10,color:"var(--text3)"}}>val. mercado</div>
+                  <div style={{fontSize:11,color:"var(--text3)"}}>val. mercado</div>
                 </div>}
               </div>
               {!priv&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
                 {[{l:"Invertido",v:`${fmt(gInv)} €`},{l:"Beneficio ventas",v:`${gBen>=0?"+":""}${fmt(gBen)} €`,c:gBen>=0?"var(--green)":"var(--red)"},{l:"Plus-valía",v:`+${fmt(gVM-gInv)} €`,c:gVM>gInv?"var(--accent2)":"var(--red)"}].map((k,i)=>(
                   <div key={i} style={{...S.card,padding:"10px 12px",textAlign:"center"}}>
-                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>{k.l}</div>
+                    <div style={{fontSize:11,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>{k.l}</div>
                     <div style={{fontSize:13,fontWeight:800,color:k.c||"var(--text)"}}>{k.v}</div>
                   </div>
                 ))}
@@ -2692,7 +2700,7 @@ function App(){
                       </div>
                       <div style={{textAlign:"right"}}>
                         <div style={{fontSize:13,fontWeight:700,color:cfg.color||"var(--text)"}}>{H(`${fmt(c.vm)} €`)}</div>
-                        <div style={{fontSize:10,color:"var(--text3)"}}>val. mdo.</div>
+                        <div style={{fontSize:11,color:"var(--text3)"}}>val. mdo.</div>
                       </div>
                       <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
                     </button>
@@ -2720,7 +2728,7 @@ function App(){
                 {!priv&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                   {[{l:"Invertido",v:`${fmt(cs.inv||0)} €`},{l:"Valor mdo.",v:`${fmt(cs.vm||0)} €`,c:cfg.color},{l:"Ingresos",v:`${fmt(cs.ing||0)} €`},{l:"Beneficio",v:`${cs.ben>=0?"+":""}${fmt(cs.ben||0)} €`,c:(cs.ben||0)>=0?"var(--green)":"var(--red)"}].map((k,i)=>(
                     <div key={i} style={{background:"var(--bg3)",borderRadius:8,padding:"8px 10px"}}>
-                      <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:2}}>{k.l}</div>
+                      <div style={{fontSize:11,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:2}}>{k.l}</div>
                       <div style={{fontSize:13,fontWeight:800,color:k.c||"var(--text)"}}>{k.v}</div>
                     </div>
                   ))}
@@ -2754,20 +2762,20 @@ function App(){
                       }
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                          {esOp&&<span style={{fontSize:9,fontWeight:800,color:"var(--accent2)"}}>OP</span>}
+                          {esOp&&<span style={{fontSize:11,fontWeight:800,color:"var(--accent2)"}}>OP</span>}
                           <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:esOp?"var(--red)":"var(--text)"}}>{p.nombre}</div>
                         </div>
                         <div style={{fontSize:11,color:"var(--text3)",display:"flex",gap:6,alignItems:"center"}}>
                           {p.lanzamiento?<span>{p.lanzamiento.slice(0,4)}</span>:<span>{p.sku}</span>}
                           <span>·</span><span>{p.stock} uds</span>
                           {(orden==="ganancia"||orden==="vender")&&!priv&&p.precioCompra>0&&<><span>·</span><span style={{color:"var(--green)",fontWeight:700}}>+{fmt(((p.valorMercado||p.precioCompra)-p.precioCompra)*p.stock)} €</span></>}
-                          {p.ebayData&&!ebStale&&<span style={{color:"var(--accent2)",fontSize:10}}>eBay ✓</span>}
-                          {ebStale&&<span style={{color:"var(--yellow)",fontSize:10}}>desact.</span>}
+                          {p.ebayData&&!ebStale&&<span style={{color:"var(--accent2)",fontSize:11}}>eBay ✓</span>}
+                          {ebStale&&<span style={{color:"var(--yellow)",fontSize:11}}>desact.</span>}
                         </div>
                       </div>
                       <div style={{textAlign:"right",flexShrink:0}}>
                         <div style={{fontWeight:700,fontSize:13,color:ratio>=1.5?cfg.color:"var(--text)"}}>{H(`${fmt(pv)} €`)}</div>
-                        {p.precioCompra>0&&!priv&&<div style={{fontSize:10,color:ratio>=1.5?"var(--green)":"var(--text3)"}}>×{ratio.toFixed(1)}</div>}
+                        {p.precioCompra>0&&!priv&&<div style={{fontSize:11,color:ratio>=1.5?"var(--green)":"var(--text3)"}}>×{ratio.toFixed(1)}</div>}
                       </div>
                       <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
                     </button>
@@ -2811,15 +2819,15 @@ function App(){
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"1.35fr 1fr 1fr",gap:10,marginTop:14,background:"var(--ink)",borderRadius:14,padding:"14px 15px",color:"#fff",alignItems:"end"}}>
                     <div>
-                      <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Valor</div>
+                      <div style={{fontSize:11,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Valor</div>
                       <div style={{fontFamily:"var(--display)",fontSize:23,letterSpacing:-.6,marginTop:3,whiteSpace:"nowrap"}}>{H(`${fmt(p.valorMercado)} €`)}</div>
                     </div>
                     <div>
-                      <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Coste</div>
+                      <div style={{fontSize:11,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Coste</div>
                       <div style={{fontSize:15,fontWeight:700,marginTop:3,whiteSpace:"nowrap"}}>{H(`${fmt(p.precioCompra)} €`)}</div>
                     </div>
                     <div>
-                      <div style={{fontSize:10.5,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Ganancia</div>
+                      <div style={{fontSize:11,fontWeight:700,letterSpacing:.7,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>Ganancia</div>
                       <div style={{fontSize:15,fontWeight:700,marginTop:3,whiteSpace:"nowrap",color:pPlusval===null?"#fff":pPlusval>=0?"#4ADE9A":"#FF8A96"}}>{pPlusval===null?"—":H(`${pPlusval>=0?"+":""}${fmt(p.valorMercado-p.precioCompra)} €`)}</div>
                     </div>
                   </div>
@@ -2890,18 +2898,18 @@ function App(){
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
                       {[{l:"Mediana",v:p.ebayData.mediana,c:"var(--accent2)"},{l:"Mínimo",v:p.ebayData.min,c:"var(--green)"},{l:"Máximo",v:p.ebayData.max,c:"var(--red)"}].map((k,i)=>(
                         <div key={i} style={{background:"var(--bg3)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
-                          <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:2}}>{k.l}</div>
+                          <div style={{fontSize:11,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:2}}>{k.l}</div>
                           <div style={{fontSize:13,fontWeight:800,color:k.c}}>{H(`${fmt(k.v)} €`)}</div>
                         </div>
                       ))}
                     </div>
-                    <div style={{fontSize:10,color:"var(--text3)",textAlign:"right"}}>
+                    <div style={{fontSize:11,color:"var(--text3)",textAlign:"right"}}>
                       {p.ebayData.count>0?`${p.ebayData.count} ventas · `:""}
                       Actualizado hace {ebayAge<1?"<1h":`${ebayAge}h`}
                     </div>
                     {p.ebayData.listings&&p.ebayData.listings.length>0&&(
                       <div style={{marginTop:8,borderTop:"1px solid var(--border)",paddingTop:8}}>
-                        <div style={{fontSize:10,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.3,marginBottom:6}}>Últimos anuncios</div>
+                        <div style={{fontSize:11,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.3,marginBottom:6}}>Últimos anuncios</div>
                         {p.ebayData.listings.map((l,i)=>(
                           <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
                             style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 0",borderBottom:i<p.ebayData.listings.length-1?"1px solid #f9fafb":"none",textDecoration:"none",color:"inherit"}}>
@@ -2999,7 +3007,7 @@ function App(){
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
                   {tiles.map((k,i)=>(
                     <div key={i} style={{...S.card,padding:"11px 12px"}}>
-                      <div style={{fontSize:9.5,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.4,marginBottom:4}}>{k.l}</div>
+                      <div style={{fontSize:11,color:"var(--text3)",fontWeight:700,textTransform:"uppercase",letterSpacing:.4,marginBottom:4}}>{k.l}</div>
                       <div style={{fontSize:15,fontWeight:800,color:k.c}}>{k.v}</div>
                     </div>
                   ))}
@@ -3051,7 +3059,7 @@ function App(){
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
               {[{l:"Fecha",v:vData.fecha},{l:"Canal",v:vData.nota||"—"},{l:"Uds",v:`×${vData.cantidad}`},{l:"Precio venta",v:H(`${fmt(vData.precioVenta)} €`)},{l:"Coste",v:H(`${fmt(vCoste)} €`)},{l:"Comisión eBay",v:H(vFee>0?`-${fmt(vFee)} €`:"—")},{l:"Beneficio neto",v:H(`${vBen>=0?"+":""}${fmt(vBen)} €`),c:vBen>=0?"var(--green)":"var(--red)"}].map((k,i)=>(
                 <div key={i} style={{background:"var(--bg3)",borderRadius:8,padding:"10px 12px"}}>
-                  <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>{k.l}</div>
+                  <div style={{fontSize:11,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>{k.l}</div>
                   <div style={{fontSize:13,fontWeight:700,color:k.c||"var(--text)"}}>{k.v}</div>
                 </div>
               ))}
@@ -3069,10 +3077,11 @@ function App(){
             <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Productos que valen 3 veces o más lo que te costaron, o que están en el precio más alto que ha registrado la app.</div>
             <div style={{...S.card,overflow:"hidden"}}>
               {paraVender.map(({p,m})=>(
-                <button key={p.id} onClick={()=>go("producto",p)} style={{...S.row}}>
+                <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
+                  {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:40,height:53,objectFit:"cover",borderRadius:6,flexShrink:0}}/>:<div style={{width:40,height:53,background:"var(--bg3)",borderRadius:6,flexShrink:0}}/>}
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
-                    <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{p.categoria} · {p.stock} uds · {m.motivo}</div>
+                    <div style={{...CLAMP2,fontWeight:600,fontSize:13.5,lineHeight:1.25}}>{p.nombre}</div>
+                    <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>{p.categoria} · {p.stock} uds · {m.motivo}</div>
                   </div>
                   <div style={{textAlign:"right",flex:"none"}}>
                     <div style={{fontFamily:"var(--display)",fontSize:13}}>{H(`${fmt(p.valorMercado)} €`)}</div>
@@ -3086,26 +3095,22 @@ function App(){
 
         {screen==="oportunidades"&&(
           <div>
-            <div style={{...S.card,padding:"12px 16px",marginBottom:10,background:"var(--bg3)",border:"1px solid #fcd34d"}}>
-              <div style={{fontSize:12,color:"var(--yellow)",fontWeight:700}}>Oportunidades detectadas</div>
-              <div style={{fontSize:11,color:"var(--yellow)",marginTop:3}}>Productos con valor de mercado ≥1.5× precio de compra</div>
-            </div>
+            <div style={{fontFamily:"var(--display)",fontSize:15,margin:"2px 2px 4px"}}>Oportunidades</div>
+            <div style={{fontSize:12,color:"var(--text3)",margin:"0 2px 10px",lineHeight:1.45}}>Productos que valen al menos 1,5 veces lo que te costaron, de mayor a menor.</div>
             <div style={{...S.card,overflow:"hidden"}}>
               {oportunidades.map((p,i)=>{
                 const cfg2=CAT_CONFIG[p.categoria]||{};
                 const mult=p.precioCompra>0?(p.valorMercado/p.precioCompra).toFixed(1):"∞";
                 const ben=p.valorMercado-p.precioCompra;
                 return(
-                  <button key={p.id} onClick={()=>go("producto",p)} style={{...S.row}}
-                    onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
-                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <div style={{width:30,height:30,background:"var(--bg3)",border:"1px solid #fcd34d",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,color:"var(--yellow)",fontSize:i<3?15:11,flexShrink:0}}>{i<3?["1.","2.","3."][i]:i+1}</div>
+                  <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
+                    {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:40,height:53,objectFit:"cover",borderRadius:6,flexShrink:0}}/>:<div style={{width:40,height:53,background:"var(--bg3)",borderRadius:6,flexShrink:0}}/>}
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
-                      <div style={{fontSize:11,color:"var(--text3)",marginTop:1}}>{cfg2.emoji} {p.categoria} · {H(`${fmt(p.precioCompra)} → ${fmt(p.valorMercado)} €`)}</div>
+                      <div style={{...CLAMP2,fontWeight:600,fontSize:13.5,lineHeight:1.25}}>{p.nombre}</div>
+                      <div style={{fontSize:12,color:"var(--text3)",marginTop:3}}>{p.categoria} · {H(`${fmt(p.precioCompra)} → ${fmt(p.valorMercado)} €`)}</div>
                     </div>
                     <div style={{textAlign:"right",flexShrink:0}}>
-                      <span style={{background:"var(--bg3)",border:"1px solid #fcd34d",color:"var(--yellow)",padding:"3px 9px",borderRadius:20,fontWeight:800,fontSize:12}}>×{mult}</span>
+                      <span style={{background:"var(--green2)",color:"var(--green)",padding:"2px 7px",borderRadius:6,fontWeight:700,fontSize:12}}>×{mult}</span>
                       <div style={{fontSize:11,color:"var(--green)",fontWeight:600,marginTop:3}}>{H(`+${fmt(ben)} €`)}</div>
                     </div>
                     <span style={{color:"var(--border2)",fontSize:18,marginLeft:4}}>›</span>
@@ -3129,7 +3134,7 @@ function App(){
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
                   {[{l:"Señal pagada",v:H(`${fmt(totalSignal)} €`),c:"var(--accent2)"},{l:"Pendiente",v:H(`${fmt(totalPend)} €`),c:totalPend>0?"var(--red)":"var(--green)"},{l:"Unidades",v:`${totalUds} uds`,c:"var(--blue)"}].map((k,i)=>(
                     <div key={i} style={{background:"var(--bg3)",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
-                      <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>{k.l}</div>
+                      <div style={{fontSize:11,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>{k.l}</div>
                       <div style={{fontSize:13,fontWeight:800,color:k.c}}>{k.v}</div>
                     </div>
                   ))}
@@ -3150,17 +3155,17 @@ function App(){
                       <div style={{width:46,height:46,borderRadius:12,flex:"none",display:"grid",placeContent:"center",textAlign:"center",lineHeight:1,
                         background:(r.lanzamiento&&d>=0&&d<=21)?"var(--accent2)":"var(--bg3)",color:(r.lanzamiento&&d>=0&&d<=21)?"#fff":"var(--text)"}}>
                         <div style={{fontFamily:"var(--display)",fontSize:15}}>{r.lanzamiento?(d>=0?d:"—"):"—"}</div>
-                        <div style={{fontSize:8,letterSpacing:.5,textTransform:"uppercase",marginTop:2,opacity:.7}}>{r.lanzamiento?(d===0?"hoy":"días"):"s/f"}</div>
+                        <div style={{fontSize:11,letterSpacing:.5,textTransform:"uppercase",marginTop:2,opacity:.7}}>{r.lanzamiento?(d===0?"hoy":"días"):"s/f"}</div>
                       </div>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.nombre}</div>
                         <div style={{fontSize:11.5,color:"var(--text2)",marginTop:2}}>{r.lanzamiento||"sin fecha"} · {r.unidades||0} uds
-                          <span style={{display:"inline-block",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:999,background:"var(--bg3)",color:"var(--text2)",marginLeft:6}}>{r.plataforma}</span>
+                          <span style={{display:"inline-block",fontSize:11,fontWeight:700,padding:"2px 7px",borderRadius:999,background:"var(--bg3)",color:"var(--text2)",marginLeft:6}}>{r.plataforma}</span>
                         </div>
                       </div>
                       <div style={{textAlign:"right",flex:"none"}}>
                         <div style={{fontFamily:"var(--display)",fontSize:13}}>{H(`${fmt(r.costeTotal||0)} €`)}</div>
-                        <div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>señal</div>
+                        <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>señal</div>
                       </div>
                     </button>
                   );
@@ -3213,13 +3218,13 @@ function App(){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                 {[{l:"Lanzamiento",v:rFresh.lanzamiento},{l:"Tienda",v:rFresh.tienda||"—"},{l:"Unidades",v:`${rFresh.unidades||0} uds`},{l:"Señal pagada",v:H(`${fmt(rFresh.costeTotal||0)} €`)},{l:"Pendiente",v:H(`${fmt(rFresh.costePendiente||0)} €`),c:(rFresh.costePendiente||0)>0?"var(--red)":"var(--green)"},{l:"Precio final/ud",v:H(rFresh.precioFinal>0?`${fmt(rFresh.precioFinal)} €`:"—")}].map((k,i)=>(
                   <div key={i} style={{background:"var(--bg3)",borderRadius:8,padding:"10px 12px"}}>
-                    <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>{k.l}</div>
+                    <div style={{fontSize:11,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>{k.l}</div>
                     <div style={{fontSize:13,fontWeight:700,color:k.c||"var(--text)"}}>{k.v}</div>
                   </div>
                 ))}
               </div>
               {rFresh.notas&&<div style={{marginTop:8,padding:"10px 12px",background:"var(--bg3)",borderRadius:8}}>
-                <div style={{fontSize:9,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Notas</div>
+                <div style={{fontSize:11,color:"var(--text3)",textTransform:"uppercase",letterSpacing:.3,marginBottom:3}}>Notas</div>
                 <div style={{fontSize:12,color:"var(--text)"}}>{rFresh.notas}</div>
               </div>}
               {rFresh.urlTienda&&<a href={rFresh.urlTienda} target="_blank" rel="noopener noreferrer"
@@ -3303,7 +3308,7 @@ function App(){
                           ?<a href={n.link} target="_blank" rel="noopener noreferrer" style={{fontWeight:700,fontSize:12,lineHeight:1.4,color:"var(--text)",display:"block",textDecoration:"none",marginBottom:3}}>{n.titulo}</a>
                           :<div style={{fontWeight:700,fontSize:12,lineHeight:1.4,color:"var(--text)",marginBottom:3}}>{n.titulo}</div>
                         }
-                        <div style={{fontSize:10,color:"var(--text3)"}}>{n.fuente} · {n.fecha}</div>
+                        <div style={{fontSize:11,color:"var(--text3)"}}>{n.fuente} · {n.fecha}</div>
                       </div>
                       <button onClick={()=>dispatch({type:"MARK_NEWS_SEEN",payload:n.id})}
                         style={{background:"var(--bg3)",border:"none",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:11,color:"var(--text2)",fontWeight:700,flexShrink:0,whiteSpace:"nowrap"}}>
@@ -3347,8 +3352,8 @@ function App(){
             <button key={t.k} onClick={()=>{setTab(t.k);if(t.k==="pokemon") setPkScreen("home");}}
               style={{flex:1,background:"none",border:"none",padding:"10px 0 8px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,transition:"all .1s",position:"relative"}}>
               <svg viewBox="0 0 24 24" style={{width:21,height:21,fill:"none",stroke:active?"var(--accent2)":"var(--text3)",strokeWidth:1.9,strokeLinecap:"round",strokeLinejoin:"round"}}><path d={t.d}/></svg>
-              {showBadge&&<div style={{position:"absolute",top:6,right:"calc(50% - 16px)",background:"var(--red)",color:"#fff",borderRadius:99,fontSize:9,fontWeight:800,minWidth:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{badgeNum}</div>}
-              <span style={{fontSize:9.5,fontWeight:700,color:active?"var(--accent2)":"var(--text3)",letterSpacing:.2,marginTop:3}}>{t.l}</span>
+              {showBadge&&<div style={{position:"absolute",top:6,right:"calc(50% - 16px)",background:"var(--red)",color:"#fff",borderRadius:99,fontSize:11,fontWeight:800,minWidth:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{badgeNum}</div>}
+              <span style={{fontSize:11,fontWeight:700,color:active?"var(--accent2)":"var(--text3)",letterSpacing:.2,marginTop:3}}>{t.l}</span>
               {active&&<div style={{width:18,height:2,background:"var(--accent2)",borderRadius:99}}/>}
             </button>
           );
