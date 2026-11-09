@@ -1957,16 +1957,9 @@ function App(){
       const semana=lunes.toISOString().split("T")[0];
       if(stateRef.current.resumenVisto===semana) return;
       (async()=>{
-      // 1) precios de los juegos una vez por semana, antes del resumen
-      if(stateRef.current.preciosSemana!==semana){
-        showToast("Actualizando los precios de la semana, deja la app abierta");
-        const ok=await updateAllPrices(true,"juegos");
-        if(!ok) return;
-        dispatch({type:"SET_FLAGS",payload:{}});
-        dispatch({type:"SET_PRECIOS_SEMANA",payload:semana});
-        await new Promise(r=>setTimeout(r,800));
-      }
-      // 2) resumen con los valores ya actualizados
+      // Los precios ya no se actualizan aqui con anuncios activos (precios pedidos, inflados):
+      // los valores vienen solo de ventas reales (vendidos.json del repaso semanal por vendidos)
+      // Resumen con los valores actuales
       const st=stateRef.current;
       const h=st.historial||[];
       const hace7=new Date(Date.now()-7*864e5).toISOString().split("T")[0];
