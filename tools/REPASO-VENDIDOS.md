@@ -25,3 +25,13 @@ Objetivo: que el valor de cada juego sea **lo que se vende de verdad en eBay**, 
 - Si no llegan a 3, se usa la mezcla de regiones y se guarda `"region":"mixta"` en vendidos.json; la ficha de la app lo muestra como "región mixta".
 - Cada entrada de vendidos.json lleva `region` ("PAL" o "mixta"). Las anteriores al 07/11 no lo llevan y cuentan como mixtas: hay que repasarlas.
 - Excluir siempre versiones japonesas/asiáticas salvo que el producto sea JP.
+
+## Anuncios de eBay (desde 09/11/2026)
+- En cada repaso, actualizar también `anuncios.json` con los anuncios activos de Juan: abrir `https://www.ebay.es/sh/lst/active?limit=200` (con su sesión) y leer número de anuncio, título, precio y si acepta ofertas.
+- Formato: `{actualizado:"YYYY-MM-DD", items:[{id (id del producto en la app, o null si no es un producto del stock), rid (id de la reserva si el anuncio es de una reserva, o null), itemId, titulo, precio, oferta}]}`.
+- La app lo usa para enseñar en cada ficha y en "Repetidos para vender" si está anunciado, a cuánto, y si el precio queda por debajo (más de un 10 %) o por encima (más de un 25 %) de los vendidos.
+- Solo leer: **no cambiar precios ni anuncios** sin que Juan lo pida. Los anuncios de unidad única van caros a propósito.
+
+## Plan de Juan (09/11/2026)
+- La colección se queda: de cada juego guarda una unidad (campo `guardar` de la ficha; por defecto 1; las Game & Watch se quedan todas).
+- Solo se venden los repetidos, con la idea de que la colección quede pagada ("a coste cero").
