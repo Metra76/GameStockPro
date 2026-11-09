@@ -1694,6 +1694,8 @@ function App(){
   useEffect(()=>{fetch("anuncios.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{if(v&&Array.isArray(v.items)) setAnuncios(v);}).catch(()=>{});},[]);
   const anuncioDe=id=>(anuncios.items||[]).find(a=>a.id===id);
   const stockY=useRef(0);
+  const origen=useRef(null); // de donde se abrio la ficha, para volver al mismo sitio
+  const abrir=p=>{origen.current={screen:nav.screen,data:nav.data,y:window.scrollY};go("producto",p);};
   const [updateProgress,setUpdateProgress]=useState(null); // {current,total}
   const [loadingEbay,setLoadingEbay]=useState(null); // product id being fetched
   const [radarNews,setRadarNews]=useState([]);
@@ -2230,7 +2232,9 @@ function App(){
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {screen!=="home"&&screen!=="stock"&&screen!=="radar"&&screen!=="reservas"&&
             <button onClick={()=>{
-              if(screen==="producto"){const y=stockY.current;setTab("stock");go("stock");setTimeout(()=>{try{window.scrollTo(0,y);}catch(e){}},80);}
+              if(screen==="producto"){const o=origen.current;origen.current=null;
+                if(o&&o.screen!=="producto"&&(tab!=="stock"||o.screen==="stock")){go(o.screen,o.data);setTimeout(()=>{try{window.scrollTo(0,o.y||0);}catch(e){}},80);}
+                else{setTab("stock");go("stock");}}
               else if(screen==="categoria"||screen==="grupo"){setTab("stock");go("stock");}
               else if(screen==="reservaDetalle"){setTab("reservas");go("reservas");}
               else if(screen==="oportunidades"||screen==="vender"||screen==="ventas"||screen==="ventaDetalle"){setTab("home");go("home");}
@@ -2451,7 +2455,7 @@ function App(){
               {paraVender.slice(0,6).map(({p,n})=>{
                 const an=anuncioDe(p.id);
                 return(
-                <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{flex:"none",width:98,background:"none",border:"none",padding:0,textAlign:"left",cursor:"pointer",color:"var(--text)"}}>
+                <button key={p.id} onClick={()=>abrir(p)} style={{flex:"none",width:98,background:"none",border:"none",padding:0,textAlign:"left",cursor:"pointer",color:"var(--text)"}}>
                   <div style={{position:"relative",width:98,height:130,borderRadius:9,overflow:"hidden",background:"var(--bg3)",boxShadow:"var(--card-shadow)"}}>
                     {p.cover&&<img loading="lazy" src={GRANDE(p.cover)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>}
                     <span style={{position:"absolute",top:6,right:6,background:"rgba(20,24,38,.85)",color:"#fff",fontSize:11,fontWeight:700,borderRadius:999,padding:"2px 7px"}}>×{n}</span>
@@ -2585,7 +2589,7 @@ function App(){
                   {res.length} {res.length===1?"resultado":"resultados"}
                 </div>
                 {res.slice(0,40).map(p=>(
-                  <button key={p.id} onClick={()=>go("producto",p)} style={{...S.row}}>
+                  <button key={p.id} onClick={()=>abrir(p)} style={{...S.row}}>
                     <div style={{width:5,height:34,borderRadius:3,flex:"none",background:({"PS5":"var(--ps5)","PS4":"var(--ps4)","Switch":"var(--sw)","Switch 2":"var(--sw)","Zapatillas":"var(--zp)"})[p.categoria]||"var(--accent2)"}}/>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.nombre}</div>
@@ -2634,7 +2638,7 @@ function App(){
             {stockLista.map(p=>{
               const pv=p.valorMercado||p.precioCompra||0, ratio=p.precioCompra>0?pv/p.precioCompra:0;
               return(
-                <button key={p.id} onClick={()=>{stockY.current=window.scrollY;go("producto",p);}} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:13,padding:0,overflow:"hidden",cursor:"pointer",textAlign:"left",boxShadow:"var(--card-shadow)",display:"flex",flexDirection:"column",color:"var(--text)"}}>
+                <button key={p.id} onClick={()=>abrir(p)} style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:13,padding:0,overflow:"hidden",cursor:"pointer",textAlign:"left",boxShadow:"var(--card-shadow)",display:"flex",flexDirection:"column",color:"var(--text)"}}>
                   <div style={{position:"relative",aspectRatio:"3/4",background:"var(--bg3)",width:"100%"}}>
                     {p.cover?<img loading="lazy" src={GRANDE(p.cover)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
                       :<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",padding:8,fontSize:11,fontWeight:600,color:"var(--text3)",lineHeight:1.25}}>Sin portada</div>}
@@ -2655,7 +2659,7 @@ function App(){
             {stockLista.map(p=>{
               const pv=p.valorMercado||p.precioCompra||0, ratio=p.precioCompra>0?pv/p.precioCompra:0;
               return(
-                <button key={p.id} onClick={()=>{stockY.current=window.scrollY;go("producto",p);}} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
+                <button key={p.id} onClick={()=>abrir(p)} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
                   {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:44,height:58,objectFit:"cover",borderRadius:6,flexShrink:0}}/>
                     :<div style={{width:44,height:58,background:"var(--bg3)",borderRadius:6,flexShrink:0}}/>}
                   <div style={{flex:1,minWidth:0}}>
@@ -3031,7 +3035,7 @@ function App(){
                   </div>
                   {pVentas.map((m,i)=>{
                     const coste=m.historico?m.coste:(p.precioCompra||0);
-                    const ben=(m.precioVenta-coste)*m.cantidad;
+                    const ben=(m.precioVenta-coste)*m.cantidad-(m.ebayFee||0);
                     return(
                       <button key={i} onClick={()=>go("ventaDetalle",m)} style={{...S.row}}
                         onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
@@ -3100,7 +3104,7 @@ function App(){
                 const cat=m.historico?m.categoriaVenta:(prod?.categoria||"—");
                 const cfg2=CAT_CONFIG[cat]||{};
                 const coste=m.historico?m.coste:(prod?.precioCompra||0);
-                const ben=(m.precioVenta-coste)*m.cantidad;
+                const ben=(m.precioVenta-coste)*m.cantidad-(m.ebayFee||0);
                 return(
                   <button key={i} onClick={()=>go("ventaDetalle",m)} style={{...S.row}}
                     onMouseEnter={e=>e.currentTarget.style.background="var(--bg3)"}
@@ -3162,7 +3166,7 @@ function App(){
                 const an=anuncioDe(p.id), v=p.valorMercado||p.precioCompra||0;
                 const dif=an&&v>0?(an.precio-v)/v:0;
                 return(
-                <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
+                <button key={p.id} onClick={()=>abrir(p)} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
                   {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:40,height:53,objectFit:"cover",borderRadius:6,flexShrink:0}}/>:<div style={{width:40,height:53,background:"var(--bg3)",borderRadius:6,flexShrink:0}}/>}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{...CLAMP2,fontWeight:600,fontSize:13.5,lineHeight:1.25}}>{p.nombre}</div>
@@ -3189,7 +3193,7 @@ function App(){
                 const mult=p.precioCompra>0?(p.valorMercado/p.precioCompra).toFixed(1):"∞";
                 const ben=p.valorMercado-p.precioCompra;
                 return(
-                  <button key={p.id} onClick={()=>{stockY.current=0;go("producto",p);}} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
+                  <button key={p.id} onClick={()=>abrir(p)} style={{...S.row,padding:"10px 14px",color:"var(--text)"}}>
                     {p.cover?<img loading="lazy" src={p.cover} alt="" style={{width:40,height:53,objectFit:"cover",borderRadius:6,flexShrink:0}}/>:<div style={{width:40,height:53,background:"var(--bg3)",borderRadius:6,flexShrink:0}}/>}
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{...CLAMP2,fontWeight:600,fontSize:13.5,lineHeight:1.25}}>{p.nombre}</div>
