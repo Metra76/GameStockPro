@@ -548,6 +548,11 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1011A":{
+      // 10/11/2026: Juan cancela todas las reservas de Legacy of Kain Defiance Remastered Deluxe (GAME, 8 uds)
+      const reservas=(state.reservas||[]).filter(r=>!(/legacy of kain/i.test(r.nombre||"")&&/defiance/i.test(r.nombre||"")&&!r.enStock));
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes1011a:true}};break;
+    }
     case "AJUSTES_0911B":{
       // 09/11/2026 (Juan: "hazlas"): precios de compra que faltaban, ediciones mal puestas, portadas equivocadas o que faltaban,
       // y las Game & Watch se quedan todas (no salen como repetidas)
@@ -2134,6 +2139,7 @@ function App(){
     if(!f.ajustes0711b){dispatch({type:"AJUSTES_0711B"});setTimeout(()=>subirNube(),16600);}
     if(!f.ajustes0911a){dispatch({type:"AJUSTES_0911A"});setTimeout(()=>subirNube(),17000);}
     if(!f.ajustes0911b){dispatch({type:"AJUSTES_0911B"});setTimeout(()=>subirNube(),17400);}
+    if(!f.ajustes1011a){dispatch({type:"AJUSTES_1011A"});setTimeout(()=>subirNube(),17800);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
