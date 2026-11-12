@@ -548,6 +548,11 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1211B":{
+      // Juan: compra 1 steelbook Silent Hill f a 24,78 el 12/11/2026 (Wallapop), para los lotes. Coste medio
+      const products=state.products.map(p=>p.id===341?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+24.78)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 a 24,78 (12/11/2026)"}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1211b:true}};break;
+    }
     case "AJUSTES_1211A":{
       // Venta eBay 12/11/2026, pedido 08-15423-88179 (kirkster_2008): steelbooks Silent Hill 2 + Silent Hill f en lote.
       // 235 + 50 envio = 285 (sin el impuesto que cobra eBay), tarifas 42,73, neto 242,27. Reparto por valor: SH2 159 / SHf 126
@@ -2151,6 +2156,7 @@ function App(){
     if(!f.ajustes0911b){dispatch({type:"AJUSTES_0911B"});setTimeout(()=>subirNube(),17400);}
     if(!f.ajustes1011a){dispatch({type:"AJUSTES_1011A"});setTimeout(()=>subirNube(),17800);}
     if(!f.ajustes1211a){dispatch({type:"AJUSTES_1211A"});setTimeout(()=>subirNube(),18200);}
+    if(!f.ajustes1211b){dispatch({type:"AJUSTES_1211B"});setTimeout(()=>subirNube(),18600);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
