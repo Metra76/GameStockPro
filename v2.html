@@ -548,6 +548,13 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1211C":{
+      // Juan: compra 2 steelbooks Silent Hill: Townfall (sin juego) el 12/11/2026 a 25,39 y 24,25, para los lotes de tres con SH2 y SHf.
+      // Sin valor de mercado todavia (pendiente de mirar vendidos); guardar 0 porque las dos son para lotes
+      const id=1763000000101;
+      const products=state.products.some(p=>p.id===id)?state.products:[...state.products,{id,nombre:"Steelbook Silent Hill: Townfall",categoria:"Steelbook",edicion:"Steelbook",condicion:"Precintado",region:"PAL",sku:"",stock:2,guardar:0,precioCompra:24.82,valorMercado:0,fechaCompra:"2026-11-12",lanzamiento:"2026-09-24",notas:"Sin juego. 25,39 + 24,25 (12/11/2026). Para lotes SH2 + SHf + Townfall"}];
+      next={...state,products,flags:{...(state.flags||{}),ajustes1211c:true}};break;
+    }
     case "AJUSTES_1211B":{
       // Juan: compra 1 steelbook Silent Hill f a 24,78 el 12/11/2026 (Wallapop), para los lotes. Coste medio
       const products=state.products.map(p=>p.id===341?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+24.78)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 a 24,78 (12/11/2026)"}:p);
@@ -2157,6 +2164,7 @@ function App(){
     if(!f.ajustes1011a){dispatch({type:"AJUSTES_1011A"});setTimeout(()=>subirNube(),17800);}
     if(!f.ajustes1211a){dispatch({type:"AJUSTES_1211A"});setTimeout(()=>subirNube(),18200);}
     if(!f.ajustes1211b){dispatch({type:"AJUSTES_1211B"});setTimeout(()=>subirNube(),18600);}
+    if(!f.ajustes1211c){dispatch({type:"AJUSTES_1211C"});setTimeout(()=>subirNube(),19000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
