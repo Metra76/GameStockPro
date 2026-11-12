@@ -548,6 +548,16 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1211A":{
+      // Venta eBay 12/11/2026, pedido 08-15423-88179 (kirkster_2008): steelbooks Silent Hill 2 + Silent Hill f en lote.
+      // 235 + 50 envio = 285 (sin el impuesto que cobra eBay), tarifas 42,73, neto 242,27. Reparto por valor: SH2 159 / SHf 126
+      const v=[{id:1763000000001,productoId:274,nombreProducto:"Steelbook Silent Hill 2",categoriaVenta:"Steelbook",coste:28,precioVenta:159,ebayFee:23.84},
+               {id:1763000000002,productoId:341,nombreProducto:"Steelbook Silent Hill f",categoriaVenta:"Steelbook",coste:20,precioVenta:126,ebayFee:18.89}];
+      let movements=state.movements;
+      v.forEach(x=>{if(!movements.some(m=>m.id===x.id)) movements=[...movements,{...x,tipo:"Venta",fecha:"2026-11-12",cantidad:1,historico:true,nota:"eBay · lote SH2 + SHf · pedido 08-15423-88179 · 235 + 50 envío, tarifas 42,73"}];});
+      const products=state.products.map(p=>(p.id===274||p.id===341)?{...p,stock:Math.max((p.stock||0)-1,0)}:p);
+      next={...state,movements,products,flags:{...(state.flags||{}),ajustes1211a:true}};break;
+    }
     case "AJUSTES_1011A":{
       // 10/11/2026: Juan cancela todas las reservas de Legacy of Kain Defiance Remastered Deluxe (GAME, 8 uds)
       const reservas=(state.reservas||[]).filter(r=>!(/legacy of kain/i.test(r.nombre||"")&&/defiance/i.test(r.nombre||"")&&!r.enStock));
@@ -2140,6 +2150,7 @@ function App(){
     if(!f.ajustes0911a){dispatch({type:"AJUSTES_0911A"});setTimeout(()=>subirNube(),17000);}
     if(!f.ajustes0911b){dispatch({type:"AJUSTES_0911B"});setTimeout(()=>subirNube(),17400);}
     if(!f.ajustes1011a){dispatch({type:"AJUSTES_1011A"});setTimeout(()=>subirNube(),17800);}
+    if(!f.ajustes1211a){dispatch({type:"AJUSTES_1211A"});setTimeout(()=>subirNube(),18200);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
