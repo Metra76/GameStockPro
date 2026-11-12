@@ -548,6 +548,12 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1211D":{
+      // Envio del lote de steelbooks SH2 + SHf (pedido 08-15423-88179) a Modesto, California (EE. UU.)
+      const envios=[...(state.envios||[])];
+      if(!envios.some(e=>e.id==="08-15423-88179")) envios.push({id:"08-15423-88179",ciudad:"Modesto (California)",pais:"Estados Unidos",pais_en:"United States",total:285,titulo:"Steelbooks Silent Hill 2 + Silent Hill f",fecha:"2026-11-12",lat:37.64,lon:-120.99,canal:"eBay"});
+      next={...state,envios,flags:{...(state.flags||{}),ajustes1211d:true}};break;
+    }
     case "AJUSTES_1211C":{
       // Juan: compra 2 steelbooks Silent Hill: Townfall (sin juego) el 12/11/2026 a 25,39 y 24,25, para los lotes de tres con SH2 y SHf.
       // Sin valor de mercado todavia (pendiente de mirar vendidos); guardar 0 porque las dos son para lotes
@@ -2165,6 +2171,7 @@ function App(){
     if(!f.ajustes1211a){dispatch({type:"AJUSTES_1211A"});setTimeout(()=>subirNube(),18200);}
     if(!f.ajustes1211b){dispatch({type:"AJUSTES_1211B"});setTimeout(()=>subirNube(),18600);}
     if(!f.ajustes1211c){dispatch({type:"AJUSTES_1211C"});setTimeout(()=>subirNube(),19000);}
+    if(!f.ajustes1211d){dispatch({type:"AJUSTES_1211D"});setTimeout(()=>subirNube(),19400);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
