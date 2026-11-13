@@ -548,6 +548,16 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1311A":{
+      // 13/11/2026: lo que se sabe de las reservas sin fecha (sin fecha exacta publicada; se deja en notas, no en la fecha)
+      const N=[[/blasphemous/i,"Fecha: retrasada a 1er trimestre 2027 (Team17, 30/09/2026)."],
+               [/clair obscur.*artbook|artbook.*clair/i,"Fecha: 4º trimestre 2026 según Pix'n Love, sin día exacto."],
+               [/bloodrayne/i,"El juego salió el 29/07/2026 (Strictly Limited). Fecha de envío de la edición física sin publicar: mirar en GAME."],
+               [/city hunter/i,"Ediciones físicas a la venta desde el 17/09/2026 (Red Art Games). Mirar en GAME si ya está para recoger."]];
+      const reservas=(state.reservas||[]).map(r=>{if(r.lanzamiento||r.enStock) return r;const n=N.find(([re])=>re.test(r.nombre||""));
+        return n&&!(r.notas||"").includes(n[1])?{...r,notas:((r.notas||"")+" "+n[1]).trim()}:r;});
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes1311a:true}};break;
+    }
     case "AJUSTES_1211D":{
       // Envio del lote de steelbooks SH2 + SHf (pedido 08-15423-88179) a Modesto, California (EE. UU.)
       const envios=[...(state.envios||[])];
@@ -2172,6 +2182,7 @@ function App(){
     if(!f.ajustes1211b){dispatch({type:"AJUSTES_1211B"});setTimeout(()=>subirNube(),18600);}
     if(!f.ajustes1211c){dispatch({type:"AJUSTES_1211C"});setTimeout(()=>subirNube(),19000);}
     if(!f.ajustes1211d){dispatch({type:"AJUSTES_1211D"});setTimeout(()=>subirNube(),19400);}
+    if(!f.ajustes1311a){dispatch({type:"AJUSTES_1311A"});setTimeout(()=>subirNube(),19800);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
