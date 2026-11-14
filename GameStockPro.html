@@ -548,6 +548,14 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1411C":{
+      // Portadas que faltaban (solo si la ficha no tiene ninguna)
+      const IG="https://images.igdb.com/igdb/image/upload/t_cover_big/";
+      const port={123:IG+"td1t8kb33gyo8mvhl2pc.jpg",245:IG+"wdvojtqymc24siasqjde.jpg",50:IG+"co2s9r.jpg",11:IG+"co5580.jpg",1763000000101:IG+"coc5sw.jpg",
+        1763100000001:"https://tcgplayer-cdn.tcgplayer.com/product/218791_in_1000x1000.jpg"};
+      const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
+    }
     case "AJUSTES_1411B":{
       // Juan: tenía olvidada una Elite Trainer Box de Champion's Path (inglés, precintada de fábrica), comprada en StockX por ~105.
       // Valor de referencia 220 (tiendas UE 233-264, mercado ~245$; para cartas Juan usa Cardmarket como baremo)
@@ -2198,6 +2206,7 @@ function App(){
     if(!f.ajustes1311a){dispatch({type:"AJUSTES_1311A"});setTimeout(()=>subirNube(),19800);}
     if(!f.ajustes1411a){dispatch({type:"AJUSTES_1411A"});setTimeout(()=>subirNube(),20200);}
     if(!f.ajustes1411b){dispatch({type:"AJUSTES_1411B"});setTimeout(()=>subirNube(),20600);}
+    if(!f.ajustes1411c){dispatch({type:"AJUSTES_1411C"});setTimeout(()=>subirNube(),21000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
