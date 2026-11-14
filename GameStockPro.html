@@ -556,6 +556,14 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_1411D":{
+      const EB="https://i.ebayimg.com/images/g/";
+      const port={7:"https://images.igdb.com/igdb/image/upload/t_cover_big/co545p.jpg",20:EB+"RPwAAeSwDF9q-GvF/s-l500.jpg",51:EB+"FwUAAeSw3EVqhfI8/s-l500.jpg",
+        307:EB+"rvYAAeSwI55q80KV/s-l500.jpg",1760900000012:EB+"HlMAAeSwa6Bq8OwY/s-l500.jpg",1760900000013:EB+"pM0AAeSwG~lqDODk/s-l500.jpg",
+        1760900000014:EB+"pM0AAeSwG~lqDODk/s-l500.jpg",1760900000015:EB+"aC4AAeSwmIBq16dX/s-l500.jpg",1760900000022:EB+"4AoAAeSw~2dqwTZO/s-l500.jpg"};
+      const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1411d:true}};break;
+    }
     case "AJUSTES_1411B":{
       // Juan: tenía olvidada una Elite Trainer Box de Champion's Path (inglés, precintada de fábrica), comprada en StockX por ~105.
       // Valor de referencia 220 (tiendas UE 233-264, mercado ~245$; para cartas Juan usa Cardmarket como baremo)
@@ -2207,6 +2215,7 @@ function App(){
     if(!f.ajustes1411a){dispatch({type:"AJUSTES_1411A"});setTimeout(()=>subirNube(),20200);}
     if(!f.ajustes1411b){dispatch({type:"AJUSTES_1411B"});setTimeout(()=>subirNube(),20600);}
     if(!f.ajustes1411c){dispatch({type:"AJUSTES_1411C"});setTimeout(()=>subirNube(),21000);}
+    if(!f.ajustes1411d){dispatch({type:"AJUSTES_1411D"});setTimeout(()=>subirNube(),22000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
