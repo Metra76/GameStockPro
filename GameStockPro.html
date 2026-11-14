@@ -548,6 +548,14 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1411B":{
+      // Juan: tenía olvidada una Elite Trainer Box de Champion's Path (inglés, precintada de fábrica), comprada en StockX por ~105.
+      // Valor de referencia 220 (tiendas UE 233-264, mercado ~245$; para cartas Juan usa Cardmarket como baremo)
+      const id=1763100000001;
+      const ya=state.products.some(p=>p.id===id||/champion.?s path/i.test(p.nombre||""));
+      const products=ya?state.products:[...state.products,{id,nombre:"Pokémon Champion's Path – Elite Trainer Box",categoria:"Cartas",edicion:"Elite Trainer Box",condicion:"Precintado",region:"EN",sku:"",stock:1,precioCompra:105,valorMercado:220,valorFuente:"manual",valorFecha:"2026-11-14",fechaCompra:"",lanzamiento:"2020-09-25",notas:"Comprada en StockX. Valor según tiendas UE y Cardmarket (14/11/2026)"}];
+      next={...state,products,flags:{...(state.flags||{}),ajustes1411b:true}};break;
+    }
     case "AJUSTES_1411A":{
       // Juan: compra 1 steelbook Silent Hill Townfall en Vinted el 14/11/2026 por 22,15 (18 + 2,55 envio + 1,60 tasa). Coste medio
       const products=state.products.map(p=>p.id===1763000000101?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+22.15)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 Vinted 22,15 (14/11/2026)"}:p);
@@ -2189,6 +2197,7 @@ function App(){
     if(!f.ajustes1211d){dispatch({type:"AJUSTES_1211D"});setTimeout(()=>subirNube(),19400);}
     if(!f.ajustes1311a){dispatch({type:"AJUSTES_1311A"});setTimeout(()=>subirNube(),19800);}
     if(!f.ajustes1411a){dispatch({type:"AJUSTES_1411A"});setTimeout(()=>subirNube(),20200);}
+    if(!f.ajustes1411b){dispatch({type:"AJUSTES_1411B"});setTimeout(()=>subirNube(),20600);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
