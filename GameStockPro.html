@@ -548,6 +548,11 @@ function reducer(state,action){
       });
       next={...state,products,historial,vendidosAplicado:actualizado};break;
     }
+    case "AJUSTES_1411A":{
+      // Juan: compra 1 steelbook Silent Hill Townfall en Vinted el 14/11/2026 por 22,15 (18 + 2,55 envio + 1,60 tasa). Coste medio
+      const products=state.products.map(p=>p.id===1763000000101?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+22.15)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 Vinted 22,15 (14/11/2026)"}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1411a:true}};break;
+    }
     case "AJUSTES_1311A":{
       // 13/11/2026: lo que se sabe de las reservas sin fecha (sin fecha exacta publicada; se deja en notas, no en la fecha)
       const N=[[/blasphemous/i,"Fecha: retrasada a 1er trimestre 2027 (Team17, 30/09/2026)."],
@@ -2183,6 +2188,7 @@ function App(){
     if(!f.ajustes1211c){dispatch({type:"AJUSTES_1211C"});setTimeout(()=>subirNube(),19000);}
     if(!f.ajustes1211d){dispatch({type:"AJUSTES_1211D"});setTimeout(()=>subirNube(),19400);}
     if(!f.ajustes1311a){dispatch({type:"AJUSTES_1311A"});setTimeout(()=>subirNube(),19800);}
+    if(!f.ajustes1411a){dispatch({type:"AJUSTES_1411A"});setTimeout(()=>subirNube(),20200);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
