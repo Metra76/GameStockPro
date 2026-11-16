@@ -556,6 +556,13 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_1611A":{
+      // Juan: compra RAIDOU Remastered (Switch) en GAME el 16/11/2026, op. 0133046942: 24,99 - 19,10 puntos = 5,89 pagados. Recogido en mano.
+      const id=1763300000001;
+      const ya=state.products.some(p=>p.id===id||/raidou/i.test(p.nombre||""));
+      const products=ya?state.products:[...state.products,{id,nombre:"RAIDOU Remastered: The Mystery of the Soulless Army",categoria:"Switch",edicion:"Estándar",condicion:"Precintado",region:"PAL ESP",sku:"",stock:1,precioCompra:5.89,valorMercado:24.99,valorFuente:"tienda",valorFecha:"2026-11-16",fechaCompra:"2026-11-16",lanzamiento:"2025-06-19",cover:"https://images.igdb.com/igdb/image/upload/t_cover_big/co9l0l.jpg",notas:"GAME op. 0133046942: 24,99 − 19,10 puntos = 5,89 pagados (16/11/2026)"}];
+      next={...state,products,flags:{...(state.flags||{}),ajustes1611a:true}};break;
+    }
     case "AJUSTES_1411D":{
       const EB="https://i.ebayimg.com/images/g/";
       const port={7:"https://images.igdb.com/igdb/image/upload/t_cover_big/co545p.jpg",20:EB+"RPwAAeSwDF9q-GvF/s-l500.jpg",51:EB+"FwUAAeSw3EVqhfI8/s-l500.jpg",
@@ -2216,6 +2223,7 @@ function App(){
     if(!f.ajustes1411b){dispatch({type:"AJUSTES_1411B"});setTimeout(()=>subirNube(),20600);}
     if(!f.ajustes1411c){dispatch({type:"AJUSTES_1411C"});setTimeout(()=>subirNube(),21000);}
     if(!f.ajustes1411d){dispatch({type:"AJUSTES_1411D"});setTimeout(()=>subirNube(),22000);}
+    if(!f.ajustes1611a){dispatch({type:"AJUSTES_1611A"});setTimeout(()=>subirNube(),23000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
