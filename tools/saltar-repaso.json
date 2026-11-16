@@ -1,0 +1,55 @@
+{
+  "nota": "Juegos que el repaso semanal se salta: ya revisados y sin datos fiables en eBay (solo versiones japonesas o ediciones mezcladas). Se revisan una vez al mes, por si aparecen 3+ ventas PAL precintadas. Coincidencia por nombre del producto, sin distinguir mayúsculas.",
+  "items": [
+    {
+      "nombre": "Bayonetta 2",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Fire Emblem Three Houses",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Trinity Trigger",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Taiko",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Digimon",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Ys Memoire",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Horror Tales",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Ace Combat",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Monster Hunter Stories",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    },
+    {
+      "nombre": "Fate/Samurai Remnant",
+      "ultimaRevision": "2026-11-16",
+      "siguienteRevision": "2026-12-16"
+    }
+  ]
+}
