@@ -18,6 +18,14 @@ Objetivo: que el valor de cada juego sea **lo que se vende de verdad en eBay**, 
 5. Commit + push al repo Metra76/GameStockPro (rama main). La app aplica `vendidos.json` sola al abrirse.
 6. Avisar a Juan con un resumen corto: cuántos revisados, **los juegos que más suben y los que más bajan** respecto al valor anterior (en € y %, unos 5 de cada), y los que no tenían ventas suficientes.
    - **No poner la lista de los más valorados**: eso ya sale en la app (petición de Juan, 03/11/2026).
+   - **Terminar con la cuenta de lo que queda** (petición de Juan, 16/11/2026), en una línea: "Quedan X por repasar: A nunca repasados, B con región mixta o sin región, C sin ventas suficientes".
+7. Cuenta de pendientes, en `tools/estado-repaso.json` (la usan este repaso y el chat de GameStockPro, que deben dar la misma cifra). Calcularla con los `products` de la app y `vendidos.json`, solo juegos de la sección Juegos con stock > 0 y sin `valorFuente` manual/stockx:
+   - `nuncaRepasados`: sin entrada en vendidos.json.
+   - `regionMixta`: con entrada `region` = "mixta" o sin campo `region` (anteriores al 07/11).
+   - `sinVentas`: con entrada `n` < 3.
+   - `pendientesTotal`: la suma; `pal`: los que ya tienen `region` = "PAL" con n ≥ 3; `fecha`: hoy.
+   - Guardar esos campos junto a `avisoPcApagado` (no borrarlo) y hacer commit con el resto.
+   - Si un chat repasa vendidos a mano, debe actualizar también este archivo.
 
 
 ## Región (desde 07/11/2026, petición de Juan: "vamos a lo seguro")
