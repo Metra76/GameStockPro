@@ -556,6 +556,13 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_1711A":{
+      // Juan: compra Lost Judgment PS4 en Amazon (oferta Black Friday) el 17/11/2026 por 8,11. Precintado, PAL ESP.
+      const id=1763400000001;
+      const ya=state.products.some(p=>p.id===id||/lost judg/i.test(p.nombre||""));
+      const products=ya?state.products:[...state.products,{id,nombre:"Lost Judgment",categoria:"PS4",edicion:"Estándar",condicion:"Precintado",region:"PAL ESP",sku:"",stock:1,precioCompra:8.11,valorMercado:20,valorFuente:"tienda",valorFecha:"2026-11-17",fechaCompra:"2026-11-17",lanzamiento:"2021-09-24",cover:"https://images.igdb.com/igdb/image/upload/t_cover_big/co53ld.jpg",notas:"Amazon, oferta Black Friday 8,11 (PVP 59,99) · 17/11/2026"}];
+      next={...state,products,flags:{...(state.flags||{}),ajustes1711a:true}};break;
+    }
     case "AJUSTES_1611A":{
       // Juan: compra RAIDOU Remastered (Switch) en GAME el 16/11/2026, op. 0133046942: 24,99 - 19,10 puntos = 5,89 pagados. Recogido en mano.
       const id=1763300000001;
@@ -2224,6 +2231,7 @@ function App(){
     if(!f.ajustes1411c){dispatch({type:"AJUSTES_1411C"});setTimeout(()=>subirNube(),21000);}
     if(!f.ajustes1411d){dispatch({type:"AJUSTES_1411D"});setTimeout(()=>subirNube(),22000);}
     if(!f.ajustes1611a){dispatch({type:"AJUSTES_1611A"});setTimeout(()=>subirNube(),23000);}
+    if(!f.ajustes1711a){dispatch({type:"AJUSTES_1711A"});setTimeout(()=>subirNube(),24000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
