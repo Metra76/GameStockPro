@@ -556,6 +556,11 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_1811A":{
+      // Juan: compra otra steelbook Silent Hill Townfall el 18/11/2026 por 32,40. Coste medio
+      const products=state.products.map(p=>p.id===1763000000101?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+32.40)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 a 32,40 (18/11/2026)"}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes1811a:true}};break;
+    }
     case "AJUSTES_1711A":{
       // Juan: compra Lost Judgment PS4 en Amazon (oferta Black Friday) el 17/11/2026 por 8,11. Precintado, PAL ESP.
       const id=1763400000001;
@@ -2232,6 +2237,7 @@ function App(){
     if(!f.ajustes1411d){dispatch({type:"AJUSTES_1411D"});setTimeout(()=>subirNube(),22000);}
     if(!f.ajustes1611a){dispatch({type:"AJUSTES_1611A"});setTimeout(()=>subirNube(),23000);}
     if(!f.ajustes1711a){dispatch({type:"AJUSTES_1711A"});setTimeout(()=>subirNube(),24000);}
+    if(!f.ajustes1811a){dispatch({type:"AJUSTES_1811A"});setTimeout(()=>subirNube(),25000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
