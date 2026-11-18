@@ -1,6 +1,6 @@
 # Anuncio pendiente: Pack Switch 2 Zelda 40 aniversario + Ocarina of Time foil
 
-Estado (12/11/2026): PUBLICADO en el anuncio 287607242637 (título, descripción sin el póster, 1.450 €, ofertas, envío 50/100). Falta añadir el póster cuando llegue y fotos nuevas con el juego.
+Estado (18/11/2026): PUBLICADO en el anuncio 287607242637, 1.450 €, ofertas, envío 50/100. Póster añadido el 18/11: regalo exclusivo de las tiendas GAME España, en su sobre original cerrado con el logo de Zelda (foto subida por Juan).
 Nota: se quitó "la carátula foil está AGOTADA" (GAME la tenía a la venta el 09/11); ahora pone "unidades limitadas".
 Precio: 1.450 € con Mejor oferta (decidido por Juan el 10/11/2026). Envío 50 € España / 100 € resto del mundo (pack grande y de mucho valor: envío asegurado).
 
