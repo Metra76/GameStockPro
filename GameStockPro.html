@@ -556,6 +556,11 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_2011A":{
+      // Juan: compra otra steelbook Silent Hill Townfall en Vinted (mpshock) el 19/11/2026 por 24,25 (20 + 2,55 envio + 1,70 tasa). Coste medio
+      const products=state.products.map(p=>p.id===1763000000101?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+24.25)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 Vinted 24,25 (19/11/2026)"}:p);
+      next={...state,products,flags:{...(state.flags||{}),ajustes2011a:true}};break;
+    }
     case "AJUSTES_1911A":{
       // Juan: envio del pedido 08-15423-88179 (Modesto, EE. UU.) por Correos iPaq Internacional = 45 con aranceles (19/11/2026).
       // Como en el Castlevania, la comision incluye el envio que paga Juan: 45 repartido por valor (SH2 25,11 / SHf 19,89)
@@ -2246,6 +2251,7 @@ function App(){
     if(!f.ajustes1711a){dispatch({type:"AJUSTES_1711A"});setTimeout(()=>subirNube(),24000);}
     if(!f.ajustes1811a){dispatch({type:"AJUSTES_1811A"});setTimeout(()=>subirNube(),25000);}
     if(!f.ajustes1911a){dispatch({type:"AJUSTES_1911A"});setTimeout(()=>subirNube(),26000);}
+    if(!f.ajustes2011a){dispatch({type:"AJUSTES_2011A"});setTimeout(()=>subirNube(),27000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
