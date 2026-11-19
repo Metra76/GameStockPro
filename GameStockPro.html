@@ -556,6 +556,13 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_1911A":{
+      // Juan: envio del pedido 08-15423-88179 (Modesto, EE. UU.) por Correos iPaq Internacional = 45 con aranceles (19/11/2026).
+      // Como en el Castlevania, la comision incluye el envio que paga Juan: 45 repartido por valor (SH2 25,11 / SHf 19,89)
+      const add={1763000000001:25.11,1763000000002:19.89};
+      const movements=(state.movements||[]).map(m=>add[m.id]&&!/envío Correos 45/.test(m.nota||"")?{...m,ebayFee:Math.round(((m.ebayFee||0)+add[m.id])*100)/100,nota:(m.nota||"")+" · envío Correos 45 con aranceles (19/11)"}:m);
+      next={...state,movements,flags:{...(state.flags||{}),ajustes1911a:true}};break;
+    }
     case "AJUSTES_1811A":{
       // Juan: compra otra steelbook Silent Hill Townfall el 18/11/2026 por 32,40. Coste medio
       const products=state.products.map(p=>p.id===1763000000101?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+32.40)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 a 32,40 (18/11/2026)"}:p);
@@ -2238,6 +2245,7 @@ function App(){
     if(!f.ajustes1611a){dispatch({type:"AJUSTES_1611A"});setTimeout(()=>subirNube(),23000);}
     if(!f.ajustes1711a){dispatch({type:"AJUSTES_1711A"});setTimeout(()=>subirNube(),24000);}
     if(!f.ajustes1811a){dispatch({type:"AJUSTES_1811A"});setTimeout(()=>subirNube(),25000);}
+    if(!f.ajustes1911a){dispatch({type:"AJUSTES_1911A"});setTimeout(()=>subirNube(),26000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
