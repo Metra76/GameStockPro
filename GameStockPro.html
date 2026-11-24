@@ -556,6 +556,24 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_2411B":{
+      // Juan (24/11/2026): estos los tiene pero no estaban en la app; salen de su coleccion de PriceCharting (coste y fecha de alli). Bayonetta 3: 1 ud
+      const nuevos=[{id:1764000000101,nombre:"Bayonetta 3",categoria:"Switch",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:60.0,valorMercado:60.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-01-07",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000102,nombre:"Persona 3 Reload",categoria:"PS5",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:25.0,valorMercado:25.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-12-16",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000103,nombre:"The Invincible – Signature Edition",categoria:"PS5",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:40.0,valorMercado:40.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2026-01-07",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000104,nombre:"Five Nights at Freddy's: Security Breach – Collector's Edition",categoria:"PS5",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:59.95,valorMercado:59.95,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-02-05",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000105,nombre:"Tactics Ogre: Reborn",categoria:"PS5",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:20.0,valorMercado:20.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-09-13",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000106,nombre:"Oxide Room 104",categoria:"PS5",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:24.0,valorMercado:24.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-01-07",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000107,nombre:"Ys Memoire: The Oath in Felghana",categoria:"PS5",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:20.0,valorMercado:20.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2025-05-30",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000108,nombre:"Sea of Stars",categoria:"Switch",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:20.0,valorMercado:20.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2025-04-04",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000109,nombre:"Fantasian Neo Dimension",categoria:"Switch",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:35.0,valorMercado:35.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2025-04-04",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000110,nombre:"Lost Judgment",categoria:"PS5",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:19.95,valorMercado:19.95,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-01-07",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000111,nombre:"amiibo Sora (Super Smash Bros.)",categoria:"Coleccionismo",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:2,precioCompra:29.98,valorMercado:29.98,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-01-21",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
+        {id:1764000000112,nombre:"amiibo Snake (Super Smash Bros.)",categoria:"Coleccionismo",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:8.0,valorMercado:8.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-02-17",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"}];
+      const ids=new Set(state.products.map(p=>p.id));
+      const products=[...state.products,...nuevos.filter(p=>!ids.has(p.id))];
+      next={...state,products,flags:{...(state.flags||{}),ajustes2411b:true}};break;
+    }
     case "AJUSTES_2411A":{
       // Juan: reserva en Wakkap la Ocarina of Time electrica de HORI (licencia oficial) para Switch 2, 1 ud, 52,95 con gastos incluidos (24/11/2026). Salida en Europa 27/11/2026 segun HORI Europe
       const r={...EMPTY_R,id:1764000000001,nombre:"Ocarina of Time eléctrica (HORI) – Switch 2",plataforma:"Switch 2",lanzamiento:"2026-11-27",tienda:"Wakkap",urlTienda:"https://wakkap.com",precioReserva:52.95,unidades:1,costeTotal:52.95,costePendiente:0,precioFinal:52.95,notas:"Merchandising. 49,90 + envío = 52,95, pagado en la reserva (24/11/2026)"};
@@ -2259,6 +2277,7 @@ function App(){
     if(!f.ajustes1911a){dispatch({type:"AJUSTES_1911A"});setTimeout(()=>subirNube(),26000);}
     if(!f.ajustes2011a){dispatch({type:"AJUSTES_2011A"});setTimeout(()=>subirNube(),27000);}
     if(!f.ajustes2411a){dispatch({type:"AJUSTES_2411A"});setTimeout(()=>subirNube(),28000);}
+    if(!f.ajustes2411b){dispatch({type:"AJUSTES_2411B"});setTimeout(()=>subirNube(),29000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
