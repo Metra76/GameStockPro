@@ -556,6 +556,12 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_2411A":{
+      // Juan: reserva en Wakkap la Ocarina of Time electrica de HORI (licencia oficial) para Switch 2, 1 ud, 52,95 con gastos incluidos (24/11/2026). Salida en Europa 27/11/2026 segun HORI Europe
+      const r={...EMPTY_R,id:1764000000001,nombre:"Ocarina of Time eléctrica (HORI) – Switch 2",plataforma:"Switch 2",lanzamiento:"2026-11-27",tienda:"Wakkap",urlTienda:"https://wakkap.com",precioReserva:52.95,unidades:1,costeTotal:52.95,costePendiente:0,precioFinal:52.95,notas:"Merchandising. 49,90 + envío = 52,95, pagado en la reserva (24/11/2026)"};
+      const reservas=(state.reservas||[]).some(x=>x.id===r.id)?state.reservas:[...(state.reservas||[]),r];
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes2411a:true}};break;
+    }
     case "AJUSTES_2011A":{
       // Juan: compra otra steelbook Silent Hill Townfall en Vinted (mpshock) el 19/11/2026 por 24,25 (20 + 2,55 envio + 1,70 tasa). Coste medio
       const products=state.products.map(p=>p.id===1763000000101?{...p,stock:(p.stock||0)+1,precioCompra:Math.round(((p.precioCompra||0)*(p.stock||0)+24.25)/((p.stock||0)+1)*100)/100,notas:(p.notas||"")+" · +1 Vinted 24,25 (19/11/2026)"}:p);
@@ -2252,6 +2258,7 @@ function App(){
     if(!f.ajustes1811a){dispatch({type:"AJUSTES_1811A"});setTimeout(()=>subirNube(),25000);}
     if(!f.ajustes1911a){dispatch({type:"AJUSTES_1911A"});setTimeout(()=>subirNube(),26000);}
     if(!f.ajustes2011a){dispatch({type:"AJUSTES_2011A"});setTimeout(()=>subirNube(),27000);}
+    if(!f.ajustes2411a){dispatch({type:"AJUSTES_2411A"});setTimeout(()=>subirNube(),28000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
