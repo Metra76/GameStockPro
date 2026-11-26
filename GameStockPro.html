@@ -556,6 +556,17 @@ function reducer(state,action){
       const products=state.products.map(p=>port[p.id]&&!p.cover?{...p,cover:port[p.id]}:p);
       next={...state,products,flags:{...(state.flags||{}),ajustes1411c:true}};break;
     }
+    case "AJUSTES_2611A":{
+      // Juan 26/11/2026: reserva Metroid Ravenous Special Edition (Switch 2) en Amazon, 1 ud, no se paga hasta el envio, llega 28/01/2027.
+      // Y otra Ocarina electrica HORI en GAME, 1 ud, 3 de senal (precio final por confirmar).
+      const nuevas=[
+        {...EMPTY_R,id:1764100000001,nombre:"Metroid Ravenous – Special Edition (amiibo + Steelbook)",plataforma:"Switch 2",lanzamiento:"2027-01-28",tienda:"Amazon",urlTienda:"https://www.amazon.es",precioReserva:0,unidades:1,costeTotal:0,costePendiente:0,precioFinal:0,notas:"Reservada 26/11/2026. Amazon cobra al enviar; precio por confirmar. Es la unidad para el anuncio de preventa de eBay"},
+        {...EMPTY_R,id:1764100000002,nombre:"Ocarina of Time eléctrica (HORI) – Switch 2",plataforma:"Switch 2",lanzamiento:"2026-11-27",tienda:"GAME",urlTienda:"https://www.game.es",precioReserva:3,unidades:1,costeTotal:3,costePendiente:0,precioFinal:0,notas:"Reservada 26/11/2026 con 3 de señal; precio final por confirmar. Segunda ocarina (la de Wakkap va al pack de Zelda)"}
+      ];
+      const ids=new Set((state.reservas||[]).map(r=>r.id));
+      const reservas=[...(state.reservas||[]),...nuevas.filter(r=>!ids.has(r.id))];
+      next={...state,reservas,flags:{...(state.flags||{}),ajustes2611a:true}};break;
+    }
     case "AJUSTES_2411B":{
       // Juan (24/11/2026): estos los tiene pero no estaban en la app; salen de su coleccion de PriceCharting (coste y fecha de alli). Bayonetta 3: 1 ud
       const nuevos=[{id:1764000000101,nombre:"Bayonetta 3",categoria:"Switch",edicion:"Estándar",condicion:"Precintado",region:"PAL",sku:"",stock:1,precioCompra:60.0,valorMercado:60.0,valorFuente:"pendiente",valorFecha:"2026-11-24",fechaCompra:"2024-01-07",notas:"Alta 24/11/2026 desde la colección de PriceCharting (Juan confirma que lo tiene)"},
@@ -2278,6 +2289,7 @@ function App(){
     if(!f.ajustes2011a){dispatch({type:"AJUSTES_2011A"});setTimeout(()=>subirNube(),27000);}
     if(!f.ajustes2411a){dispatch({type:"AJUSTES_2411A"});setTimeout(()=>subirNube(),28000);}
     if(!f.ajustes2411b){dispatch({type:"AJUSTES_2411B"});setTimeout(()=>subirNube(),29000);}
+    if(!f.ajustes2611a){dispatch({type:"AJUSTES_2611A"});setTimeout(()=>subirNube(),30000);}
     // Ventas reales del repaso semanal
     fetch("vendidos.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(v=>{
       if(v&&v.actualizado&&v.actualizado!==stateRef.current.vendidosAplicado&&(v.items||[]).length){dispatch({type:"APLICAR_VENDIDOS",payload:v});setTimeout(()=>subirNube(),10000);}
